@@ -1,8 +1,7 @@
 #include <stdio.h>
 
-void say_hello(viod) {
-    prinfg("Hello~/n");
-    return;
+int say_hello(int a, int b){
+    return a+b;
 }
 
 int main(void) {
