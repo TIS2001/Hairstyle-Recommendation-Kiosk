@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 void say_hello(viod) {
-    prinfg("Hello~/n");
+    printf("New Hello~/n");
     return;
 }
 
