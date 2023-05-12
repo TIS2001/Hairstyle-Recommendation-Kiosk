@@ -1,1 +1,3 @@
 model/pretrained_models
+py_model/dat/shape_predictor_81_face_landmarks.dat
+py_model/util/test.jpg
