@@ -251,15 +251,13 @@ def imageBrowse():
 #7. 헤어스타일 선택
 #일단 버튼 클릭하면 레이블 바뀌는거까지 구현했는데, 사진 선택 구현x, 범위 벗어난 인덱스에 대한 오류 처리도 x
 def open_win6():
-    global win6,img_list,label_list
+    global win6,img_list,button_list
     win6 = tk.Toplevel()
     win6.geometry("500x800")
     win6.title("헤어스타일 선택")
     tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0,column=4)
     tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(),open_win8()]).grid(row=10,column=2)
     tk.Button(win6, text="이전", command=forward_image).grid(row=5, column=1)
-    
-
     tk.Button(win6, text="다음", command=next_image).grid(row=5, column=2)
 
     # 이미지 파일 경로 및 크기
@@ -275,37 +273,58 @@ def open_win6():
         img_list.append(ImageTk.PhotoImage(img))
 
     # 이미지를 표시할 라벨 생성
-    label_list = []
-    for i in range(4):
+    button_list = []
+    for i in range(3):
         row_list = []
         for j in range(4):
-            label = tk.Label(win6, image=None)
-            label.grid(row=i, column=j, padx=5, pady=5)  # 추가 간격 설정
-            row_list.append(label)
-        label_list.append(row_list)
+            button = tk.Button(win6, image=None)
+            button.grid(row=i+1, column=j, padx=5, pady=5)  # 추가 간격 설정
+            row_list.append(button)
+        button_list.append(row_list)
 
     # 이미지를 라벨에 할당
     for i in range(3):
         for j in range(4):
             idx = i * 4 + j
             if idx < len(img_list):
-                label_list[i+1][j].configure(image=img_list[idx])
-num = 2
+                button_list[i][j].configure(image=img_list[idx],command=lambda i=i, j=j: toggle_border(button_list[i][j]))
+
+button_dict = {}
+num=2
+def toggle_border(button):
+    global num,button_dict
+    if button.cget("relief") == "solid":
+        button.config(relief="flat", highlightthickness=0)
+        button_dict = {}
+    else:
+        if bool(button_dict):
+            int_keys = [k for k in button_dict.keys() if isinstance(k, int)]
+            button_dict[int_keys[0]].config(relief="flat", highlightthickness=0)         
+            button_dict = {}
+        button.config(relief="solid", highlightthickness=2, highlightbackground="red")
+        button_dict[num] = button
+
 def forward_image():
-    global num
+    global num,button_dict
     num = num - 1
     for j in range(4):
         idx = num * 4 + j
         if idx < len(img_list):
-            label_list[3][j].configure(image=img_list[idx])
-    
+            button_list[2][j].configure(image=img_list[idx], relief="flat", highlightthickness=0)
+    if num in button_dict.keys():           
+        button_dict[num].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
 def next_image():
-    global num
+    global num,button_dict
     num = num + 1
     for j in range(4):
         idx = num * 4 + j
         if idx < len(img_list):
-            label_list[3][j].configure(image=img_list[idx])
+            button_list[2][j].configure(image=img_list[idx], relief="flat", highlightthickness=0)
+
+    if num in button_dict.keys():           
+        button_dict[num].config(relief="solid", highlightthickness=2, highlightbackground="red")
+  
 
 #8. 퍼스널컬러 4가지 중 선택
 def open_win8():
