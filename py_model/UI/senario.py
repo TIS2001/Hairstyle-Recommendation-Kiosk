@@ -129,14 +129,13 @@ def baro():
 #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
 def open_win5():
     global win5
-    global isBaro
-    isBaro=False
     win5 = tk.Toplevel()
     win5.geometry("400x640")
     win5.title("사진 촬영")
+    #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
     tk.Button(win5, text="뒤로가기", command=lambda:[win5.destroy(),win4.deiconify()]).grid(row=1,column=3)
     tk.Button(win5, text="사진 가져오기", command=lambda:[imageBrowse()]).grid(row=7,column=3)
-    tk.Button(win5, text="사진 촬영", command=lambda:[win5.withdraw(),Capture(),open_win6()]).grid(row=8,column=3)
+    tk.Button(win5, text="사진 촬영", command=lambda:[Capture()]).grid(row=8,column=3)
     win5.cameraLabel = Label(win5, bg="steelblue", borderwidth=3, relief="groove")
     win5.cameraLabel.grid(row=3,column=2, padx=10, pady=10, columnspan=2)
     win5.imageLabel = Label(win5, bg="steelblue", borderwidth=3, relief="groove")
@@ -179,7 +178,7 @@ def ShowFeed():
 
 # Defining Capture() to capture and save the image and display the image in the imageLabel
 def Capture():
-    destD="/home/lee/4-1/EMB/project/photos"
+    destD="/home/lee/4-1/EMB/project_UI/photos"
     destPath.set(destD)
     # Storing the date in the mentioned format in the image_name variable
     image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
@@ -210,15 +209,18 @@ def Capture():
     # Creating object of PhotoImage() class to display the frame
     saved_image = ImageTk.PhotoImage(saved_image)
 
-    # # Configuring the label to display the frame
-    # win5.imageLabel.config(image=saved_image)
+    # Configuring the label to display the frame
+    win5.imageLabel.config(image=saved_image)
 
-    # # Keeping a reference
-    # win5.imageLabel.photo = saved_image
+    # Keeping a reference
+    win5.imageLabel.photo = saved_image
 
     # Displaying messagebox
     if success :
         messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
+    tk.Button(win5, text="다시 찍기", command=Capture).grid(row=8,column=3)    
+    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win7()]).grid(row=9,column=3)
+
 
 def imageBrowse():
     # Presenting user with a pop-up for directory selection. initialdir argument is optional
