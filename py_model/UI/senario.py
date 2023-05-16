@@ -249,6 +249,7 @@ def imageBrowse():
 
 
 #7. 헤어스타일 선택
+#일단 버튼 클릭하면 레이블 바뀌는거까지 구현했는데, 사진 선택 구현x, 범위 벗어난 인덱스에 대한 오류 처리도 x
 def open_win6():
     global win6,img_list,label_list
     win6 = tk.Toplevel()
