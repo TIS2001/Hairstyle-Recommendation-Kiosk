@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 import cv2
 from tkinter import messagebox, filedialog
 from datetime import datetime
+import os
 
 def on_escape(event=None):
     print("escaped")
@@ -219,7 +220,7 @@ def Capture():
     if success :
         messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
     tk.Button(win5, text="다시 찍기", command=Capture).grid(row=8,column=3)    
-    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win7()]).grid(row=9,column=3)
+    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
 
 def imageBrowse():
@@ -247,34 +248,63 @@ def imageBrowse():
     win5.imageLabel.photo = imageDisplay
 
 
-#6. 사진 보여주기, 재촬영 여부(-> #5)
-def open_win6():
-    global win6
-    win6 = tk.Toplevel()
-    win6.geometry("400x640")
-    win6.title("사진 촬영 이후")
-    win6.back_btn=tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()])
-    win6.back_btn.grid(row=1,column=5)
-    win6.imageLabel = Label(win6, bg="steelblue", borderwidth=3, relief="groove")
-    win6.imageLabel.grid(row=3,column=2, padx=10, pady=10, columnspan=5)
-    # tk.Button(win6, text="다시 찍기", command=lambda:[win6.withdraw(),open_win6()]).pack(pady=10)
-    win6.sel_btn=tk.Button(win6, text="현재 사진 선택", command=lambda:[win6.withdraw(),open_win7()])
-    win6.sel_btn.grid(row=5,column=4)
-    image_path=imagePath.get()
-    imageView=Image.open(image_path)
-    imageDisplay = ImageTk.PhotoImage(imageView)
-    win6.imageLabel.config(image=imageDisplay)
-    # Keeping a reference
-    win6.imageLabel.photo = imageDisplay
-
 #7. 헤어스타일 선택
-def open_win7():
-    global win7
-    win7 = tk.Toplevel()
-    win7.geometry("400x640")
-    win7.title("헤어스타일 선택")
-    tk.Button(win7, text="뒤로가기", command=lambda:[win7.destroy(),win6.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
-    tk.Button(win7, text="헤어스타일 선택", command=lambda:[win7.withdraw(),open_win8()]).pack(pady=10)
+def open_win6():
+    global win6,img_list,label_list
+    win6 = tk.Toplevel()
+    win6.geometry("500x800")
+    win6.title("헤어스타일 선택")
+    tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0,column=4)
+    tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(),open_win8()]).grid(row=10,column=2)
+    tk.Button(win6, text="이전", command=forward_image).grid(row=5, column=1)
+    
+
+    tk.Button(win6, text="다음", command=next_image).grid(row=5, column=2)
+
+    # 이미지 파일 경로 및 크기
+    dir_path = "hairstyles"
+    img_paths = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".png")]
+    img_size = (100, 100)
+
+    # 이미지 로드 및 크기 조정
+    img_list = []
+    for path in img_paths:
+        img = Image.open(path)
+        img = img.resize(img_size)
+        img_list.append(ImageTk.PhotoImage(img))
+
+    # 이미지를 표시할 라벨 생성
+    label_list = []
+    for i in range(4):
+        row_list = []
+        for j in range(4):
+            label = tk.Label(win6, image=None)
+            label.grid(row=i, column=j, padx=5, pady=5)  # 추가 간격 설정
+            row_list.append(label)
+        label_list.append(row_list)
+
+    # 이미지를 라벨에 할당
+    for i in range(3):
+        for j in range(4):
+            idx = i * 4 + j
+            if idx < len(img_list):
+                label_list[i+1][j].configure(image=img_list[idx])
+num = 2
+def forward_image():
+    global num
+    num = num - 1
+    for j in range(4):
+        idx = num * 4 + j
+        if idx < len(img_list):
+            label_list[3][j].configure(image=img_list[idx])
+    
+def next_image():
+    global num
+    num = num + 1
+    for j in range(4):
+        idx = num * 4 + j
+        if idx < len(img_list):
+            label_list[3][j].configure(image=img_list[idx])
 
 #8. 퍼스널컬러 4가지 중 선택
 def open_win8():
@@ -282,7 +312,7 @@ def open_win8():
     win8 = tk.Toplevel()
     win8.geometry("400x640")
     win8.title("퍼스널컬러")
-    tk.Button(win8, text="뒤로가기", command=lambda:[win8.destroy(),win7.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
+    tk.Button(win8, text="뒤로가기", command=lambda:[win8.destroy(),win6.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     tk.Button(win8, text="퍼스널컬러 선택", command=lambda:[win8.withdraw(),open_win9()]).pack(pady=10)
 
 
@@ -324,7 +354,7 @@ def open_win11():
     win11.title("결과")
     tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win9.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).pack(pady=10)
-    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win7.deiconify()]).pack(pady=10)
+    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).pack(pady=10)
     tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).pack(pady=10)
 
 #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
