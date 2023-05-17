@@ -104,8 +104,6 @@ def open_win3():
     Entry(frame1, show="*").grid(row=2, column=1)
     Button(frame1, text="뒤로가기", command=lambda:[win3.destroy(),win1.deiconify()]).grid(row=0, column=2, padx=10, pady=10, sticky="ne")
     Button(frame1, text="로그인", command=lambda:[win3.withdraw(),open_win4()]).grid(row=3, columnspan=3, padx=10, pady=10, sticky="s")
-    # tk.Button(win3, text="뒤로가기", command=lambda:[win3.destroy(),win1.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
-    # tk.Button(win3, text="로그인", command=lambda:[win3.withdraw(),open_win4()]).pack(pady=10)
 
 
 #4. 카메라 실행/ 예약(-> #12), 헤어스타일 선택(-> #5) 버튼
@@ -253,86 +251,155 @@ def imageBrowse():
 
 #7. 헤어스타일 선택
 # 범위 벗어난 인덱스에 대한 오류 처리 x
-button_dict = {}
-num=2
+button_dict9 = {}
+num9=2
+button_dict15 = {}
+num15=2
+m='여자'
 def open_win6():
-    global win6,img_list,button_list,button_dict,m
+    global win6,img_list9,button_list9,button_dict9,img_list15,button_list15,button_dict15,m
     win6 = tk.Toplevel()
     win6.geometry("500x800")
+    win6.geometry("600x960")
     win6.title("헤어스타일 선택")
-    button_dict = {}
-    tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0,column=4)
-    tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(),open_win8()]).grid(row=10,column=2)
-    tk.Button(win6, text="이전", command=forward_image).grid(row=5, column=1)
-    tk.Button(win6, text="다음", command=next_image).grid(row=5, column=2)
+    button_dict9 = {}
+    button_dict15 = {}
 
-    # 이미지 파일 경로 및 크기
+    tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0, column=6)
+    tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(), open_win10()]).grid(row=17, column=3)
+    tk.Button(win6, text="◀", command=forward_image9).grid(row=9, column=1)
+    tk.Button(win6, text="▶", command=next_image9).grid(row=9, column=6)
+    tk.Button(win6, text="◀", command=forward_image15).grid(row=15, column=1)
+    tk.Button(win6, text="▶", command=next_image15).grid(row=15, column=6)
+
     if m=='여자':
-        dir_path = "hairstyles"
+        dir_path9 = "hairstyles"
     elif m=='남자':
-        dir_path = "hairstyles_men"
+        dir_path9 = "hairstyles_men"
+    dir_path15="colors"
+    img_path9 = [os.path.join(dir_path9, f) for f in os.listdir(dir_path9) if f.endswith(".png")]
+    img_path15 = [os.path.join(dir_path15, f) for f in os.listdir(dir_path15) if f.endswith(".png")]
 
-    img_paths = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".png")]
     img_size = (100, 100)
 
     # 이미지 로드 및 크기 조정
-    img_list = []
-    for path in img_paths:
+    img_list9 = []
+    for path in img_path9:
         img = Image.open(path)
         img = img.resize(img_size)
-        img_list.append(ImageTk.PhotoImage(img))
+        img_list9.append(ImageTk.PhotoImage(img))
 
-    # 이미지를 표시할 라벨 생성
-    button_list = []
-    for i in range(3):
+    # 이미지를 표시할 버튼 생성
+    button_list9 = []
+    for i in range(2):
         row_list = []
         for j in range(4):
             button = tk.Button(win6, image=None)
-            button.grid(row=i+1, column=j, padx=5, pady=5)  # 추가 간격 설정
+            button.grid(row=3*i+6, column=j+2, padx=5, pady=5)  # 추가 간격 설정
             row_list.append(button)
-        button_list.append(row_list)
+        button_list9.append(row_list)
 
-    # 이미지를 라벨에 할당
-    for i in range(3):
+    # 이미지를 버튼에 할당
+    for i in range(2):
         for j in range(4):
             idx = i * 4 + j
-            if idx < len(img_list):
-                button_list[i][j].configure(image=img_list[idx],command=lambda i=i, j=j: toggle_border(button_list[i][j]))
+            if idx < len(img_list9):
+                button_list9[i][j].configure(image=img_list9[idx],command=lambda i=i, j=j: toggle_border9(button_list9[i][j]))
 
-def toggle_border(button):
-    global num,button_dict
+
+    # 이미지 로드 및 크기 조정
+    img_list15 = []
+    for path in img_path15:
+        img = Image.open(path)
+        img = img.resize(img_size)
+        img_list15.append(ImageTk.PhotoImage(img))
+
+    # 이미지를 표시할 버튼 생성
+    button_list15 = []
+    for i in range(2):
+        row_list = []
+        for j in range(4):
+            button = tk.Button(win6, image=None)
+            button.grid(row=3*i+12, column=j+2, padx=5, pady=5)  # 추가 간격 설정
+            row_list.append(button)
+        button_list15.append(row_list)
+
+    # 이미지를 버튼에 할당
+    for i in range(2):
+        for j in range(4):
+            idx = i * 4 + j
+            if idx < len(img_list15):
+                button_list15[i][j].configure(image=img_list15[idx],command=lambda i=i, j=j: toggle_border15(button_list15[i][j]))
+
+def toggle_border9(button):
+    global num9,button_dict9
     if button.cget("relief") == "solid":
         button.config(relief="flat", highlightthickness=0)
-        button_dict = {}
+        button_dict9 = {}
     else:
-        if bool(button_dict):
-            int_keys = [k for k in button_dict.keys() if isinstance(k, int)]
-            button_dict[int_keys[0]].config(relief="flat", highlightthickness=0)         
-            button_dict = {}
+        if bool(button_dict9):
+            int_keys = [k for k in button_dict9.keys() if isinstance(k, int)]
+            button_dict9[int_keys[0]].config(relief="flat", highlightthickness=0)         
+            button_dict9 = {}
         button.config(relief="solid", highlightthickness=2, highlightbackground="red")
-        button_dict[num] = button
-
-def forward_image():
-    global num,button_dict
-    num = num - 1
+        button_dict9[num9] = button
+    
+def forward_image9():
+    global num9,button_dict9
+    num9 = num9 - 1
     for j in range(4):
-        idx = num * 4 + j
-        if idx < len(img_list):
-            button_list[2][j].configure(image=img_list[idx], relief="flat", highlightthickness=0)
-    if num in button_dict.keys():           
-        button_dict[num].config(relief="solid", highlightthickness=2, highlightbackground="red")
+        idx = num9 * 4 + j
+        if idx < len(img_list9):
+            button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
+    if num9 in button_dict9.keys():           
+        button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
-def next_image():
-    global num,button_dict
-    num = num + 1
+
+def next_image9():
+    global num9,button_dict9
+    num9 = num9 + 1
     for j in range(4):
-        idx = num * 4 + j
-        if idx < len(img_list):
-            button_list[2][j].configure(image=img_list[idx], relief="flat", highlightthickness=0)
+        idx = num9 * 4 + j
+        if idx < len(img_list9):
+            button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
 
-    if num in button_dict.keys():           
-        button_dict[num].config(relief="solid", highlightthickness=2, highlightbackground="red")
-  
+    if num9 in button_dict9.keys():           
+        button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
+def toggle_border15(button):
+    global num15,button_dict15
+    if button.cget("relief") == "solid":
+        button.config(relief="flat", highlightthickness=0)
+        button_dict15 = {}
+    else:
+        if bool(button_dict15):
+            int_keys = [k for k in button_dict15.keys() if isinstance(k, int)]
+            button_dict15[int_keys[0]].config(relief="flat", highlightthickness=0)         
+            button_dict15 = {}
+        button.config(relief="solid", highlightthickness=2, highlightbackground="red")
+        button_dict15[num15] = button
+    
+def forward_image15():
+    global num15,button_dict15
+    num15 = num15 - 1
+    for j in range(4):
+        idx = num15 * 4 + j
+        if idx < len(img_list15):
+            button_list15[j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
+    if num15 in button_dict15.keys():           
+        button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
+
+def next_image15():
+    global num15,button_dict15
+    num15 = num15 + 1
+    for j in range(4):
+        idx = num15 * 4 + j
+        if idx < len(img_list15):
+            button_list15[j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
+
+    if num15 in button_dict15.keys():           
+        button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
 #8. 퍼스널컬러 4가지 중 선택
 def open_win8():
