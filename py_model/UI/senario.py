@@ -40,6 +40,7 @@ def open_win2():
     cb = IntVar()
 
     def selection():
+        global m
         choice = var.get()
         if choice == 1:
             m = '남자'
@@ -247,21 +248,30 @@ def imageBrowse():
     # Keeping a reference
     win5.imageLabel.photo = imageDisplay
 
+    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win6()]).grid(row=9,column=3)
+
 
 #7. 헤어스타일 선택
-#일단 버튼 클릭하면 레이블 바뀌는거까지 구현했는데, 사진 선택 구현x, 범위 벗어난 인덱스에 대한 오류 처리도 x
+# 범위 벗어난 인덱스에 대한 오류 처리 x
+button_dict = {}
+num=2
 def open_win6():
-    global win6,img_list,button_list
+    global win6,img_list,button_list,button_dict,m
     win6 = tk.Toplevel()
     win6.geometry("500x800")
     win6.title("헤어스타일 선택")
+    button_dict = {}
     tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0,column=4)
     tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(),open_win8()]).grid(row=10,column=2)
     tk.Button(win6, text="이전", command=forward_image).grid(row=5, column=1)
     tk.Button(win6, text="다음", command=next_image).grid(row=5, column=2)
 
     # 이미지 파일 경로 및 크기
-    dir_path = "hairstyles"
+    if m=='여자':
+        dir_path = "hairstyles"
+    elif m=='남자':
+        dir_path = "hairstyles_men"
+
     img_paths = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".png")]
     img_size = (100, 100)
 
@@ -289,8 +299,6 @@ def open_win6():
             if idx < len(img_list):
                 button_list[i][j].configure(image=img_list[idx],command=lambda i=i, j=j: toggle_border(button_list[i][j]))
 
-button_dict = {}
-num=2
 def toggle_border(button):
     global num,button_dict
     if button.cget("relief") == "solid":
@@ -384,7 +392,7 @@ def open_win12():
     win12.geometry("400x640")
     win12.title("예약")
     tk.Button(win12, text="뒤로가기", command=BaroGoback()).pack(pady=10)
-    tk.Button(win12, text="예약하기", command=lambda:[win12.withdraw(),open_win13(name)]).pack(pady=10)
+    tk.Button(win12, text="예약하기", command=lambda:[win12.withdraw(),open_win13()]).pack(pady=10)
 
 def BaroGoback():
     # print(isBaro)
@@ -395,7 +403,7 @@ def BaroGoback():
         return lambda:[win12.destroy(),win11.deiconify()]
 
 #13. 예약 완료 텍스트 or 확인 팝업창
-def open_win13(name):
+def open_win13():
     global win13
     win13 = tk.Toplevel()
     win13.geometry("400x640")
