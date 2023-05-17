@@ -248,7 +248,6 @@ def imageBrowse():
 
     tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
-
 #7. 헤어스타일 선택
 # 범위 벗어난 인덱스에 대한 오류 처리 x
 button_dict9 = {}
@@ -258,12 +257,42 @@ num15=2
 m='여자'
 def open_win6():
     global win6,img_list9,button_list9,button_dict9,img_list15,button_list15,button_dict15,m
-    win6 = tk.Toplevel()
-    win6.geometry("500x800")
-    win6.geometry("600x960")
-    win6.title("헤어스타일 선택")
     button_dict9 = {}
     button_dict15 = {}
+    win6 = tk.Toplevel()
+    win6.geometry("600x960")
+    win6.title("헤어스타일 선택")
+    win6.bind("<Escape>", on_escape)
+    # 배경 이미지 파일 경로
+    backgrounds = ["spring.png", "summer.png", "autumn.png", "winter.png"]
+    # 전경 이미지 파일 경로
+    foreground = Image.open("test.png")
+    # 배경 이미지를 원하는 크기로 조정
+    labels = []
+    background_images = []
+
+    def personal_cmd():
+        selected_image = var.get()
+        if selected_image == 1:
+            # 첫 번째 이미지에 대한 cmd 명령어 실행
+            print("봄웜")
+        elif selected_image == 2:
+            # 두 번째 이미지에 대한 cmd 명령어 실행
+            print("여쿨")
+        elif selected_image == 3:
+            # 세 번째 이미지에 대한 cmd 명령어 실행
+            print("갈웜")
+        elif selected_image == 4:
+            # 네 번째 이미지에 대한 cmd 명령어 실행
+            print("겨쿨")
+
+    for bg_path in backgrounds:
+        background = Image.open(bg_path)
+        resized_background = background.resize((100, 120))
+        background_images.append(resized_background)
+
+    # 전경 이미지를 윈도우 크기로 조정
+    resized_foreground = foreground.resize((100, 120))
 
     tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0, column=6)
     tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(), open_win10()]).grid(row=17, column=3)
@@ -271,6 +300,26 @@ def open_win6():
     tk.Button(win6, text="▶", command=next_image9).grid(row=9, column=6)
     tk.Button(win6, text="◀", command=forward_image15).grid(row=15, column=1)
     tk.Button(win6, text="▶", command=next_image15).grid(row=15, column=6)
+
+    var=IntVar()
+    var.set(1)
+    for i, background_image in enumerate(background_images):
+        composite_image = Image.alpha_composite(background_image, resized_foreground)
+
+        # ImageTk 객체 생성
+        photo = ImageTk.PhotoImage(composite_image)
+        # 합성 이미지를 표시할 라벨 생성
+        label = tk.Label(win6, image=photo)
+        label.grid(row=3, column=i+2)
+
+        # 라벨을 리스트에 추가
+        labels.append(label)
+
+        # ImageTk 객체에 대한 참조 유지
+        label.image = photo
+        image_name = backgrounds[i].split(".")[0]  # 이미지 파일 이름 (확장자 제외)
+        name_label = tk.Radiobutton(win6, text=image_name,variable=var, value=i,command=personal_cmd())
+        name_label.grid(row=4, column=i+2)
 
     if m=='여자':
         dir_path9 = "hairstyles"
@@ -330,6 +379,7 @@ def open_win6():
             idx = i * 4 + j
             if idx < len(img_list15):
                 button_list15[i][j].configure(image=img_list15[idx],command=lambda i=i, j=j: toggle_border15(button_list15[i][j]))
+
 
 def toggle_border9(button):
     global num9,button_dict9
@@ -401,6 +451,7 @@ def next_image15():
     if num15 in button_dict15.keys():           
         button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
+
 #8. 퍼스널컬러 4가지 중 선택
 def open_win8():
     global win8
@@ -434,7 +485,7 @@ def open_win10():
     progress_bar = ttk.Progressbar(frame_progress, maximum=100, variable=p_var)
     progress_bar.pack(fill="x", padx=5, pady=5)
 
-    for i in range(100):
+    for i in range(10):
         time.sleep(0.01)
         p_var.set(i)
         progress_bar.update()
