@@ -407,28 +407,6 @@ def toggle_border9(button):
             button_dict9 = {}
         button.config(relief="solid", highlightthickness=2, highlightbackground="red")
         button_dict9[num9] = button
-    
-def forward_image9():
-    global num9,button_dict9
-    num9 = num9 - 1
-    for j in range(4):
-        idx = num9 * 4 + j
-        if idx < len(img_list9):
-            button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
-    if num9 in button_dict9.keys():           
-        button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
-
-
-def next_image9():
-    global num9,button_dict9
-    num9 = num9 + 1
-    for j in range(4):
-        idx = num9 * 4 + j
-        if idx < len(img_list9):
-            button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
-
-    if num9 in button_dict9.keys():           
-        button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
 def toggle_border15(button):
     global num15,button_dict15
@@ -442,17 +420,38 @@ def toggle_border15(button):
             button_dict15 = {}
         button.config(relief="solid", highlightthickness=2, highlightbackground="red")
         button_dict15[num15] = button
-    
+
+def forward_image9():
+    global num9,button_dict9
+    num9 = num9 - 1
+    for j in range(4):
+        idx = num9 * 4 + j
+        if idx < len(img_list9):
+            button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
+    if num9 in button_dict9.keys():           
+        button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
 def forward_image15():
     global num15,button_dict15
     num15 = num15 - 1
     for j in range(4):
         idx = num15 * 4 + j
         if idx < len(img_list15):
-            button_list15[j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
+            button_list15[1][j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
     if num15 in button_dict15.keys():           
         button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
+
+def next_image9():
+    global num9,button_dict9
+    num9 = num9 + 1
+    for j in range(4):
+        idx = num9 * 4 + j
+        if idx < len(img_list9):
+            button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
+
+    if num9 in button_dict9.keys():           
+        button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
 def next_image15():
     global num15,button_dict15
@@ -460,7 +459,7 @@ def next_image15():
     for j in range(4):
         idx = num15 * 4 + j
         if idx < len(img_list15):
-            button_list15[j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
+            button_list15[1][j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
 
     if num15 in button_dict15.keys():           
         button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
