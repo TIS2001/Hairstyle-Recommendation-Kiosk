@@ -466,15 +466,19 @@ def next_image15():
         button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
 #11. 결과 출력/ 다시 찍기(-> #5), 헤어스타일 재선택(-> #7), 예약하기(-> #12) 버튼
+# 사진 안뜸.. 해결해야 됨!
 def open_win11():
     global win11
     win11 = tk.Toplevel()
-    win11.geometry("600x960")
+    win11.geometry("400x640")
     win11.title("결과")
-    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
-    tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).pack(pady=10)
-    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).pack(pady=10)
-    tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).pack(pady=10)
+    result = tk.PhotoImage("./result/result.jpg")
+
+    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).grid(row=1,column=3)
+    tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=2)
+    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=2)
+    tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=2)
+    tk.Label(win11,image=result).grid(row=4,column=1)
 
 #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
 def open_win12():
