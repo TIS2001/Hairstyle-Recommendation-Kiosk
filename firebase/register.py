@@ -78,7 +78,7 @@ def attach_photo():
         image = Image.open(file_path)
         # 이미지를 Firebase Storage에 업로드
         bucket = storage.bucket(app=firebase_app)
-        blob = bucket.blob('customers/{0}_photo.jpg'.format(name_entry.get()))
+        blob = bucket.blob('customers/{0}_photo.jpg'.format(id_entry.get()))
         blob.upload_from_filename(file_path)
         print("사진이 성공적으로 첨부되었습니다.")
     else:
