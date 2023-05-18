@@ -466,20 +466,31 @@ def open_win6():
                 name_list15[i][j].configure(text=img_name15[idx])
 
 #11. 결과 출력/ 다시 찍기(-> #5), 헤어스타일 재선택(-> #7), 예약하기(-> #12) 버튼
-# 사진 안뜸.. 해결해야 됨!
 def open_win11():
     global win11
     win11 = tk.Toplevel()
-    win11.geometry("400x640")
+    win11.geometry("600x960")
     win11.title("결과")
     win11.bind("<Escape>", on_escape)
-    result = tk.PhotoImage("./result/result.jpg")
+    result_path="./result/result.jpg"
+    if os.path.exists(result_path):
+        result_img = Image.open(result_path)
+        result_img = result_img.resize((320,240))  # 이미지 크기 조절        
+        photo = ImageTk.PhotoImage(result_img)
+        label = tk.Label(win11, image=photo)
+        label.image = photo  # 이미지 객체 유지
+        label.grid(row=2, column=1)
+    else:
+        print("이미지 파일이 존재하지 않습니다.")
 
+    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).grid(row=0,column=3)
+    tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=1)
+    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=1)
+    tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=1)
     tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).grid(row=1,column=3)
     tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=2)
     tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=2)
     tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=2)
-    tk.Label(win11,image=result).grid(row=4,column=1)
 
 #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
 def open_win12():
