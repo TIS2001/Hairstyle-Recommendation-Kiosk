@@ -26,7 +26,7 @@ def on_escape(event=None):
 def open_win1():
     global win1
     win1 = tk.Toplevel()
-    win1.geometry("400x640")
+    win1.geometry("600x960")
     win1.title("횐가입/로긴")
     tk.Button(win1, text="뒤로가기", command=lambda:[win1.destroy(),root.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     tk.Button(win1, text="회원가입하기", width=15, height=5, command=lambda:[win1.withdraw(),open_win2()]).pack(pady=10)
@@ -64,7 +64,7 @@ def open_win2():
             submit_btn['state'] = DISABLED
 
     win2 =tk.Toplevel()
-    win2.geometry("400x640")
+    win2.geometry("600x960")
     win2.title('sign up')
 
     frame1 = Label(win2, bg='#dddddd')
@@ -94,7 +94,7 @@ def open_win2():
 def open_win3():
     global win3
     win3 = tk.Toplevel()
-    win3.geometry("400x640")
+    win3.geometry("600x960")
     win3.title("로그인")
     frame1 = Frame(win3)
     frame1.pack()
@@ -112,7 +112,7 @@ def open_win4():
     global isBaro
     isBaro=False
     win4 = tk.Toplevel()
-    win4.geometry("400x640")
+    win4.geometry("600x960")
     win4.title("카메라")
     # tk.Label(win4, text=name + "아 안녕").pack(pady=10)
     tk.Button(win4, text="뒤로가기", command=lambda:[win4.destroy(),win3.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
@@ -130,7 +130,7 @@ def baro():
 def open_win5():
     global win5
     win5 = tk.Toplevel()
-    win5.geometry("400x640")
+    win5.geometry("600x960")
     win5.title("사진 촬영")
     #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
     tk.Button(win5, text="뒤로가기", command=lambda:[win5.destroy(),win4.deiconify()]).grid(row=1,column=3)
@@ -303,6 +303,8 @@ def open_win6():
             time.sleep(0.005)
             p_var.set(i)
             progress_bar.update()
+        win6.after(100,lambda:[win6.withdraw(),open_win11()])
+
     # 전경 이미지를 윈도우 크기로 조정
     resized_foreground = foreground.resize((100, 120))
 
@@ -463,54 +465,13 @@ def next_image15():
     if num15 in button_dict15.keys():           
         button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
-
-#8. 퍼스널컬러 4가지 중 선택
-def open_win8():
-    global win8
-    win8 = tk.Toplevel()
-    win8.geometry("400x640")
-    win8.title("퍼스널컬러")
-    tk.Button(win8, text="뒤로가기", command=lambda:[win8.destroy(),win6.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
-    tk.Button(win8, text="퍼스널컬러 선택", command=lambda:[win8.withdraw(),open_win9()]).pack(pady=10)
-
-
-#9. 헤어컬러 선택
-def open_win9():
-    global win9
-    win9 = tk.Toplevel()
-    win9.geometry("400x640")
-    win9.title("헤어컬러 선택")
-    tk.Button(win9, text="뒤로가기", command=lambda:[win9.destroy(),win8.deiconify()]).pack(side="top",pady=10)
-    tk.Button(win9, text="컬러 선택", command=lambda:[win9.withdraw(),open_win10()]).pack(side="bottom",pady=10)
-
-#10. 로딩 페이지
-def open_win10():
-    global win10
-    win10 = tk.Toplevel()
-    win10.geometry("400x640")
-    win10.title("로딩중")
-    # 진행 상황 Progress Bar
-    frame_progress = LabelFrame(win10, text="진행상황")
-    frame_progress.pack(fill="x", padx=5, pady=5, ipady=5)
-
-    p_var = DoubleVar()
-    progress_bar = ttk.Progressbar(frame_progress, maximum=100, variable=p_var)
-    progress_bar.pack(fill="x", padx=5, pady=5)
-
-    for i in range(10):
-        time.sleep(0.01)
-        p_var.set(i)
-        progress_bar.update()
-
-    win10.after(500,lambda:[win10.withdraw(),open_win11()])
-
 #11. 결과 출력/ 다시 찍기(-> #5), 헤어스타일 재선택(-> #7), 예약하기(-> #12) 버튼
 def open_win11():
     global win11
     win11 = tk.Toplevel()
-    win11.geometry("400x640")
+    win11.geometry("600x960")
     win11.title("결과")
-    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win9.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
+    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).pack(pady=10)
     tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).pack(pady=10)
     tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).pack(pady=10)
@@ -519,7 +480,7 @@ def open_win11():
 def open_win12():
     global win12
     win12 = tk.Toplevel()
-    win12.geometry("400x640")
+    win12.geometry("600x960")
     win12.title("예약")
     tk.Button(win12, text="뒤로가기", command=BaroGoback()).pack(pady=10)
     tk.Button(win12, text="예약하기", command=lambda:[win12.withdraw(),open_win13()]).pack(pady=10)
@@ -536,13 +497,13 @@ def BaroGoback():
 def open_win13():
     global win13
     win13 = tk.Toplevel()
-    win13.geometry("400x640")
+    win13.geometry("600x960")
     win13.title("완료")
     win13.bind("<Escape>", on_escape)
     tk.Label(win13, text=name + "님 예약이 완료되었습니다.").pack(pady=10)
 
 root = tk.Tk()
-root.geometry("400x640")
+root.geometry("600x960")
 root.title("메인")
 tk.Button(root, text="시작하기", width=16, height=7, command=lambda:[root.withdraw(),open_win1()]).pack(anchor="center",pady=200)
 
