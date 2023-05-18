@@ -263,14 +263,7 @@ def open_win6():
     win6.geometry("600x960")
     win6.title("헤어스타일 선택")
     win6.bind("<Escape>", on_escape)
-    # 배경 이미지 파일 경로
-    backgrounds = ["spring.png", "summer.png", "autumn.png", "winter.png"]
-    # 전경 이미지 파일 경로
-    foreground = Image.open("test.png")
-    # 배경 이미지를 원하는 크기로 조정
-    labels = []
-    background_images = []
-
+    
     def personal_cmd():
         selected_image = var.get()
         if selected_image == 1:
@@ -286,16 +279,35 @@ def open_win6():
             # 네 번째 이미지에 대한 cmd 명령어 실행
             print("겨쿨")
 
+    # 배경 이미지 파일 경로
+    backgrounds = ["spring.png", "summer.png", "autumn.png", "winter.png"]
+    # 전경 이미지 파일 경로
+    foreground = Image.open("test.png")
+    # 배경 이미지를 원하는 크기로 조정
+    labels = []
+    background_images = []
+
     for bg_path in backgrounds:
         background = Image.open(bg_path)
         resized_background = background.resize((100, 120))
         background_images.append(resized_background)
 
+    def progress_bar():
+        frame_progress = tk.LabelFrame(win6, text="진행상황")
+        frame_progress.grid(row=18, column=1, sticky="ew", padx=10, pady=10,columnspan=6)
+        p_var = tk.DoubleVar()
+        progress_bar = ttk.Progressbar(frame_progress, maximum=100, variable=p_var)
+        progress_bar.pack(fill="x", padx=5, pady=5, ipady=5)
+
+        for i in range(100):
+            time.sleep(0.005)
+            p_var.set(i)
+            progress_bar.update()
     # 전경 이미지를 윈도우 크기로 조정
     resized_foreground = foreground.resize((100, 120))
 
     tk.Button(win6, text="뒤로가기", command=lambda:[win6.destroy(),win5.deiconify()]).grid(row=0, column=6)
-    tk.Button(win6, text="헤어스타일 선택", command=lambda:[win6.withdraw(), open_win10()]).grid(row=17, column=3)
+    tk.Button(win6, text="헤어스타일 선택", command=progress_bar).grid(row=17, column=3)
     tk.Button(win6, text="◀", command=forward_image9).grid(row=9, column=1)
     tk.Button(win6, text="▶", command=next_image9).grid(row=9, column=6)
     tk.Button(win6, text="◀", command=forward_image15).grid(row=15, column=1)
