@@ -126,7 +126,7 @@ class Alignment(nn.Module):
             im = (im.clamp(0,1) - self.seg_mean) / self.seg_std
         return im
 
-    def get_img_and_seg_from_path(self, img, is_downsampled=True):
+    def get_img_and_seg_from_path(self, im, is_downsampled=True):
         if is_downsampled == False:  # upsample img to 512
             im = F.interpolate(im, size=(512, 512))
         down_seg, _, _ = self.seg(im)
@@ -137,7 +137,7 @@ class Alignment(nn.Module):
 
     def create_target_segmentation_mask(self, img_path1, img_path2, sign, save_intermediate=True, is_downsampled = True):
 
-        im = self.preprocess_img(img_path1, is_downsampled=is_downsampled)
+        im = self.preprocess_PILImg(img_path1, is_downsampled = is_downsampled)
         im1, seg_target1 = self.get_img_and_seg_from_path(im, is_downsampled= is_downsampled)
 
         if self.opts.save_all:
@@ -278,6 +278,7 @@ class Alignment(nn.Module):
     def align_images(self, img_path1, img_path2, sign='realistic', align_more_region=False, smooth=5,
                      save_intermediate=True):
 
+
         ################## img_path1: Identity Image # Face
         ################## img_path2: Structure Image # Hair
 
@@ -291,7 +292,7 @@ class Alignment(nn.Module):
             self.create_target_segmentation_mask(img_path1=img_path1, img_path2=img_path2, sign=sign,
                                                  save_intermediate=save_intermediate, is_downsampled = is_downsampled)
 
-        im_name_1 = os.path.splitext(os.path.basename(img_path1))[0] # source image : identity
+        im_name_1 = "target" # source image : identity
         im_name_2 = os.path.splitext(os.path.basename(img_path2))[0] # target image : hairstyle
 
         latent_FS_path_1 = os.path.join(embedding_dir, 'FS', f'{im_name_1}.npz')
@@ -309,7 +310,7 @@ class Alignment(nn.Module):
         if self.opts.blend_with_align:
 
             ## get reasonable masks for perceptual loss
-            I_1 = load_image(img_path1, downsample=is_downsampled).to(device).unsqueeze(0)
+            I_1 = load_image(img_path2, downsample=is_downsampled).to(device).unsqueeze(0)
             I_2 = load_image(img_path2, downsample=is_downsampled).to(device).unsqueeze(0)  ## downsample True : 256, 256
 
             down_seg2, _, _ = self.seg(self.preprocess_img(img_path2, is_downsampled=is_downsampled))
@@ -367,7 +368,7 @@ class Alignment(nn.Module):
                 I_G, _ = self.net.generator([latent_mixed], input_is_latent=True, return_latents=False, start_layer=4,
                                             end_layer=8, layer_in=latent_F_mixed)
                 I_G_0_1 = ((I_G + 1) / 2).clamp(0, 1)  # for saving
-                I_1_0_1 = ((I_1 + 1) / 2).clamp(0, 1)
+                # I_1_0_1 = ((I_1 + 1) / 2).clamp(0, 1)
                 loss_dict = {}
                 #### Loss1 : Target Segmentation Loss
                 if self.opts.align_src_first:
@@ -539,7 +540,7 @@ class Alignment(nn.Module):
 
     def warp_target(self, img_path2, src_kp_hm, src_ypr, img_path1):
 
-        im_name_1 =  os.path.splitext(os.path.basename(img_path1))[0]
+        im_name_1 =  "target"
         output_dir = self.opts.output_dir
         embedding_dir = self.opts.embedding_dir
         is_downsampled = self.opts.size > 256

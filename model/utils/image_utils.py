@@ -18,7 +18,10 @@ import scipy
 
 
 def load_image(img_path, normalize=True, downsample=False):
-    img = PIL.Image.open(img_path).convert('RGB')
+    try:
+        img = PIL.Image.open(img_path).convert('RGB')
+    except:
+        img = img_path
     if downsample:
         img = img.resize((256, 256), PIL.Image.LANCZOS)
     img = transforms.ToTensor()(img)
