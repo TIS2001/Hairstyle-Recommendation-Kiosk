@@ -42,18 +42,22 @@ def get_im_paths_not_embedded(im_paths: Set[str]) -> List[str]:
 
 
 def main(args):
-
+    ## 1. 모델을 불러오고 대기
+    ## 2. tcp로 사진을 받아와 모델에 사진을 넣음
+    ## 3. 적용된 사진을 전송
+    ## 4. 대기
     set_seed(42)
-    start_time = time.time()
     ii2s = Embedding(args)
     
     im_path1 = os.path.join(args.input_dir, args.im_path1)
     im_path2 = os.path.join(args.input_dir, args.im_path2)
     if args.flip_check:
         im_path2 = flip_check(im_path1, im_path2, args.device)
-
+        
     # Step 1 : Embedding source and target images into W+, FS space
     im_paths_not_embedded = get_im_paths_not_embedded({im_path1, im_path2})
+    
+    ## DB에서 사진을 받아옴. 없으면 embedded
     if im_paths_not_embedded:
         args.embedding_dir = args.output_dir
         ii2s.invert_images_in_W(im_paths_not_embedded)
@@ -66,14 +70,11 @@ def main(args):
         os.makedirs(args.save_dir, exist_ok = True)
         shutil.copy(im_path1, os.path.join(args.save_dir, im_name_1 + '.png'))
         shutil.copy(im_path2, os.path.join(args.save_dir, im_name_2 + '.png'))
-    print(f"만드는시간 : {time.time()-start_time}")
-    
     # Step 2 : Hairstyle transfer using the above embedded vector or tensor
-    start_time = time.time()
     align = Alignment(args)
-    align.align_images(im_path1, im_path2, sign=args.sign, align_more_region=False, smooth=args.smooth)
-    print(f"만드는시간 : {time.time()-start_time}")
-
+    
+    res_img = align.align_images(im_path1, im_path2, fidelity, align_more_region=False, smooth=5)
+    _, seg_target = align.get_img_and_seg_from_path(res_img)
 
 
 if __name__ == "__main__":

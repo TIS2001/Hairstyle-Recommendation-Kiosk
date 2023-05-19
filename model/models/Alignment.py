@@ -126,8 +126,7 @@ class Alignment(nn.Module):
             im = (im.clamp(0,1) - self.seg_mean) / self.seg_std
         return im
 
-    def get_img_and_seg_from_path(self, img_path, is_downsampled=True):
-        im = self.preprocess_img(img_path, is_downsampled=is_downsampled)
+    def get_img_and_seg_from_path(self, img, is_downsampled=True):
         if is_downsampled == False:  # upsample img to 512
             im = F.interpolate(im, size=(512, 512))
         down_seg, _, _ = self.seg(im)
@@ -138,7 +137,8 @@ class Alignment(nn.Module):
 
     def create_target_segmentation_mask(self, img_path1, img_path2, sign, save_intermediate=True, is_downsampled = True):
 
-        im1, seg_target1 = self.get_img_and_seg_from_path(img_path1, is_downsampled= is_downsampled)
+        im = self.preprocess_img(img_path1, is_downsampled=is_downsampled)
+        im1, seg_target1 = self.get_img_and_seg_from_path(im, is_downsampled= is_downsampled)
 
         if self.opts.save_all:
             save_vis_mask(img_path1, img_path2, seg_target1[0].cpu(), self.opts.save_dir, count='0_initial_src_seg')
@@ -147,13 +147,14 @@ class Alignment(nn.Module):
         seg_target1 = seg_target1[0].byte().cpu().detach()
         seg_target1 = torch.where(seg_target1 == 10, torch.zeros_like(seg_target1), seg_target1) # hair 부분 제외한 나머지 segmap
 
-        im2, seg_target2 = self.get_img_and_seg_from_path(img_path2, is_downsampled=is_downsampled)
+        im = self.preprocess_img(img_path2, is_downsampled=is_downsampled)
+        im2, seg_target2 = self.get_img_and_seg_from_path(im, is_downsampled=is_downsampled)
         original_img_path2 = img_path2
 
         if self.opts.optimize_warped_trg_mask:
             # 220131 target warping optimization + 220204
             im1_for_kp = F.interpolate(im1, size=(256, 256))
-            im1_for_kp = ((im1_for_kp + 1) / 2).clamp(0, 1) # [0, 1] 사이로
+            im1_for_kp = ((im1_for_kp + 1) / 2).clamp(0, 1) # [0, 1] 사이로 
             src_kp_hm = self.kp_extractor.face_alignment_net(im1_for_kp)
             im2, warped_latent_2, warped_down_seg = self.warp_target(img_path2, src_kp_hm, None, img_path1) # Warping !!
 
@@ -195,7 +196,8 @@ class Alignment(nn.Module):
             hair_mask_target = F.interpolate(hair_mask_target.float().unsqueeze(0), size=(self.opts.size, self.opts.size), mode='nearest')
 
         if self.opts.optimize_warped_trg_mask:
-            im2, seg_target2 = self.get_img_and_seg_from_path(original_img_path2, is_downsampled=is_downsampled)
+            im = self.preprocess_img(original_img_path2, is_downsampled=is_downsampled)
+            im2, seg_target2 = self.get_img_and_seg_from_path(im, is_downsampled=is_downsampled)
             hair_mask2 = torch.where(seg_target2 == 10, torch.ones_like(seg_target2), torch.zeros_like(seg_target2))
             return target_mask, hair_mask_target, hair_mask1, hair_mask2, warped_latent_2
         else:
@@ -431,11 +433,13 @@ class Alignment(nn.Module):
                 if self.opts.blend_with_gram:
                     gram_add = '_gram'
 
-                if self.opts.save_all:
-                    save_im.save(os.path.join(self.opts.save_dir, f'4_blend_and_alignment_img.png'))
-            save_im.save(os.path.join(self.opts.output_dir, f'{im_name_1}_{im_name_2}.png'))
+                # if self.opts.save_all:
+                    # save_im.save(os.path.join(self.opts.save_dir, f'4_blend_and_alignment_img.png'))
+            # save_im.save(os.path.join(self.opts.output_dir, f'{im_name_1}_{im_name_2}.png'))
+            return save_im
         else:
             pass
+        
 
         #print('down_seg shape : ',down_seg.shape)
 
