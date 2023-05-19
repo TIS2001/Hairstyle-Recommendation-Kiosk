@@ -198,8 +198,9 @@ def ShowFeed():
         cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        resized_frame = cv2.resize(cv2image, (200, 200), interpolation=cv2.INTER_AREA)
         # Creating an image memory from the above frame exporting array interface
-        videoImg = Image.fromarray(cv2image)
+        videoImg = Image.fromarray(resized_frame)
         # Creating object of PhotoImage() class to display the frame
         imgtk = ImageTk.PhotoImage(image = videoImg)
         # Configuring the label to display the frame
@@ -215,7 +216,7 @@ def ShowFeed():
 
 # Defining Capture() to capture and save the image and display the image in the imageLabel
 def Capture():
-    destD="/home/lee/4-1/EMB/project_UI/photos"
+    destD="/home/pi/ESE/project/Hairstyle-Recommendation-Kiosk/py_model/UI/photos"
     destPath.set(destD)
     # Storing the date in the mentioned format in the image_name variable
     image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
@@ -237,8 +238,9 @@ def Capture():
     success = cv2.imwrite(imgName, frame)
     # Opening the saved image using the open() of Image class which takes the saved image as the argument
     saved_image = Image.open(imgName)
+    resizedImg = saved_image.resize((200,200), Image.ANTIALIAS)
     # Creating object of PhotoImage() class to display the frame
-    saved_image = ImageTk.PhotoImage(saved_image)
+    saved_image = ImageTk.PhotoImage(resizedImg)
     # Configuring the label to display the frame
     win5.imageLabel.config(image=saved_image)
     # Keeping a reference
@@ -260,7 +262,7 @@ def imageBrowse():
     # Opening the saved image using the open() of Image class which takes the saved image as the argument
     imageView = Image.open(openDirectory)
     # Resizing the image using Image.resize()
-    imageResize = imageView.resize((320, 240), resample=Image.LANCZOS)
+    imageResize = imageView.resize((200, 200), resample=Image.LANCZOS)
     # Creating object of PhotoImage() class to display the frame
     imageDisplay = ImageTk.PhotoImage(imageResize)
     # Configuring the label to display the frame
