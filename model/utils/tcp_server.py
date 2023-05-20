@@ -10,8 +10,8 @@ class ServerSocket:
         self.TCP_IP = ip
         self.TCP_PORT = port
         self.socketOpen()
-        self.img = self.receiveImages()
-        self.socketClose()
+        
+        # self.socketClose()
         # self.receiveThread = threading.Thread(target=self.receiveImages)
         # self.receiveThread.start()
         # not multi thread
@@ -57,6 +57,20 @@ class ServerSocket:
             self.receiveThread = threading.Thread(target=self.receiveImages)
             self.receiveThread.start()
 
+    def sendImages(self,img):
+        encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
+        result, frame = cv2.imencode(".jpg",img,encode_param)
+        data = numpy.array(frame)
+        stringData = base64.b64encode(data)
+        
+        length = str(len(stringData))
+        print(length)
+        self.sock.send("length".encode('utf-8').ljust(64))
+        self.sock.send(stringData)
+        print('send images')
+        # self.connectServer()
+        # self.sendImages()
+    
     def recvall(self, sock, count):
         buf = b''
         while count:

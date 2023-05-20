@@ -55,6 +55,8 @@ def main(args):
         
     # Step 1 : Embedding source and target images into W+, FS space
     # im_paths_not_embedded = get_im_paths_not_embedded({im_path1, im_path2})
+    
+    im_paths_not_embedded = 0
     im_paths_not_embedded = [args.im_path1]
     
     ## DB에서 사진을 받아옴. 없으면 embedded
@@ -77,7 +79,9 @@ def main(args):
     # res_img = align.preprocess_PILImg(res_img, is_downsampled = True)
     # _, seg_target = align.get_img_and_seg_from_path(res_img)
     # toPIL = torchvision.transforms.ToPILImage()
-    res_img.save("test.png")
+    # res_img.save("test.png")
+    
+    return res_img
 
 
 def model_main(img):
@@ -165,4 +169,5 @@ def model_main(img):
     # parser.add_argument('--blend_steps', type=int, default=10, help='')
 
     args = parser.parse_args()
-    main(args)
+    res_img = main(args)
+    return res_img

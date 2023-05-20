@@ -45,11 +45,12 @@ class ClientVideoSocket:
         self.connectServer()
         self.sendImages()
 
-def main():
-    TCP_IP = 1234
-    TCP_PORT = 1234
+def img_send(img):
+    TCP_IP = "211.243.232.32"
+    TCP_PORT = 7100
     client = ClientVideoSocket(TCP_IP, TCP_PORT)
     client.connectServer(img)
 
+
 if __name__ == "__main__":
-    main()
+    img_send()

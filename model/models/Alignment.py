@@ -428,6 +428,7 @@ class Alignment(nn.Module):
                 #     save_im.save(cur_check_dir + f'{im_name_1}_with_{im_name_2}_hair_{step}.png')
 
             latent_in = latent_mixed
+            # save_im = np.array(toPIL(I_G_0_1.squeeze().cpu()))
             save_im = toPIL(I_G_0_1.squeeze().cpu())
             if self.opts.save_all:
                 gram_add = ''
@@ -437,6 +438,9 @@ class Alignment(nn.Module):
                 # if self.opts.save_all:
                     # save_im.save(os.path.join(self.opts.save_dir, f'4_blend_and_alignment_img.png'))
             # save_im.save(os.path.join(self.opts.output_dir, f'{im_name_1}_{im_name_2}.png'))
+            
+            # encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
+            # _, res_img = cv2.imencode(".jpg",save_im,encode_param)
             return save_im
         else:
             pass
