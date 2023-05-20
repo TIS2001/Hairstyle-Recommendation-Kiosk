@@ -8,7 +8,9 @@ from tkinter import messagebox, filedialog
 from datetime import datetime
 import os
 from firebase_admin import credentials, firestore, initialize_app, storage
-from util.img_send import img_send
+from util.img_send import ClientVideoSocket
+import numpy as np
+
 
 # Firebase 초기화
 cred = credentials.Certificate('../../easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
@@ -16,6 +18,9 @@ firebase_app = initialize_app(cred, {
     'storageBucket': 'easylogin-58c28.appspot.com'
 })
 db = firestore.client()
+server = ClientVideoSocket()
+server.connectServer()
+
 
 # esc 누르면 화면이 꺼지게 만드는 기능
 def on_escape(event=None):
@@ -36,7 +41,7 @@ def open_win1():
     global win1
     win1 = tk.Toplevel()
     win1.geometry("600x960")
-    win1.title("횐가입/로긴")
+    win1.title("회원가입/로그인")
     win1.bind("<Escape>", on_escape)
     tk.Button(win1, text="뒤로가기", command=lambda:[win1.destroy(),root.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     tk.Button(win1, text="회원가입하기", width=15, height=5, command=lambda:[win1.withdraw(),open_win2()]).pack(pady=10)
@@ -290,10 +295,12 @@ def Capture():
     # Displaying date and time on the frame
     cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (430,460), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
     # Writing the image with the captured frame. Function returns a Boolean Value which is stored in success variable
-    success = cv2.imwrite(imgName, frame)
+    # success = cv2.imwrite(imgName, frame)
+    frame = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
+    frame = cv2.flip(frame, 1)
     # Opening the saved image using the open() of Image class which takes the saved image as the argument
-    image = Image.open(imgName)
-    resizedImg = image.resize((200,200), Image.ANTIALIAS)
+    image = Image.fromarray(frame)
+    resizedImg = image.resize((200,200), Image.LANCZOS)
     # Creating object of PhotoImage() class to display the frame
     saved_image = ImageTk.PhotoImage(resizedImg)
     # Configuring the label to display the frame
@@ -305,7 +312,7 @@ def Capture():
     #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
     takePhoto_bt.destroy()
     tk.Button(win5, text="다시 찍기", command=Capture).grid(row=8,column=3)    
-    tk.Button(win5, text="사진 선택", command=lambda:[img_send(image.resize((1024,1024), Image.ANTIALIAS)),win5.withdraw(),open_win6()]).grid(row=9,column=3)
+    tk.Button(win5, text="사진 선택", command=lambda:[server.sendImages(frame),win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
 def imageBrowse():
     global saved_image
@@ -639,6 +646,7 @@ def open_win13():
     tk.Label(win13, text=name + "님 예약이 완료되었습니다.").pack(pady=10)
 
 # 스타트
+
 root = tk.Tk()
 root.geometry("600x960")
 root.title("메인")
