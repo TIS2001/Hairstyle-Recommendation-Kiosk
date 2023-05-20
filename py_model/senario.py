@@ -36,26 +36,51 @@ def open_win1():
 #3-1. 회원가입 페이지
 def open_win2():
     global win2
-    var =IntVar()
+    var = StringVar()
     cb = IntVar()
+    
     def selection():
         global m
         choice = var.get()
-        if choice == 1:
+        if choice == '남자':
             m = '남자'
-        elif choice == 2:
+        elif choice == '여자':
             m = '여자'
         return m
 
     def submit():
-        global name
+        name = name_Tf.get()
+        phoneNumber = phoneNumber_Tf.get()
+        password = password_Tf.get()
+        gender = var.get()
+        
+        if not name or not phoneNumber or not password or not gender:
+            messagebox.showwarning('회원가입 실패', '모든 필드를 입력해주세요.')
+            return
+        
         try:
-            name = name_Tf.get()
-            m = selection()
-            return messagebox.showinfo('PythonGuides', f'{m} {name}, 회원가입이 완료되었습니다.')
+            # Firebase에 고객 정보 저장
+            doc_ref = db.collection('customers').document(name)
+            doc_ref.set({
+                'name': name,
+                'phoneNumber': phoneNumber,
+                'password': password,
+                'gender' : gender
+            })
+            
+            # 저장 후 필드 초기화
+            name_Tf.delete(0, tk.END)
+            phoneNumber_Tf.delete(0, tk.END)
+            password_Tf.delete(0, tk.END)
+            var.set(None)
+            
+            messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
+            
+            open_win1()
+            win2.withdraw()
         except Exception as ep:
-            return messagebox.showwarning('PythonGuides', 'Please provide valid input')
-
+            messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
+            
     def termsCheck():
         if cb.get() == 1:
             submit_btn['state'] = NORMAL
@@ -64,45 +89,61 @@ def open_win2():
 
     win2 =tk.Toplevel()
     win2.geometry("600x960")
-    win2.title('sign up')
+    win2.title('회원가입')
     win2.bind("<Escape>", on_escape)
+    
+    # 뒤로가기 버튼 왼쪽 위에 생성
+    tk.Button(win2, text="뒤로가기", command=lambda:[win2.destroy(),win1.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
+    
     frame1 = Label(win2, bg='#dddddd')
     frame1.pack()
+    
     frame2 = LabelFrame(frame1, text='Gender', padx=30, pady=10)
 
-    var =IntVar()
-    cb = IntVar()
-
-    tk.Button(win2, text="뒤로가기", command=lambda:[win2.destroy(),win1.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     Label(frame1, text='이름').grid(row=0, column=0, padx=5, pady=5)
     Label(frame1, text='전화번호').grid(row=1, column=0, padx=5, pady=5)
     Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
-    Radiobutton(frame2, text='남자', variable=var, value=1,command=selection).pack()
-    Radiobutton(frame2, text='여자', variable=var, value=2,command=selection).pack(anchor=W)
+    
+    var.set(None)
+    Radiobutton(frame2, text='남자', variable=var, value='남자',command=selection).pack()
+    Radiobutton(frame2, text='여자', variable=var, value='여자',command=selection).pack(anchor=W)
     name_Tf = Entry(frame1)
     name_Tf.grid(row=0, column=2)
-    Entry(frame1).grid(row=1, column=2)
-    Entry(frame1, show="*").grid(row=2, column=2)
+    phoneNumber_Tf = Entry(frame1)
+    phoneNumber_Tf.grid(row=1, column=2)
+    password_Tf = Entry(frame1, show="*")
+    password_Tf.grid(row=2, column=2)
     frame2.grid(row=3, columnspan=3,padx=30)
     Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck).grid(row=4, columnspan=4, pady=5)
-    submit_btn = Button(frame1, text="Submit", command=lambda:[submit(),open_win1(),win2.withdraw()], padx=50, pady=5, state=DISABLED)
+    submit_btn = Button(frame1, text="Submit", command=submit, padx=50, pady=5, state=DISABLED)
     submit_btn.grid(row=5, columnspan=4, pady=2)
+    
 
 #3-2. 로그인 페이지
 def open_win3():
-    global win3
+    global win3, name, phone
     win3 = tk.Toplevel()
     win3.geometry("600x960")
     win3.title("로그인")
     win3.bind("<Escape>", on_escape)
+    def login():
+        global name, phone
+        name = name_entry.get()
+        phone = phone_entry.get()
+
     frame1 = Frame(win3)
     frame1.pack()
-    Label(frame1, text='전화번호 뒤 네자리').grid(row=1, column=0, padx=5, pady=5)
-    Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
-    Entry(frame1).grid(row=1, column=1)
-    Entry(frame1, show="*").grid(row=2, column=1)
+
+    Label(frame1, text='이름').grid(row=1, column=0, padx=5, pady=5)    
+    Label(frame1, text='전화번호 뒤 네자리').grid(row=2, column=0, padx=5, pady=5)
+    Label(frame1, text='비밀번호').grid(row=3, column=0, padx=5, pady=5)
+    name_entry = Entry(frame1)
+    name_entry.grid(row=1, column=1)
+    phone_entry = Entry(frame1)
+    phone_entry.grid(row=2, column=1)
+    password_entry = Entry(frame1, show="*").grid(row=3, column=1)
     Button(frame1, text="뒤로가기", command=lambda:[win3.destroy(),win1.deiconify()]).grid(row=0, column=2, padx=10, pady=10, sticky="ne")
-    Button(frame1, text="로그인", command=lambda:[win3.withdraw(),open_win4()]).grid(row=3, columnspan=3, padx=10, pady=10, sticky="s")
+    Button(frame1, text="로그인", command=lambda:[login(),win3.withdraw(),open_win4()]).grid(row=4, columnspan=3, padx=10, pady=10, sticky="s")
 
 
 #4. 카메라 실행/ 예약(-> #12), 헤어스타일 선택(-> #5) 버튼
@@ -125,7 +166,7 @@ def baro():
     
 #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
 def open_win5():
-    global win5
+    global win5,ㅡ
     win5 = tk.Toplevel()
     win5.geometry("600x960")
     win5.title("사진 촬영")
@@ -159,8 +200,9 @@ def ShowFeed():
         cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        resized_frame = cv2.resize(cv2image, (200, 200), interpolation=cv2.INTER_AREA)
         # Creating an image memory from the above frame exporting array interface
-        videoImg = Image.fromarray(cv2image)
+        videoImg = Image.fromarray(resized_frame)
         # Creating object of PhotoImage() class to display the frame
         imgtk = ImageTk.PhotoImage(image = videoImg)
         # Configuring the label to display the frame
@@ -176,10 +218,13 @@ def ShowFeed():
 
 # Defining Capture() to capture and save the image and display the image in the imageLabel
 def Capture():
-    destD="/home/lee/4-1/EMB/project_UI/photos"
+    global name, phone
+    destD="/home/pi/ESE/project/Hairstyle-Recommendation-Kiosk/py_model/UI/photos"
     destPath.set(destD)
     # Storing the date in the mentioned format in the image_name variable
-    image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
+    # image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
+    image_name=name+str(phone)
+    print(image_name)
     # print("dest path: "+destPath.get())
     # If the user has selected the destination directory, then get the directory and save it in image_path
     if destPath.get() != '':
@@ -202,7 +247,7 @@ def Capture():
     saved_image_array = saved_image
     
     # Creating object of PhotoImage() class to display the frame
-    saved_image = ImageTk.PhotoImage(saved_image)
+    saved_image = ImageTk.PhotoImage(resizedImg)
     # Configuring the label to display the frame
     win5.imageLabel.config(image=saved_image)
     # Keeping a reference
@@ -224,7 +269,7 @@ def imageBrowse():
     # Opening the saved image using the open() of Image class which takes the saved image as the argument
     imageView = Image.open(openDirectory)
     # Resizing the image using Image.resize()
-    imageResize = imageView.resize((320, 240), resample=Image.LANCZOS)
+    imageResize = imageView.resize((200, 200), resample=Image.LANCZOS)
     # Creating object of PhotoImage() class to display the frame
     imageDisplay = ImageTk.PhotoImage(imageResize)
     # Configuring the label to display the frame
@@ -524,6 +569,7 @@ def open_win13():
     win13.bind("<Escape>", on_escape)
     tk.Label(win13, text=name + "님 예약이 완료되었습니다.").pack(pady=10)
 
+# 스타트
 root = tk.Tk()
 root.geometry("600x960")
 root.title("메인")
