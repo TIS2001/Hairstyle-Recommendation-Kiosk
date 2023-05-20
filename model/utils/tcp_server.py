@@ -10,8 +10,8 @@ class ServerSocket:
         self.TCP_IP = ip
         self.TCP_PORT = port
         self.socketOpen()
-        self.img = self.receiveImages()
-        self.socketClose()
+        
+        # self.socketClose()
         # self.receiveThread = threading.Thread(target=self.receiveImages)
         # self.receiveThread.start()
         # not multi thread
@@ -26,10 +26,10 @@ class ServerSocket:
         self.sock.bind((self.TCP_IP, self.TCP_PORT))
         self.sock.listen(1)
         print(u'Server socket [ TCP_IP: ' + self.TCP_IP + ', TCP_PORT: ' + str(self.TCP_PORT) + ' ] is open')
+        
+    def receiveImages(self):
         self.conn, self.addr = self.sock.accept()
         print(u'Server socket [ TCP_IP: ' + self.TCP_IP + ', TCP_PORT: ' + str(self.TCP_PORT) + ' ] is connected with client')
-
-    def receiveImages(self):
         try:
             # while True:
             for i in range(1):
@@ -45,8 +45,8 @@ class ServerSocket:
                 # print(data.shape)
                 decimg = cv2.imdecode(data, 1)
                 imageRGB = cv2.cvtColor(decimg , cv2.COLOR_BGR2RGB)
-                pil_img = Image.fromarray(imageRGB, "RGB")
-            return pil_img
+                # pil_img = Image.fromarray(imageRGB, "RGB")
+            return imageRGB
                 # cv2.imwrite("image.png", decimg)
                 # cv2.waitKey(1)
                 
@@ -54,9 +54,23 @@ class ServerSocket:
             print(e)
             self.socketClose()
             self.socketOpen()
-            self.receiveThread = threading.Thread(target=self.receiveImages)
-            self.receiveThread.start()
+            # self.receiveThread = threading.Thread(target=self.receiveImages)
+            # self.receiveThread.start()
 
+    def sendImages(self,img):
+        encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
+        result, frame = cv2.imencode(".jpg",img,encode_param)
+        data = numpy.array(frame)
+        stringData = base64.b64encode(data)
+        
+        length = str(len(stringData))
+        print(length)
+        self.sock.send("length".encode('utf-8').ljust(64))
+        self.sock.send(stringData)
+        print('send images')
+        # self.connectServer()
+        # self.sendImages()
+    
     def recvall(self, sock, count):
         buf = b''
         while count:
