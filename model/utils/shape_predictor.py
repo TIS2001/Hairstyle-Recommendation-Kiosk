@@ -1,10 +1,11 @@
 import numpy as np
 import PIL
-import PIL.Image
+import PIL.Image as Image
 import scipy
 import scipy.ndimage
 import dlib
 from pathlib import Path
+import torchvision
 
 
 """
@@ -22,33 +23,31 @@ requirements:
     # download face landmark model from:
     # http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
 """
+class face_predicter:
+    def __init__(self,f):
+        self.predictor = dlib.shape_predictor(f)
+        
+    def get_landmark(self,img):
+        """get landmark with dlib
+        :return: np.array shape=(68, 2)
+        """
+        detector = dlib.get_frontal_face_detector()
+        print(type(img))
+        det = detector(img, 1)[0]
+        shape = self.predictor(img, det)
 
-def get_landmark(filepath,predictor):
-    """get landmark with dlib
-    :return: np.array shape=(68, 2)
-    """
-    detector = dlib.get_frontal_face_detector()
+        lm = np.array([[tt.x, tt.y] for tt in shape.parts()])
 
-    img = dlib.load_rgb_image(filepath)
-    dets = detector(img, 1)
-    filepath = Path(filepath)
-    print(f"{filepath.name}: Number of faces detected: {len(dets)}")
-    shapes = [predictor(img, d) for k, d in enumerate(dets)]
+        return lm
 
-    lms = [np.array([[tt.x, tt.y] for tt in shape.parts()]) for shape in shapes]
+    def align_face(self,img):
+        """
+        :param filepath: str
+        :return: list of PIL Images
+        """
 
-    return lms
+        lm = self.get_landmark(img)
 
-
-def align_face(filepath,predictor):
-    """
-    :param filepath: str
-    :return: list of PIL Images
-    """
-
-    lms = get_landmark(filepath,predictor)
-    imgs = []
-    for lm in lms:
         lm_chin = lm[0: 17]  # left-right
         lm_eyebrow_left = lm[17: 22]  # left-right
         lm_eyebrow_right = lm[22: 27]  # left-right
@@ -58,6 +57,7 @@ def align_face(filepath,predictor):
         lm_eye_right = lm[42: 48]  # left-clockwise
         lm_mouth_outer = lm[48: 60]  # left-clockwise
         lm_mouth_inner = lm[60: 68]  # left-clockwise
+        fore_head = lm[68:81]
 
         # Calculate auxiliary vectors.
         eye_left = np.mean(lm_eye_left, axis=0)
@@ -78,19 +78,16 @@ def align_face(filepath,predictor):
         quad = np.stack([c - x - y, c - x + y, c + x + y, c + x - y])
         qsize = np.hypot(*x) * 2
 
-        # read image
-        img = PIL.Image.open(filepath)
-
         output_size = 1024
         # output_size = 256
         transform_size = 4096
         enable_padding = True
-
+        img = Image.fromarray(img)
         # Shrink.
         shrink = int(np.floor(qsize / output_size * 0.5))
         if shrink > 1:
             rsize = (int(np.rint(float(img.size[0]) / shrink)), int(np.rint(float(img.size[1]) / shrink)))
-            img = img.resize(rsize, PIL.Image.ANTIALIAS)
+            img = img.resize(rsize, PIL.Image.LANCZOS)
             quad /= shrink
             qsize /= shrink
 
@@ -106,16 +103,18 @@ def align_face(filepath,predictor):
 
         # Pad.
         pad = (int(np.floor(min(quad[:, 0]))), int(np.floor(min(quad[:, 1]))), int(np.ceil(max(quad[:, 0]))),
-               int(np.ceil(max(quad[:, 1]))))
+            int(np.ceil(max(quad[:, 1]))))
         pad = (max(-pad[0] + border, 0), max(-pad[1] + border, 0), max(pad[2] - img.size[0] + border, 0),
-               max(pad[3] - img.size[1] + border, 0))
+            max(pad[3] - img.size[1] + border, 0))
         if enable_padding and max(pad) > border - 4:
             pad = np.maximum(pad, int(np.rint(qsize * 0.3)))
             img = np.pad(np.float32(img), ((pad[1], pad[3]), (pad[0], pad[2]), (0, 0)), 'reflect')
+            # print(img)
+            # print(img.shape)
             h, w, _ = img.shape
             y, x, _ = np.ogrid[:h, :w, :1]
             mask = np.maximum(1.0 - np.minimum(np.float32(x) / pad[0], np.float32(w - 1 - x) / pad[2]),
-                              1.0 - np.minimum(np.float32(y) / pad[1], np.float32(h - 1 - y) / pad[3]))
+                            1.0 - np.minimum(np.float32(y) / pad[1], np.float32(h - 1 - y) / pad[3]))
             blur = qsize * 0.02
             img += (scipy.ndimage.gaussian_filter(img, [blur, blur, 0]) - img) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
             img += (np.median(img, axis=(0, 1)) - img) * np.clip(mask, 0.0, 1.0)
@@ -128,6 +127,26 @@ def align_face(filepath,predictor):
         if output_size < transform_size:
             img = img.resize((output_size, output_size), PIL.Image.ANTIALIAS)
 
-        # Save aligned image.
-        imgs.append(img)
-    return imgs
+        return img
+    
+    def run(self,img):
+        face = self.align_face(img)
+        face_tensor = torchvision.transforms.ToTensor()(face).unsqueeze(0).cuda()
+        face_tensor_lr = face_tensor[0].cpu().detach().clamp(0, 1)
+        face = torchvision.transforms.ToPILImage()(face_tensor_lr)
+        face = face.resize((1024, 1024), PIL.Image.LANCZOS)
+        return face
+    
+    
+if __name__=="__main__":
+    dat = "dat/shape_predictor_81_face_landmarks.dat"
+    pre = face_predicter(dat)
+    img = dlib.load_rgb_image("/data/test.jpg")
+    # print(type(img))
+    # img = pre.run(img)
+    # img = np.array(img)
+    
+    # 
+    # img.save('test.jpg')
+    
+    
