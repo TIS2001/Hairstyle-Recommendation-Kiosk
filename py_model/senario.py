@@ -75,7 +75,7 @@ def open_win2():
     
         try:
             # Firebase에 고객 정보 저장
-            doc_ref = db.collection('customers').document(name)
+            doc_ref = db.collection('customers').document(id)
             doc_ref.set({
                 'name': name,
                 'id': id,
@@ -155,22 +155,21 @@ def open_win3():
     win3.bind("<Escape>", on_escape)
     
     def login():
-        global name, phone
-        name = name_entry.get()
-        password = password_entry.get()
-        # phone = phone_entry.get()
+        global id, password
+        id = id_entry.get()
+        password = password_entry.get()        
 
-        if name and password:
+        if id and password:
             # Firebase에서 사용자 데이터 조회
-            doc_ref = db.collection('customers').document(name)
+            doc_ref = db.collection('customers').document(id)
             doc = doc_ref.get()
 
             if doc.exists:
                 customer_data = doc.to_dict()
                 # 비밀번호 일치 확인
                 if password == customer_data['password']:
-                    phone=customer_data['phoneNumber']
-                    messagebox.showinfo("로그인 성공", "로그인에 성공했습니다.")
+                    name = customer_data['name']
+                    messagebox.showinfo("로그인 성공", f'어서오세요, {name}님.')
                     win3.withdraw()
                     open_win4()
                 else:
@@ -178,21 +177,18 @@ def open_win3():
             else:
                 messagebox.showerror("로그인 실패", "해당 아이디가 존재하지 않습니다.")
         else:
-            messagebox.showwarning("경고", "아이디와 비밀번호를 입력해주세요.")
+            messagebox.showwarning("로그인 실패", "아이디와 비밀번호를 입력해주세요.")
 
     frame1 = Frame(win3)
     frame1.pack()
-
-    Label(frame1, text='이름').grid(row=1, column=0, padx=5, pady=5)    
-    # Label(frame1, text='전화번호 뒤 네자리').grid(row=2, column=0, padx=5, pady=5)
-    Label(frame1, text='비밀번호').grid(row=3, column=0, padx=5, pady=5)
-    name_entry = Entry(frame1)
-    name_entry.grid(row=1, column=1)
-    # phone_entry = Entry(frame1)
-    # phone_entry.grid(row=2, column=1)
-    password_entry = Entry(frame1, show="*")
-    password_entry.grid(row=3, column=1)
+    
     Button(frame1, text="뒤로가기", command=lambda:[win3.destroy(),win1.deiconify()]).grid(row=0, column=2, padx=10, pady=10, sticky="ne")
+    Label(frame1, text='아이디').grid(row=1, column=0, padx=5, pady=5)    
+    Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
+    id_entry = Entry(frame1)
+    id_entry.grid(row=1, column=1)
+    password_entry = Entry(frame1, show="*")
+    password_entry.grid(row=2, column=1)
     Button(frame1, text="로그인", command=login).grid(row=4, columnspan=3, padx=10, pady=10, sticky="s")
 
 
