@@ -26,12 +26,13 @@ requirements:
 class face_predicter:
     def __init__(self,f):
         self.predictor = dlib.shape_predictor(f)
+        
     def get_landmark(self,img):
         """get landmark with dlib
         :return: np.array shape=(68, 2)
         """
         detector = dlib.get_frontal_face_detector()
-
+        print(type(img))
         det = detector(img, 1)[0]
         shape = self.predictor(img, det)
 
@@ -86,7 +87,7 @@ class face_predicter:
         shrink = int(np.floor(qsize / output_size * 0.5))
         if shrink > 1:
             rsize = (int(np.rint(float(img.size[0]) / shrink)), int(np.rint(float(img.size[1]) / shrink)))
-            img = img.resize(rsize, PIL.Image.ANTIALIAS)
+            img = img.resize(rsize, PIL.Image.LANCZOS)
             quad /= shrink
             qsize /= shrink
 
@@ -108,7 +109,9 @@ class face_predicter:
         if enable_padding and max(pad) > border - 4:
             pad = np.maximum(pad, int(np.rint(qsize * 0.3)))
             img = np.pad(np.float32(img), ((pad[1], pad[3]), (pad[0], pad[2]), (0, 0)), 'reflect')
-            h, w, _ = img.size
+            # print(img)
+            # print(img.shape)
+            h, w, _ = img.shape
             y, x, _ = np.ogrid[:h, :w, :1]
             mask = np.maximum(1.0 - np.minimum(np.float32(x) / pad[0], np.float32(w - 1 - x) / pad[2]),
                             1.0 - np.minimum(np.float32(y) / pad[1], np.float32(h - 1 - y) / pad[3]))
@@ -139,8 +142,9 @@ if __name__=="__main__":
     dat = "dat/shape_predictor_81_face_landmarks.dat"
     pre = face_predicter(dat)
     img = dlib.load_rgb_image("/data/test.jpg")
-    img = pre.run(img)
-    img = np.array(img)
+    # print(type(img))
+    # img = pre.run(img)
+    # img = np.array(img)
     
     # 
     # img.save('test.jpg')

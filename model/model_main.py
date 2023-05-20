@@ -40,7 +40,7 @@ def set_seed(seed: int) -> None:
 #     return im_paths_not_embedded
 
 
-def main(args):
+def img_maker(args,img,align):
     ## 1. 모델을 불러오고 대기
     ## 2. tcp로 사진을 받아와 모델에 사진을 넣음
     ## 3. 적용된 사진을 전송
@@ -57,7 +57,7 @@ def main(args):
     # im_paths_not_embedded = get_im_paths_not_embedded({im_path1, im_path2})
     
     im_paths_not_embedded = 0
-    im_paths_not_embedded = [args.im_path1]
+    im_paths_not_embedded = [img]
     
     ## DB에서 사진을 받아옴. 없으면 embedded
     if im_paths_not_embedded:
@@ -74,17 +74,18 @@ def main(args):
         shutil.copy(im_path1, os.path.join(args.save_dir, im_name_1 + '.png'))
         shutil.copy(im_path2, os.path.join(args.save_dir, im_name_2 + '.png'))
     # Step 2 : Hairstyle transfer using the above embedded vector or tensor
-    align = Alignment(args)
-    res_img = align.align_images(args.im_path1, im_path2, "fidelity", align_more_region=False, smooth=5)
+    # align = Alignment(args)
+    res_img = align.align_images(img, im_path2, "fidelity", align_more_region=False, smooth=5)
     # res_img = align.preprocess_PILImg(res_img, is_downsampled = True)
     # _, seg_target = align.get_img_and_seg_from_path(res_img)
     # toPIL = torchvision.transforms.ToPILImage()
-    # res_img.save("test.png")
+    print("img_gen end waiting new order")
+    res_img.save("test.png")
     
     return res_img
 
 
-def model_main(img):
+def model_init():
     parser = argparse.ArgumentParser(description='Style Your Hair')
 
     # flip
@@ -97,7 +98,7 @@ def model_main(img):
     parser.add_argument('--align_src_first', default=True, help='align src with trg mask before blending')
     parser.add_argument('--optimize_warped_trg_mask', default=True, help='optimize warped_trg_mask')
     parser.add_argument('--mean_seg', default=True, help='use mean seg when alignment')
-
+        
     parser.add_argument('--kp_type', type=str, default='3D', help='kp_type')
     parser.add_argument('--kp_loss', default=True, help='use keypoint loss when alignment')
     parser.add_argument('--kp_loss_lambda', type=float, default=1000, help='kp_loss_lambda')
@@ -123,7 +124,7 @@ def model_main(img):
                         help='The directory of the images to be inverted')
     parser.add_argument('--output_dir', type=str, default='./output/',
                         help='The directory to save the output images')
-    parser.add_argument('--im_path1', type=str, default=img, help='Identity image')
+    parser.add_argument('--im_path1', type=str, default='target.png', help='Identity image')
     parser.add_argument('--im_path2', type=str, default='source6.png', help='Structure image')
     parser.add_argument('--sign', type=str, default='fidelity', help='realistic or fidelity results')
     parser.add_argument('--smooth', type=int, default=5, help='dilation and erosion parameter')
@@ -169,5 +170,4 @@ def model_main(img):
     # parser.add_argument('--blend_steps', type=int, default=10, help='')
 
     args = parser.parse_args()
-    res_img = main(args)
-    return res_img
+    return args
