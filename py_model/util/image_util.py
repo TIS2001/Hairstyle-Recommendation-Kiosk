@@ -47,7 +47,7 @@ def ShowFeed(win):
     
 def imageBrowse(bucket,name):
     # Firebase Storage에서 사진 다운로드
-    blob = bucket.blob(f'customers/{name}_photo.PNG')
+    blob = bucket.blob(f'customers/{name}_photo.png')
     str = blob.download_as_bytes()
     return Image.open(io.BytesIO(str))
     # Configuring the label to display the frame
@@ -58,11 +58,11 @@ def attach_photo(bucket,name, image):
         # 이미지를 Firebase Storage에 업로드
         imgByteArr = io.BytesIO()
         # image.save expects a file-like as a argument
-        image.save(imgByteArr, format=image.format)
+        image.save(imgByteArr, format=jpg)
         # Turn the BytesIO object back into a bytes object
         imgByteArr = imgByteArr.getvalue()
         print(image.format)
-        blob = bucket.blob(f'customers/{name}_photo.{image.format}')
+        blob = bucket.blob(f'customers/{name}_photo.{jpg}')
         blob.upload_from_string(imgByteArr)
         print("사진이 성공적으로 첨부되었습니다.")
     else:
