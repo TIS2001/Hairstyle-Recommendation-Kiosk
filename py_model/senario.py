@@ -8,9 +8,9 @@ from tkinter import messagebox, filedialog
 from datetime import datetime
 import os
 from firebase_admin import credentials, firestore, initialize_app, storage
-
+from util.img_send import img_send
 # Firebase 초기화
-cred = credentials.Certificate('./easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
+cred = credentials.Certificate('UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
 firebase_app = initialize_app(cred, {
     'storageBucket': 'easylogin-58c28.appspot.com'
 })
@@ -206,7 +206,7 @@ def ShowFeed():
         # Displaying date and time on the feed
         cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
         # Changing the frame color from BGR to RGB
-        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         resized_frame = cv2.resize(cv2image, (200, 200), interpolation=cv2.INTER_AREA)
         # Creating an image memory from the above frame exporting array interface
         videoImg = Image.fromarray(resized_frame)
@@ -231,7 +231,6 @@ def Capture():
     # Storing the date in the mentioned format in the image_name variable
     # image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
     image_name=name+str(phone)
-    print(image_name)
     # print("dest path: "+destPath.get())
     # If the user has selected the destination directory, then get the directory and save it in image_path
     if destPath.get() != '':
@@ -244,6 +243,8 @@ def Capture():
     imagePath.set(imgName)
     # Capturing the frame
     ret,frame = win5.cap.read()
+    # frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # pil_image = Image.fromarray(frame_rgb)
     # Displaying date and time on the frame
     cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (430,460), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
     # Writing the image with the captured frame. Function returns a Boolean Value which is stored in success variable
@@ -258,11 +259,10 @@ def Capture():
     # Keeping a reference
     win5.imageLabel.photo = saved_image
     # Displaying messagebox
-    if success :
-        messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
+    # if success :
+    #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
     tk.Button(win5, text="다시 찍기", command=Capture).grid(row=8,column=3)    
-    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win6()]).grid(row=9,column=3)
-
+    tk.Button(win5, text="사진 선택", command=lambda:[img_send(cv2.resize(frame,(1024,1024))),win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
 def imageBrowse():
     # Presenting user with a pop-up for directory selection. initialdir argument is optional
@@ -295,11 +295,11 @@ def open_win6():
     button_dict9 = {}
     button_dict15 = {}
     win6 = tk.Toplevel()
-    win6.geometry("600x960")
+    win6.geometry("600x1200")
     win6.title("헤어스타일 선택")
     win6.bind("<Escape>", on_escape)
     
-    #cmd 실행 안됨!!!!!!!
+    ##cmd 실행 안됨!!!!!!!
     def personal_cmd():
         selected_image = var.get()
         if selected_image == 1:
@@ -316,15 +316,15 @@ def open_win6():
             print("겨쿨")
 
     # 배경 이미지 파일 경로
-    backgrounds = ["spring.png", "summer.png", "autumn.png", "winter.png"]
+    backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
     # 전경 이미지 파일 경로
-    foreground = Image.open("test.png")
+    foreground = Image.open("UI/test.png")  ##이미지 받아오기!!!
     # 배경 이미지를 원하는 크기로 조정
     labels = []
     background_images = []
     for bg_path in backgrounds:
         background = Image.open(bg_path)
-        resized_background = background.resize((100, 120))
+        resized_background = background.resize((80, 96))
         background_images.append(resized_background)
 
     def progress_bar():
@@ -418,16 +418,16 @@ def open_win6():
     tk.Button(win6, text="▶", command=next_image9).grid(row=9, column=6)
     tk.Button(win6, text="◀", command=forward_image15).grid(row=15, column=1)
     tk.Button(win6, text="▶", command=next_image15).grid(row=15, column=6)
-    tk.Label(win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.').grid(row=2, column=2,columnspan=3)
-    tk.Label(win6,text='얼굴형에 따른 추천 헤어스타일').grid(row=5, column=2,columnspan=3)
-    tk.Label(win6,text='전체 헤어스타일').grid(row=8, column=3)
-    tk.Label(win6,text='퍼스널컬러에 따른 추천 염색 컬러').grid(row=11, column=2, columnspan=3)
-    tk.Label(win6,text='전체 염색 컬러').grid(row=14, column=3)
+    tk.Label(win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.',height=1).grid(row=2, column=2,columnspan=3)
+    tk.Label(win6,text='얼굴형에 따른 추천 헤어스타일',height=1).grid(row=5, column=2,columnspan=3)
+    tk.Label(win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
+    tk.Label(win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
+    tk.Label(win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
 
     var=IntVar()
     var.set(1)
     # 전경 이미지를 윈도우 크기로 조정
-    resized_foreground = foreground.resize((100, 120))
+    resized_foreground = foreground.resize((80, 96))
 
     for i, background_image in enumerate(background_images):
         composite_image = Image.alpha_composite(background_image, resized_foreground)
@@ -445,13 +445,13 @@ def open_win6():
         name_label.grid(row=4, column=i+2)
 
     if m=='여자':
-        dir_path9 = "hairstyles"
+        dir_path9 = "UI/hairstyles"
     elif m=='남자':
-        dir_path9 = "hairstyles_men"
-    dir_path15="colors"
+        dir_path9 = "UI/hairstyles_men"
+    dir_path15="UI/colors"
     img_path9 = [os.path.join(dir_path9, f) for f in os.listdir(dir_path9) if f.endswith(".png")]
     img_path15 = [os.path.join(dir_path15, f) for f in os.listdir(dir_path15) if f.endswith(".png")]
-    img_size = (100, 100)
+    img_size = (80, 80)
 
     # 이미지 로드 및 크기 조정
     img_list9 = []
@@ -470,10 +470,10 @@ def open_win6():
         row_list2=[]
         for j in range(4):
             button = tk.Button(win6, image=None)
-            button.grid(row=3*i+6, column=j+2, padx=5, pady=5)  # 추가 간격 설정
+            button.grid(row=3*i+6, column=j+2, padx=5)  # 추가 간격 설정
             row_list.append(button)
             label=tk.Label(win6,text='')
-            label.grid(row=3*i+7, column=j+2, padx=5, pady=5)
+            label.grid(row=3*i+7, column=j+2, padx=5)
             row_list2.append(label)
         button_list9.append(row_list)
         name_list9.append(row_list2)
@@ -503,10 +503,10 @@ def open_win6():
         row_list2=[]
         for j in range(4):
             button = tk.Button(win6, image=None)
-            button.grid(row=3*i+12, column=j+2, padx=5, pady=5)  # 추가 간격 설정
+            button.grid(row=3*i+12, column=j+2, padx=5)  # 추가 간격 설정
             row_list.append(button)
             label=tk.Label(win6,text='')
-            label.grid(row=3*i+13, column=j+2, padx=5, pady=5)
+            label.grid(row=3*i+13, column=j+2, padx=5)
             row_list2.append(label)
         button_list15.append(row_list)
         name_list15.append(row_list2)
@@ -526,7 +526,7 @@ def open_win11():
     win11.geometry("600x960")
     win11.title("결과")
     win11.bind("<Escape>", on_escape)
-    result_path="./result/result.jpg"
+    result_path="result/result.jpg" ##이미지 받아오기!!!
     if os.path.exists(result_path):
         result_img = Image.open(result_path)
         result_img = result_img.resize((320,240))  # 이미지 크기 조절        
@@ -541,11 +541,7 @@ def open_win11():
     tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=1)
     tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=1)
     tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=1)
-    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).grid(row=1,column=3)
-    tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=2)
-    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=2)
-    tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=2)
-
+    
 #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
 def open_win12():
     global win12
