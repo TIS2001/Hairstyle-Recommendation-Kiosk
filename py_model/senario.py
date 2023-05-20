@@ -9,13 +9,15 @@ from datetime import datetime
 import os
 from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import img_send
+
 # Firebase 초기화
-cred = credentials.Certificate('UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
+cred = credentials.Certificate('../../easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
 firebase_app = initialize_app(cred, {
     'storageBucket': 'easylogin-58c28.appspot.com'
 })
 db = firestore.client()
 
+# esc 누르면 화면이 꺼지게 만드는 기능
 def on_escape(event=None):
     print("escaped")
     root.destroy()
@@ -50,31 +52,43 @@ def open_win2():
         global m
         m = var.get()
         return m
+    
+    def check_duplicate_id(id):
+        customer_ref = db.collection('customers')
+        query = customer_ref.where('id', '==', id).limit(1).get()
+        return len(query) > 0
 
     def submit():
         name = name_Tf.get()
-        phoneNumber = phoneNumber_Tf.get()
+        id = id_Tf.get()
         password = password_Tf.get()
+        phoneNumber = phoneNumber_Tf.get()
         gender = var.get()
         
-        if not name or not phoneNumber or not password or not gender:
+        if not name or not id or not password or not phoneNumber or not gender:
             messagebox.showwarning('회원가입 실패', '모든 필드를 입력해주세요.')
             return
         
+        if check_duplicate_id(id):
+            messagebox.showwarning('회원가입 실패', '이미 사용 중인 아이디입니다.')
+            return
+    
         try:
             # Firebase에 고객 정보 저장
             doc_ref = db.collection('customers').document(name)
             doc_ref.set({
                 'name': name,
-                'phoneNumber': phoneNumber,
+                'id': id,
                 'password': password,
+                'phoneNumber': phoneNumber,
                 'gender' : gender
             })
             
             # 저장 후 필드 초기화
             name_Tf.delete(0, tk.END)
-            phoneNumber_Tf.delete(0, tk.END)
+            id_Tf.delete(0, tk.END)
             password_Tf.delete(0, tk.END)
+            phoneNumber_Tf.delete(0, tk.END)
             var.set(None)
             
             messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
@@ -100,26 +114,36 @@ def open_win2():
     
     frame1 = Label(win2, bg='#dddddd')
     frame1.pack()
-    
-    frame2 = LabelFrame(frame1, text='Gender', padx=30, pady=10)
+    frame2 = LabelFrame(frame1, text='Gender', padx=50, pady=10)
 
     Label(frame1, text='이름').grid(row=0, column=0, padx=5, pady=5)
-    Label(frame1, text='전화번호').grid(row=1, column=0, padx=5, pady=5)
+    Label(frame1, text='아이디').grid(row=1, column=0, padx=5, pady=5)
     Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
+    Label(frame1, text='전화번호').grid(row=3, column=0, padx=5, pady=5)
     
     var.set(None)
-    Radiobutton(frame2, text='남자', variable=var, value='남자',command=selection).pack()
-    Radiobutton(frame2, text='여자', variable=var, value='여자',command=selection).pack(anchor=W)
+    Radiobutton(frame2, text='남자', variable=var, value='남자',command=selection).grid(row=0, column=0)
+    Radiobutton(frame2, text='여자', variable=var, value='여자',command=selection).grid(row=0, column=1)
+    
     name_Tf = Entry(frame1)
     name_Tf.grid(row=0, column=2)
-    phoneNumber_Tf = Entry(frame1)
-    phoneNumber_Tf.grid(row=1, column=2)
-    password_Tf = Entry(frame1, show="*")
+    
+    id_Tf = Entry(frame1)
+    id_Tf.grid(row=1, column=2)
+    
+    password_Tf = Entry(frame1, show="*") # 비밀번호 보안을 위한 show='*'
     password_Tf.grid(row=2, column=2)
-    frame2.grid(row=3, columnspan=3,padx=30)
-    Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck).grid(row=4, columnspan=4, pady=5)
+    
+    phoneNumber_Tf = Entry(frame1)
+    phoneNumber_Tf.grid(row=3, column=2)
+    
+    frame2.grid(row=4, columnspan=3,padx=30)
+    
+    check_btn = Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
+    check_btn.grid(row=5, columnspan=4, pady=5)
+    
     submit_btn = Button(frame1, text="Submit", command=submit, padx=50, pady=5, state=DISABLED)
-    submit_btn.grid(row=5, columnspan=4, pady=2)
+    submit_btn.grid(row=6, columnspan=4, pady=2)
     
 
 #3-2. 로그인 페이지
@@ -129,6 +153,7 @@ def open_win3():
     win3.geometry("600x960")
     win3.title("로그인")
     win3.bind("<Escape>", on_escape)
+    
     def login():
         global name, phone
         name = name_entry.get()
