@@ -7,8 +7,22 @@ import cv2
 from tkinter import messagebox, filedialog
 from datetime import datetime
 import os
-from utils.img_send import img_send
+from firebase_admin import credentials, firestore, initialize_app, storage
+from util.img_send import ClientVideoSocket
+import numpy as np
 
+
+# Firebase 초기화
+cred = credentials.Certificate('../../easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
+firebase_app = initialize_app(cred, {
+    'storageBucket': 'easylogin-58c28.appspot.com'
+})
+db = firestore.client()
+server = ClientVideoSocket()
+server.connectServer()
+
+
+# esc 누르면 화면이 꺼지게 만드는 기능
 def on_escape(event=None):
     print("escaped")
     root.destroy()
@@ -27,7 +41,7 @@ def open_win1():
     global win1
     win1 = tk.Toplevel()
     win1.geometry("600x960")
-    win1.title("횐가입/로긴")
+    win1.title("회원가입/로그인")
     win1.bind("<Escape>", on_escape)
     tk.Button(win1, text="뒤로가기", command=lambda:[win1.destroy(),root.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
     tk.Button(win1, text="회원가입하기", width=15, height=5, command=lambda:[win1.withdraw(),open_win2()]).pack(pady=10)
@@ -41,37 +55,45 @@ def open_win2():
     
     def selection():
         global m
-        choice = var.get()
-        if choice == '남자':
-            m = '남자'
-        elif choice == '여자':
-            m = '여자'
+        m = var.get()
         return m
+    
+    def check_duplicate_id(id):
+        customer_ref = db.collection('customers')
+        query = customer_ref.where('id', '==', id).limit(1).get()
+        return len(query) > 0
 
     def submit():
         name = name_Tf.get()
-        phoneNumber = phoneNumber_Tf.get()
+        id = id_Tf.get()
         password = password_Tf.get()
+        phoneNumber = phoneNumber_Tf.get()
         gender = var.get()
         
-        if not name or not phoneNumber or not password or not gender:
+        if not name or not id or not password or not phoneNumber or not gender:
             messagebox.showwarning('회원가입 실패', '모든 필드를 입력해주세요.')
             return
         
+        if check_duplicate_id(id):
+            messagebox.showwarning('회원가입 실패', '이미 사용 중인 아이디입니다.')
+            return
+    
         try:
             # Firebase에 고객 정보 저장
-            doc_ref = db.collection('customers').document(name)
+            doc_ref = db.collection('customers').document(id)
             doc_ref.set({
                 'name': name,
-                'phoneNumber': phoneNumber,
+                'id': id,
                 'password': password,
+                'phoneNumber': phoneNumber,
                 'gender' : gender
             })
             
             # 저장 후 필드 초기화
             name_Tf.delete(0, tk.END)
-            phoneNumber_Tf.delete(0, tk.END)
+            id_Tf.delete(0, tk.END)
             password_Tf.delete(0, tk.END)
+            phoneNumber_Tf.delete(0, tk.END)
             var.set(None)
             
             messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
@@ -97,53 +119,82 @@ def open_win2():
     
     frame1 = Label(win2, bg='#dddddd')
     frame1.pack()
-    
-    frame2 = LabelFrame(frame1, text='Gender', padx=30, pady=10)
+    frame2 = LabelFrame(frame1, text='Gender', padx=50, pady=10)
 
     Label(frame1, text='이름').grid(row=0, column=0, padx=5, pady=5)
-    Label(frame1, text='전화번호').grid(row=1, column=0, padx=5, pady=5)
+    Label(frame1, text='아이디').grid(row=1, column=0, padx=5, pady=5)
     Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
+    Label(frame1, text='전화번호').grid(row=3, column=0, padx=5, pady=5)
     
     var.set(None)
-    Radiobutton(frame2, text='남자', variable=var, value='남자',command=selection).pack()
-    Radiobutton(frame2, text='여자', variable=var, value='여자',command=selection).pack(anchor=W)
+    Radiobutton(frame2, text='남자', variable=var, value='남자',command=selection).grid(row=0, column=0)
+    Radiobutton(frame2, text='여자', variable=var, value='여자',command=selection).grid(row=0, column=1)
+    
     name_Tf = Entry(frame1)
     name_Tf.grid(row=0, column=2)
-    phoneNumber_Tf = Entry(frame1)
-    phoneNumber_Tf.grid(row=1, column=2)
-    password_Tf = Entry(frame1, show="*")
+    
+    id_Tf = Entry(frame1)
+    id_Tf.grid(row=1, column=2)
+    
+    password_Tf = Entry(frame1, show="*") # 비밀번호 보안을 위한 show='*'
     password_Tf.grid(row=2, column=2)
-    frame2.grid(row=3, columnspan=3,padx=30)
-    Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck).grid(row=4, columnspan=4, pady=5)
+    
+    phoneNumber_Tf = Entry(frame1)
+    phoneNumber_Tf.grid(row=3, column=2)
+    
+    frame2.grid(row=4, columnspan=3,padx=30)
+    
+    check_btn = Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
+    check_btn.grid(row=5, columnspan=4, pady=5)
+    
     submit_btn = Button(frame1, text="Submit", command=submit, padx=50, pady=5, state=DISABLED)
-    submit_btn.grid(row=5, columnspan=4, pady=2)
+    submit_btn.grid(row=6, columnspan=4, pady=2)
     
 
 #3-2. 로그인 페이지
 def open_win3():
-    global win3, name, phone
+    global win3
     win3 = tk.Toplevel()
     win3.geometry("600x960")
     win3.title("로그인")
     win3.bind("<Escape>", on_escape)
+    
     def login():
-        global name, phone
-        name = name_entry.get()
-        phone = phone_entry.get()
+        global id, password
+        id = id_entry.get()
+        password = password_entry.get()        
+
+        if id and password:
+            # Firebase에서 사용자 데이터 조회
+            doc_ref = db.collection('customers').document(id)
+            doc = doc_ref.get()
+
+            if doc.exists:
+                customer_data = doc.to_dict()
+                # 비밀번호 일치 확인
+                if password == customer_data['password']:
+                    name = customer_data['name']
+                    messagebox.showinfo("로그인 성공", f'어서오세요, {name}님.')
+                    win3.withdraw()
+                    open_win4()
+                else:
+                    messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
+            else:
+                messagebox.showerror("로그인 실패", "해당 아이디가 존재하지 않습니다.")
+        else:
+            messagebox.showwarning("로그인 실패", "아이디와 비밀번호를 입력해주세요.")
 
     frame1 = Frame(win3)
     frame1.pack()
-
-    Label(frame1, text='이름').grid(row=1, column=0, padx=5, pady=5)    
-    Label(frame1, text='전화번호 뒤 네자리').grid(row=2, column=0, padx=5, pady=5)
-    Label(frame1, text='비밀번호').grid(row=3, column=0, padx=5, pady=5)
-    name_entry = Entry(frame1)
-    name_entry.grid(row=1, column=1)
-    phone_entry = Entry(frame1)
-    phone_entry.grid(row=2, column=1)
-    password_entry = Entry(frame1, show="*").grid(row=3, column=1)
+    
     Button(frame1, text="뒤로가기", command=lambda:[win3.destroy(),win1.deiconify()]).grid(row=0, column=2, padx=10, pady=10, sticky="ne")
-    Button(frame1, text="로그인", command=lambda:[login(),win3.withdraw(),open_win4()]).grid(row=4, columnspan=3, padx=10, pady=10, sticky="s")
+    Label(frame1, text='아이디').grid(row=1, column=0, padx=5, pady=5)    
+    Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
+    id_entry = Entry(frame1)
+    id_entry.grid(row=1, column=1)
+    password_entry = Entry(frame1, show="*")
+    password_entry.grid(row=2, column=1)
+    Button(frame1, text="로그인", command=login).grid(row=4, columnspan=3, padx=10, pady=10, sticky="s")
 
 
 #4. 카메라 실행/ 예약(-> #12), 헤어스타일 선택(-> #5) 버튼
@@ -156,8 +207,8 @@ def open_win4():
     win4.title("카메라")
     win4.bind("<Escape>", on_escape)
     tk.Button(win4, text="뒤로가기", command=lambda:[win4.destroy(),win3.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
-    tk.Button(win4, text="바로 예약하기", command=lambda:[baro(),win4.withdraw(),open_win12()]).pack(side="left", padx=20,pady=10)
-    tk.Button(win4, text="헤어스타일 합성", command=lambda:[win4.withdraw(),open_win5()]).pack(side="right", padx=20, pady=10)
+    tk.Button(win4, text="바로 예약하기", width=15, height=5, command=lambda:[baro(),win4.withdraw(),open_win12()]).pack(pady=10)
+    tk.Button(win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[win4.withdraw(),open_win5()]).pack(pady=10)
 
 # 바로 예약
 def baro():
@@ -166,14 +217,17 @@ def baro():
     
 #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
 def open_win5():
+    global browse_bt,takePhoto_bt
     global win5,ㅡ
     win5 = tk.Toplevel()
     win5.geometry("600x960")
     win5.title("사진 촬영")
     #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
     tk.Button(win5, text="뒤로가기", command=lambda:[win5.destroy(),win4.deiconify()]).grid(row=1,column=3)
-    tk.Button(win5, text="사진 가져오기", command=lambda:[imageBrowse()]).grid(row=7,column=3)
-    tk.Button(win5, text="사진 촬영", command=lambda:[Capture()]).grid(row=8,column=3)
+    browse_bt=tk.Button(win5, text="사진 가져오기", command=lambda:[imageBrowse()])
+    browse_bt.grid(row=7,column=3)
+    takePhoto_bt=tk.Button(win5, text="사진 촬영", command=lambda:[Capture()])
+    takePhoto_bt.grid(row=8,column=3)
     win5.cameraLabel = Label(win5, bg="steelblue", borderwidth=3, relief="groove")
     win5.cameraLabel.grid(row=3,column=2, padx=10, pady=10, columnspan=2)
     win5.imageLabel = Label(win5, bg="steelblue", borderwidth=3, relief="groove")
@@ -192,14 +246,13 @@ def open_win5():
 def ShowFeed():
     # Capturing frame by frame
     ret, frame = win5.cap.read()
-    # print(ret)
     if ret:
         # Flipping the frame vertically
         frame = cv2.flip(frame, 1)
         # Displaying date and time on the feed
         cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
         # Changing the frame color from BGR to RGB
-        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         resized_frame = cv2.resize(cv2image, (200, 200), interpolation=cv2.INTER_AREA)
         # Creating an image memory from the above frame exporting array interface
         videoImg = Image.fromarray(resized_frame)
@@ -218,13 +271,12 @@ def ShowFeed():
 
 # Defining Capture() to capture and save the image and display the image in the imageLabel
 def Capture():
-    global name, phone
-    destD="/home/pi/ESE/project/Hairstyle-Recommendation-Kiosk/py_model/UI/photos"
+    global name, phone, imageFile_path
+    destD="UI/photos"
     destPath.set(destD)
     # Storing the date in the mentioned format in the image_name variable
     # image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
-    image_name=name+str(phone)
-    print(image_name)
+    image_name=name+str(phone[-4:])
     # print("dest path: "+destPath.get())
     # If the user has selected the destination directory, then get the directory and save it in image_path
     if destPath.get() != '':
@@ -233,19 +285,22 @@ def Capture():
     else:
         messagebox.showerror("ERROR", "NO DIRECTORY SELECTED TO STORE IMAGE!!")
     # Concatenating the image_path with image_name and with .jpg extension and saving it in imgName variable
-    imgName = image_path + '/' + image_name + ".jpg"
-    imagePath.set(imgName)
+    imageFile_path = image_path + '/' + image_name + ".jpg"
+    imagePath.set(imageFile_path)
     # Capturing the frame
     ret,frame = win5.cap.read()
+    # frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # pil_image = Image.fromarray(frame_rgb)
     # Displaying date and time on the frame
     cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (430,460), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
     # Writing the image with the captured frame. Function returns a Boolean Value which is stored in success variable
-    success = cv2.imwrite(imgName, frame)    
-    img_send(frame)
+
+    frame = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
+    frame = cv2.flip(frame, 1)
     # Opening the saved image using the open() of Image class which takes the saved image as the argument
-    saved_image = Image.open(imgName)
-    saved_image_array = saved_image
-    
+    image = Image.fromarray(frame)
+    resizedImg = image.resize((200,200), Image.LANCZOS)
+
     # Creating object of PhotoImage() class to display the frame
     saved_image = ImageTk.PhotoImage(resizedImg)
     # Configuring the label to display the frame
@@ -253,30 +308,66 @@ def Capture():
     # Keeping a reference
     win5.imageLabel.photo = saved_image
     # Displaying messagebox
-    if success :
-        messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
+    # if success :
+    #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
+    takePhoto_bt.destroy()
     tk.Button(win5, text="다시 찍기", command=Capture).grid(row=8,column=3)    
-    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win6()]).grid(row=9,column=3)
+
+    tk.Button(win5, text="사진 선택", command=lambda:[server.sendImages(frame),win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
 
 def imageBrowse():
-    # Presenting user with a pop-up for directory selection. initialdir argument is optional
-    # Retrieving the user-input destination directory and storing it in destinationDirectory
-    # Setting the initialdir argument is optional. SET IT TO YOUR DIRECTORY PATH
-    openDirectory = filedialog.askopenfilename(initialdir="YOUR DIRECTORY PATH")
-    # Displaying the directory in the directory textbox
-    imagePath.set(openDirectory)
-    # Opening the saved image using the open() of Image class which takes the saved image as the argument
-    imageView = Image.open(openDirectory)
-    # Resizing the image using Image.resize()
-    imageResize = imageView.resize((200, 200), resample=Image.LANCZOS)
+    global saved_image, imageFile_path
+    # Firebase Storage에서 사진 다운로드
+    bucket = storage.bucket(app=firebase_app)
+    blob = bucket.blob('customers/{0}_photo.jpg'.format(name))
+    imageFile_path = 'UI/photos'+blob.name[blob.name.index("/"):]
+    print(imageFile_path)
+    blob.download_to_filename(imageFile_path)
+
+    # 이미지 로드 및 표시
+    image = Image.open(imageFile_path)
+    resizedImg = image.resize((200,200), Image.ANTIALIAS)
     # Creating object of PhotoImage() class to display the frame
-    imageDisplay = ImageTk.PhotoImage(imageResize)
+    saved_image = ImageTk.PhotoImage(resizedImg)
     # Configuring the label to display the frame
-    win5.imageLabel.config(image=imageDisplay)
+    win5.imageLabel.config(image=saved_image)
     # Keeping a reference
-    win5.imageLabel.photo = imageDisplay
-    tk.Button(win5, text="사진 선택", command=lambda:[win5.withdraw(),open_win6()]).grid(row=9,column=3)
+    win5.imageLabel.photo = saved_image
+    # Displaying messagebox
+    # if success :
+    #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
+    browse_bt.destroy()
+    tk.Button(win5, text="사진 선택", command=lambda:[img_send(image.resize((1024,1024), Image.ANTIALIAS)),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
+
+
+    # # Presenting user with a pop-up for directory selection. initialdir argument is optional
+    # # Retrieving the user-input destination directory and storing it in destinationDirectory
+    # # Setting the initialdir argument is optional. SET IT TO YOUR DIRECTORY PATH
+    # openDirectory = filedialog.askopenfilename(initialdir="YOUR DIRECTORY PATH")
+    # # Displaying the directory in the directory textbox
+    # imagePath.set(openDirectory)
+    # # Opening the saved image using the open() of Image class which takes the saved image as the argument
+    # imageView = Image.open(openDirectory)
+    # # Resizing the image using Image.resize()
+    # imageResize = imageView.resize((200, 200), resample=Image.LANCZOS)
+    # # Creating object of PhotoImage() class to display the frame
+    # imageDisplay = ImageTk.PhotoImage(imageResize)
+    # # Configuring the label to display the frame
+    # win5.imageLabel.config(image=imageDisplay)
+    # # Keeping a reference
+    # win5.imageLabel.photo = imageDisplay
+    # tk.Button(win5, text="사진 선택", command=lambda:[img_send(cv2.resize(saved_image,(1024,1024))),win5.withdraw(),open_win6()]).pack()
+
+def attach_photo():
+    if imageFile_path:
+        # 이미지를 Firebase Storage에 업로드
+        bucket = storage.bucket(app=firebase_app)
+        blob = bucket.blob('customers/{0}_photo.jpg'.format(name))
+        blob.upload_from_filename(imageFile_path)
+        print("사진이 성공적으로 첨부되었습니다.")
+    else:
+        print("파일 없습니다.")
 
 #7. 헤어스타일 선택
 # 범위 벗어난 인덱스에 대한 오류 처리 x
@@ -290,11 +381,11 @@ def open_win6():
     button_dict9 = {}
     button_dict15 = {}
     win6 = tk.Toplevel()
-    win6.geometry("600x960")
+    win6.geometry("600x1200")
     win6.title("헤어스타일 선택")
     win6.bind("<Escape>", on_escape)
     
-    #cmd 실행 안됨!!!!!!!
+    ##cmd 실행 안됨!!!!!!!
     def personal_cmd():
         selected_image = var.get()
         if selected_image == 1:
@@ -311,15 +402,15 @@ def open_win6():
             print("겨쿨")
 
     # 배경 이미지 파일 경로
-    backgrounds = ["spring.png", "summer.png", "autumn.png", "winter.png"]
+    backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
     # 전경 이미지 파일 경로
-    foreground = Image.open("test.png")
+    foreground = Image.open("UI/test.png")  ##이미지 받아오기!!!
     # 배경 이미지를 원하는 크기로 조정
     labels = []
     background_images = []
     for bg_path in backgrounds:
         background = Image.open(bg_path)
-        resized_background = background.resize((100, 120))
+        resized_background = background.resize((80, 96))
         background_images.append(resized_background)
 
     def progress_bar():
@@ -413,16 +504,16 @@ def open_win6():
     tk.Button(win6, text="▶", command=next_image9).grid(row=9, column=6)
     tk.Button(win6, text="◀", command=forward_image15).grid(row=15, column=1)
     tk.Button(win6, text="▶", command=next_image15).grid(row=15, column=6)
-    tk.Label(win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.').grid(row=2, column=2,columnspan=3)
-    tk.Label(win6,text='얼굴형에 따른 추천 헤어스타일').grid(row=5, column=2,columnspan=3)
-    tk.Label(win6,text='전체 헤어스타일').grid(row=8, column=3)
-    tk.Label(win6,text='퍼스널컬러에 따른 추천 염색 컬러').grid(row=11, column=2, columnspan=3)
-    tk.Label(win6,text='전체 염색 컬러').grid(row=14, column=3)
+    tk.Label(win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.',height=1).grid(row=2, column=2,columnspan=3)
+    tk.Label(win6,text='얼굴형에 따른 추천 헤어스타일',height=1).grid(row=5, column=2,columnspan=3)
+    tk.Label(win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
+    tk.Label(win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
+    tk.Label(win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
 
     var=IntVar()
     var.set(1)
     # 전경 이미지를 윈도우 크기로 조정
-    resized_foreground = foreground.resize((100, 120))
+    resized_foreground = foreground.resize((80, 96))
 
     for i, background_image in enumerate(background_images):
         composite_image = Image.alpha_composite(background_image, resized_foreground)
@@ -436,17 +527,17 @@ def open_win6():
         # ImageTk 객체에 대한 참조 유지
         label.image = photo
         image_name = backgrounds[i].split(".")[0]  # 이미지 파일 이름 (확장자 제외)
-        name_label = tk.Radiobutton(win6, text=image_name,variable=var, value=i,command=personal_cmd())
+        name_label = tk.Radiobutton(win6, text=image_name,variable=var, value=i+1,command=personal_cmd)
         name_label.grid(row=4, column=i+2)
 
     if m=='여자':
-        dir_path9 = "hairstyles"
+        dir_path9 = "UI/hairstyles"
     elif m=='남자':
-        dir_path9 = "hairstyles_men"
-    dir_path15="colors"
+        dir_path9 = "UI/hairstyles_men"
+    dir_path15="UI/colors"
     img_path9 = [os.path.join(dir_path9, f) for f in os.listdir(dir_path9) if f.endswith(".png")]
     img_path15 = [os.path.join(dir_path15, f) for f in os.listdir(dir_path15) if f.endswith(".png")]
-    img_size = (100, 100)
+    img_size = (80, 80)
 
     # 이미지 로드 및 크기 조정
     img_list9 = []
@@ -465,10 +556,10 @@ def open_win6():
         row_list2=[]
         for j in range(4):
             button = tk.Button(win6, image=None)
-            button.grid(row=3*i+6, column=j+2, padx=5, pady=5)  # 추가 간격 설정
+            button.grid(row=3*i+6, column=j+2, padx=5)  # 추가 간격 설정
             row_list.append(button)
             label=tk.Label(win6,text='')
-            label.grid(row=3*i+7, column=j+2, padx=5, pady=5)
+            label.grid(row=3*i+7, column=j+2, padx=5)
             row_list2.append(label)
         button_list9.append(row_list)
         name_list9.append(row_list2)
@@ -498,10 +589,10 @@ def open_win6():
         row_list2=[]
         for j in range(4):
             button = tk.Button(win6, image=None)
-            button.grid(row=3*i+12, column=j+2, padx=5, pady=5)  # 추가 간격 설정
+            button.grid(row=3*i+12, column=j+2, padx=5)  # 추가 간격 설정
             row_list.append(button)
             label=tk.Label(win6,text='')
-            label.grid(row=3*i+13, column=j+2, padx=5, pady=5)
+            label.grid(row=3*i+13, column=j+2, padx=5)
             row_list2.append(label)
         button_list15.append(row_list)
         name_list15.append(row_list2)
@@ -521,7 +612,7 @@ def open_win11():
     win11.geometry("600x960")
     win11.title("결과")
     win11.bind("<Escape>", on_escape)
-    result_path="./result/result.jpg"
+    result_path="result/result.jpg" ##이미지 받아오기!!!
     if os.path.exists(result_path):
         result_img = Image.open(result_path)
         result_img = result_img.resize((320,240))  # 이미지 크기 조절        
@@ -536,11 +627,7 @@ def open_win11():
     tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=1)
     tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=1)
     tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=1)
-    tk.Button(win11, text="뒤로가기", command=lambda:[win11.destroy(),win6.deiconify()]).grid(row=1,column=3)
-    tk.Button(win11, text="다시 찍기", command=lambda:[win11.withdraw(),win5.deiconify()]).grid(row=3,column=2)
-    tk.Button(win11, text="헤어스타일 재선택", command=lambda:[win11.withdraw(),win6.deiconify()]).grid(row=4,column=2)
-    tk.Button(win11, text="예약하기", command=lambda:[win11.withdraw(),open_win12()]).grid(row=5,column=2)
-
+    
 #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
 def open_win12():
     global win12
@@ -570,6 +657,7 @@ def open_win13():
     tk.Label(win13, text=name + "님 예약이 완료되었습니다.").pack(pady=10)
 
 # 스타트
+
 root = tk.Tk()
 root.geometry("600x960")
 root.title("메인")
