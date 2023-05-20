@@ -31,31 +31,17 @@ class ServerSocket:
         self.conn, self.addr = self.sock.accept()
         print(u'Server socket [ TCP_IP: ' + self.TCP_IP + ', TCP_PORT: ' + str(self.TCP_PORT) + ' ] is connected with client')
         try:
-            # while True:
-            for i in range(1):
-                length = self.recvall(self.conn, 64)
-                # print(length)
-                length1 = length.decode('utf-8')
-                # print(length1)
-                stringData = self.recvall(self.conn, int(length1))
-                # print("st : " , stringData)
-                data = numpy.frombuffer(base64.b64decode(stringData), dtype = numpy.uint8)
-                # numpy.save("data2",data)
-                # print("data",data)
-                # print(data.shape)
-                decimg = cv2.imdecode(data, 1)
-                imageRGB = cv2.cvtColor(decimg , cv2.COLOR_BGR2RGB)
-                # pil_img = Image.fromarray(imageRGB, "RGB")
-            return imageRGB
-                # cv2.imwrite("image.png", decimg)
-                # cv2.waitKey(1)
-                
+            length = self.recvall(self.conn, 64)
+            length1 = length.decode('utf-8')
+            stringData = self.recvall(self.conn, int(length1))
+            data = numpy.frombuffer(base64.b64decode(stringData), dtype = numpy.uint8)
+            decimg = cv2.imdecode(data, 1)
+            imageRGB = cv2.cvtColor(decimg , cv2.COLOR_BGR2RGB)
+            return imageRGB       
         except Exception as e:
             print(e)
-            self.socketClose()
-            self.socketOpen()
-            # self.receiveThread = threading.Thread(target=self.receiveImages)
-            # self.receiveThread.start()
+            self.receiveImages()
+
 
     def sendImages(self,img):
         encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
@@ -64,9 +50,9 @@ class ServerSocket:
         stringData = base64.b64encode(data)
         
         length = str(len(stringData))
-        print(length)
-        self.sock.send("length".encode('utf-8').ljust(64))
-        self.sock.send(stringData)
+        # print(length)
+        self.conn.send(length.encode('utf-8').ljust(64))
+        self.conn.send(stringData)
         print('send images')
         # self.connectServer()
         # self.sendImages()

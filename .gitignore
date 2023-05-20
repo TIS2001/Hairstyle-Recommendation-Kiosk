@@ -1,8 +1,7 @@
 model/pretrained_models
 model/output/
 *.pyc
-*.*.pyc
+*cpython-38.pyc
 *.png
 py_model/dat/shape_predictor_81_face_landmarks.dat
 py_model/util/test.jpg
-

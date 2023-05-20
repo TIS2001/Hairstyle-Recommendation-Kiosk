@@ -428,8 +428,8 @@ class Alignment(nn.Module):
                 #     save_im.save(cur_check_dir + f'{im_name_1}_with_{im_name_2}_hair_{step}.png')
 
             latent_in = latent_mixed
-            # save_im = np.array(toPIL(I_G_0_1.squeeze().cpu()))
-            save_im = toPIL(I_G_0_1.squeeze().cpu())
+            save_im = np.array(toPIL(I_G_0_1.squeeze().cpu()))
+            # save_im = toPIL(I_G_0_1.squeeze().cpu())
             if self.opts.save_all:
                 gram_add = ''
                 if self.opts.blend_with_gram:

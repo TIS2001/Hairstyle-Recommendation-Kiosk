@@ -42,8 +42,8 @@ class ClientVideoSocket:
         
         self.sock.close()
         time.sleep(1)
-        self.connectServer()
-        self.sendImages()
+        # self.connectServer()
+        # self.sendImages()
 
 def img_send(img):
     TCP_IP = "211.243.232.32"
