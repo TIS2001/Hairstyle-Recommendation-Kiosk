@@ -32,7 +32,7 @@ class face_predicter:
         :return: np.array shape=(68, 2)
         """
         detector = dlib.get_frontal_face_detector()
-        print(type(img))
+        # print(type(img))
         det = detector(img, 1)[0]
         shape = self.predictor(img, det)
 

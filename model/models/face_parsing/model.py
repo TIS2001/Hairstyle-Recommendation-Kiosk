@@ -245,6 +245,7 @@ class BiSeNet(nn.Module):
         self.init_weight()
 
     def forward(self, x):
+        ## 
         H, W = x.size()[2:]
         feat_res8, feat_cp8, feat_cp16 = self.cp(x)  # here return res3b1 feature
         feat_sp = feat_res8  # use res3b1 feature to replace spatial path feature
