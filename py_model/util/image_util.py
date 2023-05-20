@@ -1,11 +1,10 @@
 import cv2
 from firebase_admin import credentials, firestore, initialize_app, storage
-from PIL import Image
+from PIL import Image,ImageTk
 import tempfile
 import numpy as np
 import pybase64 as base64
 import io
-
 
 def Capture(win):
     ret,frame = win.cap.read()
@@ -34,7 +33,7 @@ def ShowFeed(win):
         # Keeping a reference
         win.cameraLabel.imgtk = imgtk
         # Calling the function after 10 milliseconds
-        win.cameraLabel.after(10, ShowFeed)
+        win.cameraLabel.after(10, lambda:ShowFeed(win))
     else:
         # Configuring the label to display the frame
         win.cameraLabel.configure(image='')
@@ -46,9 +45,9 @@ def ShowFeed(win):
     
     
     
-def imageBrowse(win,bucket):
+def imageBrowse(bucket,name):
     # Firebase Storage에서 사진 다운로드
-    blob = bucket.blob('customers/{0}_photo.jpg'.format(name))
+    blob = bucket.blob(f'customers/{name}_photo.PNG')
     str = blob.download_as_bytes()
     return Image.open(io.BytesIO(str))
     # Configuring the label to display the frame
@@ -62,9 +61,9 @@ def attach_photo(bucket,name, image):
         image.save(imgByteArr, format=image.format)
         # Turn the BytesIO object back into a bytes object
         imgByteArr = imgByteArr.getvalue()
-        
-        blob = bucket.blob('customers/{0}_photo.jpg'.format(name))
-        blob.upload_from_file(imgByteArr)
+        print(image.format)
+        blob = bucket.blob(f'customers/{name}_photo.{image.format}')
+        blob.upload_from_string(imgByteArr)
         print("사진이 성공적으로 첨부되었습니다.")
     else:
         print("파일 없습니다.")
@@ -75,4 +74,8 @@ if __name__ == "__main__":
     firebase_app = initialize_app(cred, { 'storageBucket': 'easylogin-58c28.appspot.com'})
     db = firestore.client()
     bucket = storage.bucket(app=firebase_app)
-    imageBrowse(bucket)
+    img = Image.open("test.png")
+    # print(img.format)
+    # attach_photo(bucket,"dongjin",img)
+    img = imageBrowse(bucket,"dongjin")
+    img.save("test1.png")
