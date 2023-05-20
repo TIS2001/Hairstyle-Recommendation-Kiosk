@@ -20,13 +20,13 @@ class ClientVideoSocket:
             self.sendImages(img)
         except Exception as e:
             print(e)
-            self.connectCount += 1
-            if self.connectCount == 10:
-                print(u'Connect fail %d times. exit program'%(self.connectCount))
-                sys.exit()
-            print(u'%d times try to connect with server'%(self.connectCount))
-            time.sleep(1)
-            self.connectServer()
+            # self.connectCount += 1
+            # if self.connectCount == 10:
+            #     print(u'Connect fail %d times. exit program'%(self.connectCount))
+            #     sys.exit()
+            # print(u'%d times try to connect with server'%(self.connectCount))
+            # time.sleep(1)
+            # self.connectServer(img)
 
     def sendImages(self,img):
         encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
@@ -42,14 +42,20 @@ class ClientVideoSocket:
         
         self.sock.close()
         time.sleep(1)
-        self.connectServer()
-        self.sendImages()
+        # self.connectServer()
+        # self.sendImages()
 
-def main():
+def img_send(img):
     TCP_IP = 1234
     TCP_PORT = 1234
     client = ClientVideoSocket(TCP_IP, TCP_PORT)
     client.connectServer(img)
 
+def main():
+    TCP_IP = 1234
+    TCP_PORT = 1234
+    # client = ClientVideoSocket(TCP_IP, TCP_PORT)
+    # client.connectServer(img)
+
 if __name__ == "__main__":
-    main()
+    pass
