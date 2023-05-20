@@ -246,7 +246,6 @@ def open_win5():
 def ShowFeed():
     # Capturing frame by frame
     ret, frame = win5.cap.read()
-    # print(ret)
     if ret:
         # Flipping the frame vertically
         frame = cv2.flip(frame, 1)
@@ -272,8 +271,8 @@ def ShowFeed():
 
 # Defining Capture() to capture and save the image and display the image in the imageLabel
 def Capture():
-    global name, phone
-    destD="/home/pi/ESE/project/Hairstyle-Recommendation-Kiosk/py_model/UI/photos"
+    global name, phone, imageFile_path
+    destD="UI/photos"
     destPath.set(destD)
     # Storing the date in the mentioned format in the image_name variable
     # image_name = datetime.now().strftime('%d-%m-%Y %H-%M-%S')
@@ -286,8 +285,8 @@ def Capture():
     else:
         messagebox.showerror("ERROR", "NO DIRECTORY SELECTED TO STORE IMAGE!!")
     # Concatenating the image_path with image_name and with .jpg extension and saving it in imgName variable
-    imgName = image_path + '/' + image_name + ".jpg"
-    imagePath.set(imgName)
+    imageFile_path = image_path + '/' + image_name + ".jpg"
+    imagePath.set(imageFile_path)
     # Capturing the frame
     ret,frame = win5.cap.read()
     # frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -295,12 +294,13 @@ def Capture():
     # Displaying date and time on the frame
     cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (430,460), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
     # Writing the image with the captured frame. Function returns a Boolean Value which is stored in success variable
-    # success = cv2.imwrite(imgName, frame)
+
     frame = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
     frame = cv2.flip(frame, 1)
     # Opening the saved image using the open() of Image class which takes the saved image as the argument
     image = Image.fromarray(frame)
     resizedImg = image.resize((200,200), Image.LANCZOS)
+
     # Creating object of PhotoImage() class to display the frame
     saved_image = ImageTk.PhotoImage(resizedImg)
     # Configuring the label to display the frame
@@ -312,20 +312,21 @@ def Capture():
     #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
     takePhoto_bt.destroy()
     tk.Button(win5, text="다시 찍기", command=Capture).grid(row=8,column=3)    
+
     tk.Button(win5, text="사진 선택", command=lambda:[server.sendImages(frame),win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
+
 def imageBrowse():
-    global saved_image
+    global saved_image, imageFile_path
     # Firebase Storage에서 사진 다운로드
     bucket = storage.bucket(app=firebase_app)
-    id="sundongjin" ##id 바뀌게!!
-    blob = bucket.blob('customers/{0}_photo.jpg'.format(id))
-    image_path = 'UI/photos'+blob.name[blob.name.index("/"):]
-    print(image_path)
-    blob.download_to_filename(image_path)
+    blob = bucket.blob('customers/{0}_photo.jpg'.format(name))
+    imageFile_path = 'UI/photos'+blob.name[blob.name.index("/"):]
+    print(imageFile_path)
+    blob.download_to_filename(imageFile_path)
 
     # 이미지 로드 및 표시
-    image = Image.open(image_path)
+    image = Image.open(imageFile_path)
     resizedImg = image.resize((200,200), Image.ANTIALIAS)
     # Creating object of PhotoImage() class to display the frame
     saved_image = ImageTk.PhotoImage(resizedImg)
@@ -337,7 +338,7 @@ def imageBrowse():
     # if success :
     #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
     browse_bt.destroy()
-    tk.Button(win5, text="사진 선택", command=lambda:[img_send(image.resize((1024,1024), Image.ANTIALIAS)),win5.withdraw(),open_win6()]).grid(row=9,column=3)
+    tk.Button(win5, text="사진 선택", command=lambda:[img_send(image.resize((1024,1024), Image.ANTIALIAS)),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
 
 
     # # Presenting user with a pop-up for directory selection. initialdir argument is optional
@@ -357,6 +358,16 @@ def imageBrowse():
     # # Keeping a reference
     # win5.imageLabel.photo = imageDisplay
     # tk.Button(win5, text="사진 선택", command=lambda:[img_send(cv2.resize(saved_image,(1024,1024))),win5.withdraw(),open_win6()]).pack()
+
+def attach_photo():
+    if imageFile_path:
+        # 이미지를 Firebase Storage에 업로드
+        bucket = storage.bucket(app=firebase_app)
+        blob = bucket.blob('customers/{0}_photo.jpg'.format(name))
+        blob.upload_from_filename(imageFile_path)
+        print("사진이 성공적으로 첨부되었습니다.")
+    else:
+        print("파일 없습니다.")
 
 #7. 헤어스타일 선택
 # 범위 벗어난 인덱스에 대한 오류 처리 x

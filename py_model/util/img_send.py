@@ -22,7 +22,6 @@ class ClientVideoSocket:
             print(e)
             time.sleep(1)
             self.connectServer()
-
     def sendImages(self,img):
         encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
         result, frame = cv2.imencode(".jpg",img,encode_param)
