@@ -6,7 +6,7 @@ import scipy.ndimage
 import dlib
 from pathlib import Path
 import torchvision
-
+import cv2
 
 """
 brief: face alignment with FFHQ method (https://github.com/NVlabs/ffhq-dataset)
@@ -24,16 +24,16 @@ requirements:
     # http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
 """
 class face_predicter:
-    def __init__(self,f):
-        self.predictor = dlib.shape_predictor(f)
-        
+    def __init__(self,pre,det):
+        self.predictor = dlib.shape_predictor(pre)
+        self.detector = dlib.cnn_face_detection_model_v1(det)
     def get_landmark(self,img):
         """get landmark with dlib
         :return: np.array shape=(68, 2)
         """
-        detector = dlib.get_frontal_face_detector()
+        # self.detector = dlib.cnn_face_detection_model_v1(det)
         # print(type(img))
-        det = detector(img, 1)[0]
+        det = self.detector(img, 1)[0].rect
         shape = self.predictor(img, det)
 
         lm = np.array([[tt.x, tt.y] for tt in shape.parts()])
@@ -118,15 +118,16 @@ class face_predicter:
             blur = qsize * 0.02
             img += (scipy.ndimage.gaussian_filter(img, [blur, blur, 0]) - img) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
             img += (np.median(img, axis=(0, 1)) - img) * np.clip(mask, 0.0, 1.0)
-            img = PIL.Image.fromarray(np.uint8(np.clip(np.rint(img), 0, 255)), 'RGB')
+            # img = cv2.cvtColor(img , cv2.COLOR_BGR2RGB)
+            img = PIL.Image.fromarray(np.uint8(np.clip(np.rint(img), 0, 255)),'RGB')
             quad += pad[:2]
 
         # Transform.
         img = img.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(),
                             PIL.Image.BILINEAR)
         if output_size < transform_size:
-            img = img.resize((output_size, output_size), PIL.Image.ANTIALIAS)
-
+            img = img.resize((output_size, output_size), PIL.Image.LANCZOS)
+        img.save('align1.png')
         return img
     
     def run(self,img):
@@ -139,14 +140,31 @@ class face_predicter:
     
     
 if __name__=="__main__":
-    dat = "dat/shape_predictor_81_face_landmarks.dat"
-    pre = face_predicter(dat)
-    img = dlib.load_rgb_image("/data/test.jpg")
+    pre = "dat/shape_predictor_81_face_landmarks.dat"
+    det = "dat/mmod_human_face_detector.dat"
+    mesh = face_predicter(pre,det)
+    
+    img = dlib.load_rgb_image("test.jpg")
+    print(img.shape)
+    print(type(img))
+    img = mesh.align_face(img)
+
+    img.save("align1.png")
+    
+    img = cv2.imread("test.jpg")
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    print(img.shape)
+    print(type(img))
+
+
+    img = mesh.align_face(img)
+    img.save("align2.png")
+
     # print(type(img))
     # img = pre.run(img)
     # img = np.array(img)
     
     # 
-    # img.save('test.jpg')
+    # img.save('test.png')
     
     
