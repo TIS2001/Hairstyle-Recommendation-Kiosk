@@ -24,7 +24,8 @@ class MainUI(tk.Tk):
         self.Start()
     #1. 첫번째 페이지- 시작하기
     def Start(self):
-        self.geometry("800x1280")        self.title("메인")
+        self.geometry("800x1280")        
+        self.title("메인")
         tk.Button(self, text="시작하기", width=16, height=7, command=lambda:[self.withdraw(),self.open_win1()]).pack(anchor="center",pady=200)
         self.bind("<Escape>", self.on_escape)
         self.mainloop()
