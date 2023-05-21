@@ -8,7 +8,6 @@ import io
 
 def Capture(win):
     ret,frame = win.cap.read()
-    frame = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
     frame = cv2.flip(frame, 1)
     return frame
 
@@ -23,7 +22,7 @@ def ShowFeed(win):
         # cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        resized_frame = cv2.resize(cv2image, (200, 200), interpolation=cv2.INTER_AREA)
+        resized_frame = cv2.resize(cv2image, (512, 512), interpolation=cv2.INTER_AREA)
         # Creating an image memory from the above frame exporting array interface
         videoImg = Image.fromarray(resized_frame)
         # Creating object of PhotoImage() class to display the frame
@@ -47,7 +46,7 @@ def ShowFeed(win):
     
 def imageBrowse(bucket,name):
     # Firebase Storage에서 사진 다운로드
-    blob = bucket.blob(f'customers/{name}_photo.PNG')
+    blob = bucket.blob(f'customers/{name}_photo.jpg')
     str = blob.download_as_bytes()
     return Image.open(io.BytesIO(str))
     # Configuring the label to display the frame
@@ -58,11 +57,10 @@ def attach_photo(bucket,name, image):
         # 이미지를 Firebase Storage에 업로드
         imgByteArr = io.BytesIO()
         # image.save expects a file-like as a argument
-        image.save(imgByteArr, format=image.format)
+        image.save(imgByteArr, format='JPEG')
         # Turn the BytesIO object back into a bytes object
         imgByteArr = imgByteArr.getvalue()
-        print(image.format)
-        blob = bucket.blob(f'customers/{name}_photo.{image.format}')
+        blob = bucket.blob(f'customers/{name}_photo.jpg')
         blob.upload_from_string(imgByteArr)
         print("사진이 성공적으로 첨부되었습니다.")
     else:

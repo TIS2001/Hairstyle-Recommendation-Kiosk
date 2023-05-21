@@ -4,6 +4,7 @@ import numpy
 import cv2
 import sys
 import pybase64 as base64
+from PIL import Image
 
 class ClientVideoSocket:
     def __init__(self, ip, port):
@@ -32,10 +33,29 @@ class ClientVideoSocket:
         self.sock.send(stringData)
         print('send images')
         time.sleep(0.02)
-        self.sock.close()
+        # self.sock.close()
         time.sleep(1)
         # self.connectServer()
         # self.sendImages()
+    def recvall(self, sock, count):
+        buf = b''
+        while count:
+            newbuf = sock.recv(count)
+            if not newbuf: return None
+            buf += newbuf
+            count -= len(newbuf)
+        return buf
+    
+    def receiveImages(self):
+        length = self.recvall(self.sock,64)
+        length1 = length.decode('utf-8')
+        print(length1)
+        stringData = self.recvall(self.sock,int(length1))
+        data = numpy.frombuffer(base64.b64decode(stringData), dtype = numpy.uint8)
+        decimg = cv2.imdecode(data, 1)
+        pil_img = Image.fromarray(decimg, "RGB")
+        # pil_img.save("test.png")
+        return pil_img
 
 def img_send(img):
     TCP_IP = "211.243.232.32"

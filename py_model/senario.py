@@ -12,22 +12,34 @@ from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
 
+from threading import Thread
+
 
 class MainUI(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.firebase_init()
-        self.server = ClientVideoSocket("211.243.232.32",7100)
+        self.img = None
         self.bucket = storage.bucket(app=self.firebase_app)
         self.Start()
     #1. 첫번째 페이지- 시작하기
     def Start(self):
-        self.geometry("600x960")
-        self.title("메인")
+        self.geometry("800x1280")        self.title("메인")
         tk.Button(self, text="시작하기", width=16, height=7, command=lambda:[self.withdraw(),self.open_win1()]).pack(anchor="center",pady=200)
         self.bind("<Escape>", self.on_escape)
         self.mainloop()
 
+    def img_thread(self,img):
+        self.server_tk = self.win6.after(0,self.connect_server,img)
+    
+    def connect_server(self,img):
+        self.server = ClientVideoSocket("211.243.232.32",7100)
+        self.server.connectServer()
+        self.server.sendImages(img)
+        self.img = self.server.receiveImages()
+        self.img.save("test.png")
+
+        
     def firebase_init(self):
         cred = credentials.Certificate('./UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
         self.firebase_app = initialize_app(cred, { 'storageBucket': 'easylogin-58c28.appspot.com'})
@@ -36,7 +48,7 @@ class MainUI(tk.Tk):
     #2. 회원가입, 로그인 버튼    
     def open_win1(self):
         self.win1 = tk.Toplevel()
-        self.win1.geometry("600x960")
+        self.win1.geometry("800x1280")
         self.win1.title("회원가입/로그인")
         self.win1.bind("<Escape>", self.on_escape)
         tk.Button(self.win1, text="뒤로가기", command=lambda:[self.win1.destroy(),self.root.deiconify()]).pack(padx=10,pady=10, side="top", anchor="ne")
@@ -63,6 +75,7 @@ class MainUI(tk.Tk):
             password = password_Tf.get()
             phoneNumber = phoneNumber_Tf.get()
             gender = var.get()
+
             
             if not name or not id or not password or not phoneNumber or not gender:
                 messagebox.showwarning('회원가입 실패', '모든 필드를 입력해주세요.')
@@ -105,7 +118,8 @@ class MainUI(tk.Tk):
                 submit_btn['state'] = DISABLED
 
         self.win2 =tk.Toplevel()
-        self.win2.geometry("600x960")
+
+        self.win2.geometry("800x1280")
         self.win2.title('회원가입')
         self.win2.bind("<Escape>", self.on_escape)
         
@@ -148,7 +162,8 @@ class MainUI(tk.Tk):
     #3-2. 로그인 페이지 
     def open_win3(self):
         self.win3 = tk.Toplevel()
-        self.win3.geometry("600x960")
+
+        self.win3.geometry("800x1280")
         self.win3.title("로그인")
         self.win3.bind("<Escape>", self.on_escape)
         
@@ -192,7 +207,8 @@ class MainUI(tk.Tk):
     def open_win4(self):
         self.isBaro=False
         self.win4 = tk.Toplevel()
-        self.win4.geometry("600x960")
+
+        self.win4.geometry("800x1280")
         self.win4.title("카메라")
         self.win4.bind("<Escape>", self.on_escape)
         
@@ -207,19 +223,20 @@ class MainUI(tk.Tk):
     #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
     def open_win5(self):
         self.win5 = tk.Toplevel()
-        self.win5.geometry("600x960")
+        self.win5.geometry("800x1280")
         self.win5.title("사진 촬영")
 
-        def AfterCapture(takePhoto_bt,frame):
-            image = Image.fromarray(frame)
+        def AfterCapture(frame):
+            frame_rgb = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
+            image = Image.fromarray(frame_rgb)
             resizedImg = image.resize((200,200), Image.LANCZOS)
             resizedImg = ImageTk.PhotoImage(resizedImg)
             self.win5.imageLabel.config(image=resizedImg)
             self.win5.imageLabel.photo = resizedImg
             takePhoto_bt.destroy()
-            tk.Button(self.win5, text="다시 찍기", command=lambda:[AfterCapture(Capture(self.win5))]).grid(row=8,column=3)    
+            tk.Button(self.win5, text="다시 찍기", command=lambda:[AfterCapture(Capture(self.win5))]).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            tk.Button(self.win5, text="사진 선택", command=lambda:[self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
+            tk.Button(self.win5, text="사진 선택", command=lambda:[attach_photo(self.bucket,self.user_info["name"],image),self.win5.withdraw(),self.open_win6(),self.img_thread(frame)]).place(x=350,y=680,width=100,height=40)
         
         def AfterBrowse(image):
             frame = np.array(image)
@@ -230,24 +247,24 @@ class MainUI(tk.Tk):
             self.win5.imageLabel.photo = saved_image
             browse_bt.destroy()
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            tk.Button(self.win5, text="사진 선택", command=lambda:[attach_photo(self.bucket,self.user_info["name"],image),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
+            tk.Button(self.win5, text="사진 선택", command=lambda:[attach_photo(self.bucket,self.user_info["name"],image),self.win5.withdraw(),self.open_win6(),self.img_thread(frame)]).place(x=350,y=580,width=100,height=40)
 
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
-        tk.Button(self.win5, text="뒤로가기", command=lambda:[self.win5.destroy(),self.win4.deiconify()]).grid(row=1,column=3)
+        tk.Button(self.win5, text="뒤로가기", command=lambda:[self.win5.destroy(),self.win4.deiconify()]).place(x=700,y=1200,width=40,height=20)
         browse_bt=tk.Button(self.win5, text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
-        browse_bt.grid(row=7,column=3)
-        takePhoto_bt=tk.Button(self.win5, text="사진 촬영", command=lambda:[AfterCapture(takePhoto_bt,Capture(self.win5))])
-        takePhoto_bt.grid(row=8,column=3)
+        browse_bt.place(x=350,y=580,width=100,height=40)
+        takePhoto_bt=tk.Button(self.win5, text="사진 촬영", command=lambda:[AfterCapture(Capture(self.win5))])
+        takePhoto_bt.place(x=350,y=630,width=100,height=40)
         
         self.win5.cameraLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
-        self.win5.cameraLabel.grid(row=3,column=2, padx=10, pady=10, columnspan=2)
+        self.win5.cameraLabel.place(x=144,y=50)
         self.win5.imageLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
-        self.win5.imageLabel.grid(row=6,column=2, padx=10, pady=10, columnspan=2)
+        self.win5.imageLabel.place(x=300,y=700)
         # Creating object of class VideoCapture with webcam index
         self.win5.cap = cv2.VideoCapture(0)
 
         # Setting width and height
-        width, height =320, 240
+        width, height =512, 512
         self.win5.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.win5.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.win5.bind("<Escape>", self.on_escape)
@@ -258,10 +275,13 @@ class MainUI(tk.Tk):
     
     def open_win6(self):
         global img_list9,button_list9,button_dict9,img_list15,button_list15,button_dict15
+
+        self.num9=2
+        self.num15=2
         button_dict9 = {}
         button_dict15 = {}
         self.win6 = tk.Toplevel()
-        self.win6.geometry("600x1200")
+        self.win6.geometry("800x1280")
         self.win6.title("헤어스타일 선택")
         self.win6.bind("<Escape>", self.on_escape)
         
@@ -378,7 +398,7 @@ class MainUI(tk.Tk):
             if num15 in button_dict15.keys():           
                 button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
-        tk.Button(self.win6, text="뒤로가기", command=lambda:[self.win6.destroy(),win5.deiconify()]).grid(row=0, column=6)
+        tk.Button(self.win6, text="뒤로가기", command=lambda:[self.win6.destroy(),self.win5.deiconify()]).grid(row=0, column=6)
         tk.Button(self.win6, text="헤어스타일 선택", command=progress_bar).grid(row=17, column=3)
         tk.Button(self.win6, text="◀", command=forward_image9).grid(row=9, column=1)
         tk.Button(self.win6, text="▶", command=next_image9).grid(row=9, column=6)
@@ -488,7 +508,8 @@ class MainUI(tk.Tk):
 
     def open_win11(self):
         self.win11 = tk.Toplevel()
-        self.win11.geometry("600x960")
+
+        self.win11.geometry("800x1280")
         self.win11.title("결과")
         self.win11.bind("<Escape>", self.on_escape)
         result_path="result/result.jpg" ##이미지 받아오기!!!
@@ -510,7 +531,8 @@ class MainUI(tk.Tk):
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
     def open_win12(self):
         self.win12 = tk.Toplevel()
-        self.win12.geometry("600x960")
+
+        self.win12.geometry("800x1280")
         self.win12.title("예약")
         self.win12.bind("<Escape>", self.on_escape)
 
@@ -528,7 +550,8 @@ class MainUI(tk.Tk):
     #13. 예약 완료 텍스트 or 확인 팝업창
     def open_win13(self):
         self.win13 = tk.Toplevel()
-        self.win13.geometry("600x960")
+
+        self.win13.geometry("800x1280")
         self.win13.title("완료")
         self.win13.bind("<Escape>", self.on_escape)
         tk.Label(self.win13, text=self.user_info["name"] + "님 예약이 완료되었습니다.").pack(pady=10)
