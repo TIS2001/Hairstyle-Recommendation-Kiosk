@@ -11,19 +11,21 @@ from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
-from picamera2 import Picamera2
 from threading import Thread
 
 
 class MainUI(tk.Tk):
-    def __init__(self):
+    def __init__(self,picam=False,server_open=False):
         tk.Tk.__init__(self)
+        self.pycam = picam
+        self.server_open=server_open
         self.firebase_init()
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
         self.Frame_init()
         self.mainloop()
+        
     #1. 첫번째 페이지- 시작하기
     def Frame_init(self):
         self.camera_init()
@@ -32,18 +34,19 @@ class MainUI(tk.Tk):
         self.open_win2()
         self.open_win3()
         self.open_win4()
-        # self.open_win5()
-        # self.open_win6()
-        # self.open_win11()
         self.open_win12()
-        # self.open_win13()
         self.StartFrame.tkraise()
     
     def camera_init(self):
-        self.camera = Picamera2()
-        width,height = 1024,1024
-        video_config= self.camera.create_still_configuration(main={"size":(width,height), "format":"RGB888"},buffer_count=1)
-        self.camera.configure(video_config)
+        if self.pycam:
+            from picamera2 import Picamera2
+            self.camera = Picamera2()
+            width,height = 1024,1024
+            video_config= self.camera.create_still_configuration(main={"size":(width,height), "format":"RGB888"},buffer_count=1)
+            self.camera.configure(video_config)
+        else:
+            self.camera = cv2.VideoCapture(0)
+
 
 
     def Start_Frame(self):
@@ -54,7 +57,10 @@ class MainUI(tk.Tk):
         
 
     def img_thread(self,img):
-        self.server_tk = self.win6.after(0,self.connect_server,img)
+        if self.server_open:
+            self.server_tk = self.after(0,self.connect_server,img)
+        else:
+            pass
     
     def connect_server(self,img):
         self.server = ClientVideoSocket("211.243.232.32",7100)
@@ -248,7 +254,7 @@ class MainUI(tk.Tk):
             self.win5.imageLabel.config(image=resizedImg)
             self.win5.imageLabel.photo = resizedImg
             takePhoto_bt.destroy()
-            tk.Button(self.win5, text="다시 찍기", command=lambda:[AfterCapture(Capture(self.win5))]).place(x=350,y=630,width=100,height=40)    
+            tk.Button(self.win5, text="다시 찍기", command=lambda:[AfterCapture(Capture(self.win5,self.picam))]).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
             tk.Button(self.win5, text="사진 선택", command=lambda:[attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)]).place(x=350,y=680,width=100,height=40)
         
@@ -267,7 +273,7 @@ class MainUI(tk.Tk):
         tk.Button(self.win5, text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=700,y=1200,width=40,height=20)
         browse_bt=tk.Button(self.win5, text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
         browse_bt.place(x=350,y=580,width=100,height=40)
-        takePhoto_bt=tk.Button(self.win5, text="사진 촬영", command=lambda:[AfterCapture(Capture(self.win5))])
+        takePhoto_bt=tk.Button(self.win5, text="사진 촬영", command=lambda:[AfterCapture(Capture(self.win5,self.picam))])
         takePhoto_bt.place(x=350,y=630,width=100,height=40)
         
         self.win5.cameraLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
@@ -279,7 +285,7 @@ class MainUI(tk.Tk):
         # Setting width and height
         self.win5.bind("<Escape>", self.on_escape)
 
-        ShowFeed(self.win5)
+        ShowFeed(self.win5,self.picam)
     
     
     

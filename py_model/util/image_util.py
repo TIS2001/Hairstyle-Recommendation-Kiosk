@@ -6,22 +6,26 @@ import numpy as np
 import pybase64 as base64
 import io
 
-def Capture(win):
-    frame = win.cap.capture_array(name="main")
-    # frame = cv2.flip(frame, 1)
-    frame = cv2.flip(frame, 0)
+def Capture(win,picam):
+    if picam:   
+        frame = win.cap.capture_array(name="main")
+        frame = cv2.flip(frame, 0)
+    else:
+        _,frame = win.cap.read()
+        frame = cv2.flip(frame, 1)
     return frame
 
 
-def ShowFeed(win):
+def ShowFeed(win,picam):
     # Capturing frame by frame
-    frame = win.cap.capture_array(name="main")
-    # Flipping the frame vertically
-    frame = cv2.flip(frame, 0)
-    # frame = cv2.flip(frame, 1)
-    # Displaying date and time on the feed
-    # cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
-    # Changing the frame color from BGR to RGB
+    if picam:
+        frame = win.cap.capture_array(name="main")
+        frame = cv2.flip(frame, 0)
+
+    else:
+        _,frame = win.cap.read()
+        frame = cv2.flip(frame, 1)
+    
     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     resized_frame = cv2.resize(cv2image, (512, 512), interpolation=cv2.INTER_AREA)
     # Creating an image memory from the above frame exporting array interface
@@ -35,7 +39,7 @@ def ShowFeed(win):
         # Calling the function after 10 milliseconds
         # win.cameraLabel.after(10, lambda:ShowFeed(win,cam))
 
-    win.cameraLabel.after(10, lambda:ShowFeed(win))
+    win.cameraLabel.after(10, lambda:ShowFeed(win,picam))
     # Configuring the label to display the frame
 
     # Displaying messagebox
@@ -53,6 +57,7 @@ def imageBrowse(bucket,name):
     
     
 def attach_photo(bucket,name, image):
+    
     if image:
         # 이미지를 Firebase Storage에 업로드
         imgByteArr = io.BytesIO()
