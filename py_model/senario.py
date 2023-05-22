@@ -11,7 +11,7 @@ from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
-
+from picamera2 import Picamera2
 from threading import Thread
 
 
@@ -24,21 +24,28 @@ class MainUI(tk.Tk):
         self.title("Princess_maker")
         self.Frame_init()
         self.mainloop()
-        
     #1. 첫번째 페이지- 시작하기
     def Frame_init(self):
+        self.camera_init()
         self.Start_Frame()
         self.open_win1()
         self.open_win2()
         self.open_win3()
         self.open_win4()
-        self.open_win5()
+        # self.open_win5()
         # self.open_win6()
         # self.open_win11()
         self.open_win12()
         # self.open_win13()
         self.StartFrame.tkraise()
     
+    def camera_init(self):
+        self.camera = Picamera2()
+        width,height = 1024,1024
+        video_config= self.camera.create_still_configuration(main={"size":(width,height), "format":"RGB888"},buffer_count=1)
+        self.camera.configure(video_config)
+
+
     def Start_Frame(self):
         self.StartFrame = tk.Frame(self, relief="flat",bg="white")
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
@@ -225,11 +232,10 @@ class MainUI(tk.Tk):
             
         tk.Button(self.win4, text="뒤로가기", command=lambda:[self.win3.tkraise()]).pack(padx=10,pady=10, side="top", anchor="ne")
         tk.Button(self.win4, text="바로 예약하기", width=15, height=5, command=lambda:[baro(),self.win12.tkraise()]).pack(pady=10)
-        tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.win5.tkraise()]).pack(pady=10)
+        tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()]).pack(pady=10)
 
     #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
     def open_win5(self):
-
         self.win5 = tk.Frame(self, relief="flat",bg="white")
         self.win5.place(x=0,y=0,width=800,height=1280)
         self.win5.bind("<Escape>", self.on_escape)
@@ -269,12 +275,8 @@ class MainUI(tk.Tk):
         self.win5.imageLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         self.win5.imageLabel.place(x=300,y=700)
         # Creating object of class VideoCapture with webcam index
-        self.win5.cap = cv2.VideoCapture(0)
-
+        self.win5.cap = self.camera
         # Setting width and height
-        width, height =512, 512
-        self.win5.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.win5.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.win5.bind("<Escape>", self.on_escape)
 
         ShowFeed(self.win5)
@@ -525,9 +527,9 @@ class MainUI(tk.Tk):
         label.image = photo  # 이미지 객체 유지
         label.grid(row=2, column=1)
 
-        tk.Button(self.win11, text="뒤로가기", command=lambda:[self.win6.tkriase()]).grid(row=0,column=3)
-        tk.Button(self.win11, text="다시 찍기", command=lambda:[self.win5.tkriase()]).grid(row=3,column=1)
-        tk.Button(self.win11, text="헤어스타일 재선택", command=lambda:[self.win6.tkriase()]).grid(row=4,column=1)
+        tk.Button(self.win11, text="뒤로가기", command=lambda:[self.win6.tkraise()]).grid(row=0,column=3)
+        tk.Button(self.win11, text="다시 찍기", command=lambda:[self.win5.tkraise()]).grid(row=3,column=1)
+        tk.Button(self.win11, text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).grid(row=4,column=1)
         tk.Button(self.win11, text="예약하기", command=lambda:[self.win12.tkrais()]).grid(row=5,column=1)
         
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
