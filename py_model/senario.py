@@ -235,6 +235,7 @@ class MainUI(tk.Tk):
         # 바로 예약
         def baro():
             self.isBaro=True
+            # print(self.isBaro)
             
         tk.Button(self.win4, text="뒤로가기", command=lambda:[self.win3.tkraise()]).pack(padx=10,pady=10, side="top", anchor="ne")
         tk.Button(self.win4, text="바로 예약하기", width=15, height=5, command=lambda:[baro(),self.win12.tkraise()]).pack(pady=10)
@@ -536,19 +537,108 @@ class MainUI(tk.Tk):
         tk.Button(self.win11, text="뒤로가기", command=lambda:[self.win6.tkraise()]).grid(row=0,column=3)
         tk.Button(self.win11, text="다시 찍기", command=lambda:[self.win5.tkraise()]).grid(row=3,column=1)
         tk.Button(self.win11, text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).grid(row=4,column=1)
-        tk.Button(self.win11, text="예약하기", command=lambda:[self.win12.tkrais()]).grid(row=5,column=1)
+        tk.Button(self.win11, text="예약하기", command=lambda:[self.win12.tkraise()]).grid(row=5,column=1)
         
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
     def open_win12(self):
         self.win12 = tk.Frame(self, relief="flat",bg="white")
         self.win12.place(x=0,y=0,width=800,height=1280)
         self.win12.bind("<Escape>", self.on_escape)
+        self.reservation_buttons = []
+        times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
+        
+        def download_image(filename):
+            bucket = storage.bucket()
+            blob = bucket.blob("stylist/" + filename)
+            image_path = "temp.jpg"  # 다운로드 받은 이미지를 임시로 저장할 경로
+            blob.download_to_filename(image_path)
+            return image_path
+        
+        def show_image(frame, filename):
+            # 이미지를 다운로드하여 해당 프레임에 출력하는 함수
+            image_path = download_image(filename)
+            img = Image.open(image_path)
+            img = img.resize((132, 170), Image.LANCZOS)
+            img_tk = ImageTk.PhotoImage(img)
+            label = tk.Label(frame, image=img_tk)
+            label.image = img_tk
+            label.pack()
+            
+        # def clear_image():
+        #     label.configure(image="")
+        #     label.image = ""
+        
+        def toggle_reservation(index):
+            # 버튼의 선택 상태를 변경하는 함수
+            if self.reservation_buttons[index]["relief"] == "sunken":
+                self.reservation_buttons[index]["relief"] = "raised"
+            else:
+                self.reservation_buttons[index]["relief"] = "sunken"
+                
+        def make_reservation():
+            # 예약 정보 저장 및 Firestore에 전달하는 함수
+            reservation_time = []
+            for index, btn in enumerate(self.reservation_buttons):
+                if btn["relief"] == "sunken":
+                    reservation_time.append(times[index])   
+            # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
+            data = {
+                "reservation_time": reservation_time,
+                # 추가 필드 정보 입력
+            }
+            # Firestore에 예약 정보 저장
+            hairdresser_ref = self.db.collection("hairdresser").document("김이발")
+            hairdresser_ref.set(data)
+            print("예약이 완료되었습니다.")       
+        
+        # Firestore에서 예약된 시간 읽어오기
+        hairdresser_ref = self.db.collection("hairdresser").document("김이발")
+        doc = hairdresser_ref.get()
+        if doc.exists:
+            reservation_time = doc.get("reservation_time")
+            saved_times = reservation_time if isinstance(reservation_time, list) else []
+        else:
+            saved_times = []        
+            
+        tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback()).place(x=700, y=25)
+        frame1_1 = tk.LabelFrame(self.win12, text="김이발", width=200, height=200)
+        frame1_1.place(x=75, y=75)
+        filename1_1 = "이승현님 여권 .jpg"
+        show_image(frame1_1, filename1_1)
+        
+        frame1_2 = tk.Frame(self.win12, width=400, height=200, bd=5, bg="blue")
+        frame1_2.place(x=300, y=75)
+        for index, time in enumerate(times):
+            btn_state = "normal"
+            if time in saved_times:
+                btn_state = "active"
 
-        tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback()).pack(pady=10)
-        tk.Button(self.win12, text="예약하기", command=lambda:[self.open_win13(),self.win13.tkraise()]).pack(pady=10)
+            btn = tk.Button(frame1_2, text=time, relief="flat", state=btn_state,
+                            command=lambda i=index: toggle_reservation(i))
+            btn.pack()
+            self.reservation_buttons.append(btn)
+        
+        frame2_1 = tk.LabelFrame(self.win12, text="최이발", width=200, height=200)
+        frame2_1.place(x=75, y=300)
+        filename2_1 = "이승현님 여권 .jpg"
+        show_image(frame2_1, filename2_1)
+        
+        frame2_2 = tk.Frame(self.win12, width=400, height=200, bd=5, bg="blue")
+        frame2_2.place(x=300, y=300)
+        
+        frame3_1 = tk.LabelFrame(self.win12, text="동이발", width=200, height=200)
+        frame3_1.place(x=75, y=525)
+        filename3_1 = "이승현님 여권 .jpg"
+        show_image(frame3_1, filename3_1)
+        
+        frame3_2 = tk.Frame(self.win12, width=400, height=200, bd=5, bg="blue")
+        frame3_2.place(x=300, y=525)
+        
+        # 예약하기 버튼 생성
+        tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(), self.open_win13(),self.win13.tkraise()]).place(x=375, y=750)
 
     def BaroGoback(self):
-        # print(isBaro)
+        # print(self.isBaro)
         if(self.isBaro==True):
             # print("뒤로가기")
             return lambda:[self.win4.tkraise()]
@@ -561,8 +651,8 @@ class MainUI(tk.Tk):
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
         tk.Label(self.win13, text=self.user_info["name"] + "님 예약이 완료되었습니다.").pack(pady=10)
+    
     # esc 누르면 화면이 꺼지게 만드는 기능
-
     def on_escape(self,event=None):
         print("escaped")
         self.destroy()
