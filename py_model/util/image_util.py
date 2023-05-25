@@ -51,6 +51,7 @@ def ShowFeed(win,picam):
 def imageBrowse(bucket,name):
     # Firebase Storage에서 사진 다운로드
     blob = bucket.blob(f'customers/{name}_photo.jpg')
+
     str = blob.download_as_bytes()
     return Image.open(io.BytesIO(str))
     # Configuring the label to display the frame
