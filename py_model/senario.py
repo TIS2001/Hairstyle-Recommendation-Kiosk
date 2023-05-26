@@ -545,8 +545,61 @@ class MainUI(tk.Tk):
         self.win12.place(x=0,y=0,width=800,height=1280)
         self.win12.bind("<Escape>", self.on_escape)
         self.reservation_buttons = []
+        class designer():
+            def __init__(self,name,win,y):
+                self.name=name
+                self.reservation_buttons = list()
+                self.frame1 = tk.LabelFrame(win, text=name, width=200, height=200)
+                self.frame1.place(x=75, y=y)
+                self.frame2 = tk.Frame(win, width=400, height=200)
+                self.frame2.place(x=300, y=y)
+            def toggle_reservation(self,index):
+                # 버튼의 선택 상태를 변경하는 함수
+                if self.reservation_buttons[index]["relief"] == "sunken":
+                    self.reservation_buttons[index]["relief"] = "raised"
+                else:
+                    self.reservation_buttons[index]["relief"] = "sunken"    
+            
+            def read_reservation(self,db):
+            # Firestore에서 예약된 시간 읽어오기
+                hairdresser_ref = db.collection("hairdresser").document(self.name)
+                doc = hairdresser_ref.get()
+                if doc.exists:
+                    reservation_time = doc.get("reservation_time")
+                    saved_times = reservation_time if isinstance(reservation_time, list) else []
+                else:
+                    saved_times = []        
+
+                for index, time in enumerate(times):
+                    btn_state = tk.NORMAL
+                    if time in saved_times:
+                        btn_state = tk.DISABLED
+                
+                    row = index // 4  # 버튼이 배치될 행 인덱스
+                    col = index % 4  # 버튼이 배치될 열 인덱스
+                    
+                    btn = tk.Button(self.frame2, text=time, state=btn_state, command=lambda i=index: self.toggle_reservation(i))
+                    btn.grid(row=row, column=col, padx=10, pady=30)
+                    self.reservation_buttons.append(btn) 
         times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
         
+        def make_reservation(designer_list):
+                # 예약 정보 저장 및 Firestore에 전달하는 함수
+                reservation_time = []
+                for designer in designer_list:
+                    for index, btn in enumerate(designer.reservation_buttons):
+                        if btn["relief"] == "sunken":
+                            reservation_time.append(times[index])   
+                # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
+                    data = {
+                        "reservation_time": reservation_time,
+                        # 추가 필드 정보 입력
+                    }
+                    # Firestore에 예약 정보 저장
+                    hairdresser_ref = self.db.collection("hairdresser").document(designer.name)
+                    hairdresser_ref.set(data)
+                print("예약이 완료되었습니다.")   
+                
         def download_image(filename):
             bucket = storage.bucket()
             blob = bucket.blob("stylist/" + filename)
@@ -568,74 +621,29 @@ class MainUI(tk.Tk):
         #     label.configure(image="")
         #     label.image = ""
         
-        def toggle_reservation(index):
-            # 버튼의 선택 상태를 변경하는 함수
-            if self.reservation_buttons[index]["relief"] == "sunken":
-                self.reservation_buttons[index]["relief"] = "raised"
-            else:
-                self.reservation_buttons[index]["relief"] = "sunken"
-                
-        def make_reservation():
-            # 예약 정보 저장 및 Firestore에 전달하는 함수
-            reservation_time = []
-            for index, btn in enumerate(self.reservation_buttons):
-                if btn["relief"] == "sunken":
-                    reservation_time.append(times[index])   
-            # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
-            data = {
-                "reservation_time": reservation_time,
-                # 추가 필드 정보 입력
-            }
-            # Firestore에 예약 정보 저장
-            hairdresser_ref = self.db.collection("hairdresser").document("김이발")
-            hairdresser_ref.set(data)
-            print("예약이 완료되었습니다.")       
         
-        # Firestore에서 예약된 시간 읽어오기
-        hairdresser_ref = self.db.collection("hairdresser").document("김이발")
-        doc = hairdresser_ref.get()
-        if doc.exists:
-            reservation_time = doc.get("reservation_time")
-            saved_times = reservation_time if isinstance(reservation_time, list) else []
-        else:
-            saved_times = []        
             
         tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback()).place(x=700, y=25)
-        frame1_1 = tk.LabelFrame(self.win12, text="김이발", width=200, height=200)
-        frame1_1.place(x=75, y=75)
-        filename1_1 = "이승현님 여권 .jpg"
-        show_image(frame1_1, filename1_1)
         
-        frame1_2 = tk.Frame(self.win12, width=400, height=200, bd=5, bg="blue")
-        frame1_2.place(x=300, y=75)
-        for index, time in enumerate(times):
-            btn_state = "normal"
-            if time in saved_times:
-                btn_state = "active"
+        designer1 = designer("김이발",self.win12, y=75)
+        filename1 = "이승현님 여권 .jpg"
+        show_image(designer1.frame1, filename1)  
+        designer1.read_reservation(self.db)
 
-            btn = tk.Button(frame1_2, text=time, relief="flat", state=btn_state,
-                            command=lambda i=index: toggle_reservation(i))
-            btn.pack()
-            self.reservation_buttons.append(btn)
+        designer2 = designer("최이발", self.win12, y=300)
+        filename2 = "이승현님 여권 .jpg"
+        show_image(designer2.frame1, filename2)
+        designer2.read_reservation(self.db)
         
-        frame2_1 = tk.LabelFrame(self.win12, text="최이발", width=200, height=200)
-        frame2_1.place(x=75, y=300)
-        filename2_1 = "이승현님 여권 .jpg"
-        show_image(frame2_1, filename2_1)
+        designer3 = designer("동이발", self.win12, y=525)
+        filename3 = "이승현님 여권 .jpg"
+        show_image(designer3.frame1, filename3)
+        designer3.read_reservation(self.db)
         
-        frame2_2 = tk.Frame(self.win12, width=400, height=200, bd=5, bg="blue")
-        frame2_2.place(x=300, y=300)
-        
-        frame3_1 = tk.LabelFrame(self.win12, text="동이발", width=200, height=200)
-        frame3_1.place(x=75, y=525)
-        filename3_1 = "이승현님 여권 .jpg"
-        show_image(frame3_1, filename3_1)
-        
-        frame3_2 = tk.Frame(self.win12, width=400, height=200, bd=5, bg="blue")
-        frame3_2.place(x=300, y=525)
-        
+        # open_win 함수에서 커스터마이징가능하게 만들어야함
+        self.designer_list = [designer1,designer2,designer3]
         # 예약하기 버튼 생성
-        tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(), self.open_win13(),self.win13.tkraise()]).place(x=375, y=750)
+        tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(self.designer_list), self.open_win13(),self.win13.tkraise()]).place(x=375, y=750)
 
     def BaroGoback(self):
         # print(self.isBaro)
