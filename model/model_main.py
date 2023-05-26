@@ -134,7 +134,7 @@ class Img_model:
         parser.add_argument('--l2_lambda', type=float, default=1.0, help='L2 loss multiplier factor')
         parser.add_argument('--p_norm_lambda', type=float, default=0.001, help='P-norm Regularizer multiplier factor')
         parser.add_argument('--l_F_lambda', type=float, default=0.1, help='L_F loss multiplier factor')
-        parser.add_argument('--W_steps', type=int, default=200, help='Number of W space optimization steps')
+        parser.add_argument('--W_steps', type=int, default=500, help='Number of W space optimization steps')
         parser.add_argument('--FS_steps', type=int, default=200, help='Number of W space optimization steps')
 
         # Alignment loss options

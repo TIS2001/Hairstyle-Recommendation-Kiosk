@@ -1,9 +1,14 @@
 model/pretrained_models
 model/output/
 *.pyc
-*cpython-38.pyc
+*.cpython-38
 *.png
+*.jpg
 *.json
 py_model/dat/shape_predictor_81_face_landmarks.dat
+*.dat
 py_model/util/test.jpg
 py_model/UI/photos/
+model/models/__pycache__/Alignment.cpython-38.pyc
+model/models/face_parsing/__pycache__/model.cpython-38.pyc
+py_model/multitest.py

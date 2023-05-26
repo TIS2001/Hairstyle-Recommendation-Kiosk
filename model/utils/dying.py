@@ -25,18 +25,19 @@ def dying(img,seg, color):
 
 
     #background 
-    H = np.where(img_seg_bag==1,0,H)
-    S = np.where(img_seg_bag==1,0,S)
-    V = np.where(img_seg_bag==1,255,V)
+
     
-    hsvImage = cv2.merge( [ H,S,V ] )
-    img = np.uint8(hsvImage)
-    img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
+    # hsvImage = cv2.merge( [ H,S,V ] )
+    # img = np.uint8(hsvImage)
+    # img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
     #dying
     hue_code = color
     H = np.where(img_seg_==1,hue_code[0]/2,H)
     S = np.where(img_seg_==1,hue_code[1]/100*255,S)
     V = np.where(img_seg_==1,hue_code[2]/100*255,V)
+    H = np.where(img_seg_bag==1,0,H)
+    S = np.where(img_seg_bag==1,0,S)
+    V = np.where(img_seg_bag==1,255,V)
     
     hsvImage = cv2.merge( [ H,S,V ] )
 
