@@ -29,12 +29,18 @@ class MainUI(tk.Tk):
         self.dict2 = {}
         self.num = 1
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame1.place(x=50, y=100)
+        self.frame1.place(x=50, y=50)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame2.place(x=50, y=500)
+        self.frame2.place(x=50, y=250)
         self.frame3 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame3.place(x=50, y=800)
-        self.make_btn(self.frame2, [os.path.join("UI/hairstyles_men", f) for f in os.listdir("UI/hairstyles_men") if f.endswith(".png")])
+        self.frame3.place(x=50, y=450)
+        self.frame4 = tk.Frame(self.win6, bg='#dddddd')
+        self.frame4.place(x=50, y=650)
+        self.frame5 = tk.Frame(self.win6, bg='#dddddd')
+        self.frame5.place(x=50, y=850)
+        self.make_btn(self.frame3, [os.path.join("UI/colors/전체", f) for f in os.listdir("UI/colors/전체") if f.endswith(".JPG")])
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")])
+        self.make_btn(self.frame5, [os.path.join("UI/hairstyles_men", f) for f in os.listdir("UI/hairstyles_men") if f.endswith(".png")])
         self.select_personal()
 
     def make_btn(self, frame, img_path):
@@ -61,9 +67,9 @@ class MainUI(tk.Tk):
     
     def toggle_border(self, button):
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
-        if parent_frame == str(self.frame2):  # 부모 프레임이 frame2인 경우
+        if parent_frame == str(self.frame2) or parent_frame == str(self.frame3):  # 부모 프레임이 frame4인 경우
             dict_var = self.dict1
-        elif parent_frame == str(self.frame3):  # 부모 프레임이 frame3인 경우
+        elif parent_frame == str(self.frame4) or parent_frame == str(self.frame5):  # 부모 프레임이 frame2인 경우
             dict_var = self.dict2
         else:
             dict_var = {}
@@ -84,19 +90,15 @@ class MainUI(tk.Tk):
         selected_image = self.var.get()
         if selected_image == 1:
             dir_path = "UI/colors/봄웜"
-            print("봄웜")
         elif selected_image == 2:
             dir_path = "UI/colors/여쿨"
-            print("여쿨")
         elif selected_image == 3:
             dir_path = "UI/colors/갈웜"
-            print("갈웜")
         elif selected_image == 4:
             dir_path = "UI/colors/겨쿨"
-            print("겨쿨")
         
-        self.make_btn(self.frame3, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".JPG")])
-        self.dict2={}
+        self.make_btn(self.frame2, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".JPG")])
+        self.dict1={}
     
    
 
