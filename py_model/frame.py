@@ -33,15 +33,30 @@ class MainUI(tk.Tk):
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
         self.frame2.place(x=50, y=250)
         self.frame3 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame3.place(x=50, y=450)
+        self.frame3.place(x=10, y=450,width=780)
         self.frame4 = tk.Frame(self.win6, bg='#dddddd')
         self.frame4.place(x=50, y=650)
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame5.place(x=50, y=850)
+        self.frame5.place(x=10, y=850,width=780)
         self.make_btn(self.frame3, [os.path.join("UI/colors/전체", f) for f in os.listdir("UI/colors/전체") if f.endswith(".JPG")])
         self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")])
         self.make_btn(self.frame5, [os.path.join("UI/hairstyles_men", f) for f in os.listdir("UI/hairstyles_men") if f.endswith(".png")])
         self.select_personal()
+        def forward_image():
+            pass
+        def next_image():
+            pass
+        tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
+        # tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택", command=self.progress_bar).grid(row=17, column=3)
+        tk.Button(self.frame3, font=("Arial",15), text="◀", command=forward_image).grid(row=1, column=0, padx=5)
+        tk.Button(self.frame3, font=("Arial",15), text="▶", command=next_image).grid(row=1, column=5, padx=5)
+        tk.Button(self.frame5, font=("Arial",15), text="◀", command=forward_image).grid(row=1, column=0, padx=5)
+        tk.Button(self.frame5, font=("Arial",15), text="▶", command=next_image).grid(row=1, column=5, padx=5)
+        # tk.Label(self.win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.',height=1).grid(row=2, column=2,columnspan=3)
+        # tk.Label(self.win6,text='얼굴형에 따른 추천 헤어스타일',height=1).grid(row=5, column=2,columnspan=3)
+        # tk.Label(self.win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
+        # tk.Label(self.win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
+        # tk.Label(self.win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
 
     def make_btn(self, frame, img_path):
         self.clear_frame(frame)
@@ -58,12 +73,12 @@ class MainUI(tk.Tk):
             buttons.append(button)
             
             button.configure(command=lambda btn=button: self.toggle_border(btn))
-            button.grid(row=1, column=i, padx=5)
+            button.grid(row=1, column=i+1, padx=5)
             
             self.img_list.append(photo_img)
             img_name.append(img_path[i].split('/')[-1].split('.')[0])
             label = tk.Label(frame, text=img_name[i])
-            label.grid(row=2, column=i, padx=5)
+            label.grid(row=2, column=i+1, padx=5)
     
     def toggle_border(self, button):
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
