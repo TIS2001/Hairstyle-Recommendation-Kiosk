@@ -161,28 +161,32 @@ class MainUI(tk.Tk):
     #         dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
     def navi_click(self,frame,dir):
-        page = 0
-        dict={}            
-        dir_path=""
-        format=""
+        # # page = 0
+        # dict={}            
+        # dir_path=""
+        # format=""
         if frame == self.frame3 :  
+            if dir=="prev":
+                self.page1-=1
+            elif dir=="next":
+                self.page1+=1
             page = self.page1
             dict=self.dict1
             dir_path="UI/colors/전체"
             format=".JPG"
         elif frame == self.frame5 :  
-            print(frame)
+            if dir=="prev":
+                self.page2-=1
+            elif dir=="next":
+                self.page2+=1            
             page = self.page2
             dict=self.dict2
             dir_path="UI/hairstyles"
             format=".png"
-        if dir=="prev":
-            page-=1
-        elif dir=="next":
-            page+=1
+        
         if page>=0:
             self.make_btn(frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
-
+            print(f"frmae={frame},page: {page}")
         if page in dict.keys():           
             dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
@@ -211,17 +215,19 @@ class MainUI(tk.Tk):
             photo_img = ImageTk.PhotoImage(img)
             
             button = tk.Button(frame, image=photo_img)
+            # print(button)
             buttons.append(button)
             
             button.configure(command=lambda btn=button: self.toggle_border(btn))
             button.grid(row=1, column=i+1, padx=5)
             
             self.img_list.append(photo_img)
-            img_name.append(img_path[i].split('/')[-1].split('.')[0])
+            img_name.append(img_path[idx].split('/')[-1].split('.')[0])
             label = tk.Label(frame, text=img_name[i])
             label.grid(row=2, column=i+1, padx=5)
     
     def toggle_border(self, button):
+        # print(button)
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
         if parent_frame == str(self.frame2) or parent_frame == str(self.frame3): 
             dict_var = self.dict1
