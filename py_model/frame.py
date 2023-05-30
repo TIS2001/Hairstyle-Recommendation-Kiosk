@@ -27,7 +27,8 @@ class MainUI(tk.Tk):
         self.win6.place(x=0, y=0, width=800, height=1280)
         self.dict1 = {}
         self.dict2 = {}
-        self.num = 1
+        self.page1 = 1
+        self.page2=1
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
         self.frame1.place(x=50, y=50)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
@@ -38,33 +39,137 @@ class MainUI(tk.Tk):
         self.frame4.place(x=50, y=650)
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=850,width=780)
-        self.make_btn(self.frame3, [os.path.join("UI/colors/전체", f) for f in os.listdir("UI/colors/전체") if f.endswith(".JPG")])
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")])
-        self.make_btn(self.frame5, [os.path.join("UI/hairstyles_men", f) for f in os.listdir("UI/hairstyles_men") if f.endswith(".png")])
+        self.make_btn(self.frame3, [os.path.join("UI/colors/전체", f) for f in os.listdir("UI/colors/전체") if f.endswith(".JPG")],0)
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
+        self.make_btn(self.frame5, [os.path.join("UI/hairstyles_men", f) for f in os.listdir("UI/hairstyles_men") if f.endswith(".png")],0)
         self.select_personal()
-        def forward_image():
-            pass
-        def next_image():
-            pass
+
+        # def forward_image(self,btn):
+        #     page = 0
+        #     dict={}            
+        #     dir_path=""
+        #     format=""
+        #     parent_frame = btn.winfo_parent()  # button의 부모 프레임을 찾음
+        #     if parent_frame == str(self.frame3) :  
+        #         page = self.page1
+        #         dict=self.dict1
+        #         dir_path="UI/colors/전체"
+        #         format=".JPG"
+        #     elif parent_frame == str(self.frame5) :  
+        #         page = self.page2
+        #         dict=self.dict2
+        #         dir_path="UI/hairstyles"
+        #         format=".png"
+        #     page=page-1
+        #     if page>=0:
+        #        self.make_btn(parent_frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
+
+        #     if page in dict.keys():           
+        #         dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
+        # def next_image(self,frame):
+        #     page = 0
+        #     dict={}            
+        #     dir_path=""
+        #     format=""
+        #     print(frame)
+
+        #     if frame == str(self.frame3) :  
+        #         print(frame)
+        #         page = self.page1
+        #         dict=self.dict1
+        #         dir_path="UI/colors/전체"
+        #         format=".JPG"
+        #     elif frame == str(self.frame5) :  
+        #         print(frame)
+        #         page = self.page2
+        #         dict=self.dict2
+        #         dir_path="UI/hairstyles"
+        #         format=".png"
+        #     page+=1
+        #     if page>=0:
+        #        self.make_btn(frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
+
+        #     if page in dict.keys():           
+        #         dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         # tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택", command=self.progress_bar).grid(row=17, column=3)
-        tk.Button(self.frame3, font=("Arial",15), text="◀", command=forward_image).grid(row=1, column=0, padx=5)
-        tk.Button(self.frame3, font=("Arial",15), text="▶", command=next_image).grid(row=1, column=5, padx=5)
-        tk.Button(self.frame5, font=("Arial",15), text="◀", command=forward_image).grid(row=1, column=0, padx=5)
-        tk.Button(self.frame5, font=("Arial",15), text="▶", command=next_image).grid(row=1, column=5, padx=5)
+        button1 = tk.Button(self.frame3, font=("Arial", 15), text="◀")
+        button1.configure(command=lambda btn=button1: self.forward_image(btn))
+        button1.grid(row=1, column=0, padx=5)
+
+        button2 = tk.Button(self.frame3, font=("Arial", 15), text="▶", command=lambda: self.next_image(self.frame3))
+        button2.grid(row=1, column=5, padx=5)
+
+        button3 = tk.Button(self.frame5, font=("Arial", 15), text="◀", command=lambda: self.forward_image(button3))
+        button3.grid(row=1, column=0, padx=5)
+
+        button4 = tk.Button(self.frame5, font=("Arial", 15), text="▶", command=lambda: self.next_image(self.frame5))
+        button4.grid(row=1, column=5, padx=5)
+
         # tk.Label(self.win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.',height=1).grid(row=2, column=2,columnspan=3)
         # tk.Label(self.win6,text='얼굴형에 따른 추천 헤어스타일',height=1).grid(row=5, column=2,columnspan=3)
         # tk.Label(self.win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
         # tk.Label(self.win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
         # tk.Label(self.win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
 
-    def make_btn(self, frame, img_path):
+    def forward_image(self,btn):
+        page = 0
+        dict={}            
+        dir_path=""
+        format=""
+        parent_frame = btn.winfo_parent()  # button의 부모 프레임을 찾음
+        if parent_frame == str(self.frame3) :  
+            page = self.page1
+            dict=self.dict1
+            dir_path="UI/colors/전체"
+            format=".JPG"
+        elif parent_frame == str(self.frame5) :  
+            page = self.page2
+            dict=self.dict2
+            dir_path="UI/hairstyles"
+            format=".png"
+        page=page-1
+        if page>=0:
+            self.make_btn(parent_frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
+        else:
+            print("처음 페이지 입니다.")
+        if page in dict.keys():           
+            dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
+    def next_image(self,frame):
+        page = 0
+        dict={}            
+        dir_path=""
+        format=""
+        if frame == self.frame3 :  
+            page = self.page1
+            dict=self.dict1
+            dir_path="UI/colors/전체"
+            format=".JPG"
+        elif frame == str(self.frame5) :  
+            print(frame)
+            page = self.page2
+            dict=self.dict2
+            dir_path="UI/hairstyles"
+            format=".png"
+        page+=1
+        if page>=0:
+            self.make_btn(frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
+
+        if page in dict.keys():           
+            dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
+
+
+    def make_btn(self, frame, img_path,page):
         self.clear_frame(frame)
         img_name = []
         img_size = (150, 150)
         buttons = []
         for i in range(4):
-            path = img_path[i]
+            idx=4*page+i
+            path = img_path[idx]
             img = Image.open(path)
             img = img.resize(img_size)
             photo_img = ImageTk.PhotoImage(img)
@@ -82,10 +187,12 @@ class MainUI(tk.Tk):
     
     def toggle_border(self, button):
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
-        if parent_frame == str(self.frame2) or parent_frame == str(self.frame3):  # 부모 프레임이 frame4인 경우
+        if parent_frame == str(self.frame2) or parent_frame == str(self.frame3): 
             dict_var = self.dict1
-        elif parent_frame == str(self.frame4) or parent_frame == str(self.frame5):  # 부모 프레임이 frame2인 경우
+            page=self.page1
+        elif parent_frame == str(self.frame4) or parent_frame == str(self.frame5):  
             dict_var = self.dict2
+            page=self.page2
         else:
             dict_var = {}
         
@@ -99,7 +206,7 @@ class MainUI(tk.Tk):
                 dict_var.clear()
             
             button.config(relief="solid", highlightthickness=2, highlightbackground="red")
-            dict_var[self.num] = button
+            dict_var[page] = button
 
     def personal_cmd(self):
         selected_image = self.var.get()
