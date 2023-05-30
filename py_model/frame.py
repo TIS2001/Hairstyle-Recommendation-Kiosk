@@ -27,8 +27,8 @@ class MainUI(tk.Tk):
         self.win6.place(x=0, y=0, width=800, height=1280)
         self.dict1 = {}
         self.dict2 = {}
-        self.page1 = 1
-        self.page2=1
+        self.page1 = 0
+        self.page2 = 0
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
         self.frame1.place(x=50, y=50)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
@@ -186,7 +186,7 @@ class MainUI(tk.Tk):
         
         if page>=0:
             self.make_btn(frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
-            print(f"frmae={frame},page: {page}")
+            # print(f"frmae={frame},page: {page}")
         if page in dict.keys():           
             dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
@@ -194,38 +194,49 @@ class MainUI(tk.Tk):
         self.clear_frame(frame)
         img_name = []
         img_size = (150, 150)
-        buttons = []
+        buttons = []                
+
+        for i in range(4):
+            idx=4*page+i
+            # if False:
+            if idx==0 and (frame == self.frame3 or frame == self.frame5):
+                button = tk.Button(frame, text="X")                
+                button.configure(command=lambda btn=button: self.toggle_border(btn))
+                button.grid(row=1, column=1, padx=5)
+                img_name.append("적용하지 않음")
+
+            else:
+                if idx==0 and (frame == self.frame3 or frame == self.frame5):
+                    continue
+                path = img_path[idx]
+                img = Image.open(path)
+                img = img.resize(img_size)
+                photo_img = ImageTk.PhotoImage(img)
+                button = tk.Button(frame, image=photo_img)
+                buttons.append(button)
+                self.img_list.append(photo_img)
+                img_name.append(img_path[idx].split('/')[-1].split('.')[0])
+
+                button.configure(command=lambda btn=button: self.toggle_border(btn))
+                button.grid(row=1, column=i+1, padx=5)
+            label = tk.Label(frame, text=img_name[i])
+            label.grid(row=2, column=i+1, padx=5)
+
         if frame == self.frame3 :  
             self.button1 = tk.Button(self.frame3, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(self.frame3,direction))
             self.button1.grid(row=1, column=0, padx=5)
 
             button2 = tk.Button(self.frame3, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(self.frame3,direction))
-            button2.grid(row=1, column=5, padx=5)        
+            button2.grid(row=1, column=5, padx=5)
+
         elif frame == self.frame5 :  
             button3 = tk.Button(self.frame5, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(self.frame5,direction))
             button3.grid(row=1, column=0, padx=5)
 
             button4 = tk.Button(self.frame5, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(self.frame5,direction))
-            button4.grid(row=1, column=5, padx=5)            
-        for i in range(4):
-            idx=4*page+i
-            path = img_path[idx]
-            img = Image.open(path)
-            img = img.resize(img_size)
-            photo_img = ImageTk.PhotoImage(img)
-            
-            button = tk.Button(frame, image=photo_img)
-            # print(button)
-            buttons.append(button)
-            
-            button.configure(command=lambda btn=button: self.toggle_border(btn))
-            button.grid(row=1, column=i+1, padx=5)
-            
-            self.img_list.append(photo_img)
-            img_name.append(img_path[idx].split('/')[-1].split('.')[0])
-            label = tk.Label(frame, text=img_name[i])
-            label.grid(row=2, column=i+1, padx=5)
-    
+            button4.grid(row=1, column=5, padx=5) 
+
+
     def toggle_border(self, button):
         # print(button)
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
@@ -263,8 +274,6 @@ class MainUI(tk.Tk):
         
         self.make_btn(self.frame2, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".JPG")],0)
         self.dict1={}
-    
-   
 
 
     def select_personal(self):
