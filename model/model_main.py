@@ -51,16 +51,13 @@ class Img_model:
         # ii2s.invert_images_in_W(img)
 
         # Step 2 : Hairstyle transfer using the above embedded vector or tensor
-        res_img = self.align.align_images(img, im_path2, "fidelity", align_more_region=False, smooth=5) ## res type PIL
-
-        return res_img
-
-    def dying_main(self,img):
+        
+    def dying_main(self,img,color):
         img_torch = self.align.preprocess_PILImg(img, is_downsampled = True) ## res_img torch
         _, seg_target = self.align.get_img_and_seg_from_path(img_torch)
 
         img = np.array(img)
-        res_img = dying(img,seg_target.squeeze().cpu(),[25,60,40])
+        res_img = dying(img,seg_target.squeeze().cpu(),color)
         # res_img=Image.fromarray(res_img)
         return res_img
     

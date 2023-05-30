@@ -127,7 +127,7 @@ class face_predicter:
                             PIL.Image.BILINEAR)
         if output_size < transform_size:
             img = img.resize((output_size, output_size), PIL.Image.LANCZOS)
-        img.save('align1.png')
+        # img.save('align1.png')
         return img
     
     def run(self,img):
