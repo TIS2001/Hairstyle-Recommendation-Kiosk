@@ -11,20 +11,20 @@ from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
-from threading import Thread
-
+from multiprocessing import Process, Pipe
 
 class MainUI(tk.Tk):
-    def __init__(self,picam=False,server_open=False):
+    def __init__(self,p,picam=False):
         tk.Tk.__init__(self)
-        self.pycam = picam
-        self.server_open=server_open
+        self.picam = picam
+        self.p = p
         self.firebase_init()
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
         self.Frame_init()
         self.mainloop()
+        
         
     #1. 첫번째 페이지- 시작하기
     def Frame_init(self):
@@ -38,7 +38,7 @@ class MainUI(tk.Tk):
         self.StartFrame.tkraise()
     
     def camera_init(self):
-        if self.pycam:
+        if self.picam:
             from picamera2 import Picamera2
             self.camera = Picamera2()
             width,height = 1024,1024
@@ -54,20 +54,6 @@ class MainUI(tk.Tk):
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
         tk.Button(self.StartFrame, text="시작하기", width=16, height=7, command=lambda:[self.win1.tkraise()]).pack(anchor="center",pady=200)
         self.StartFrame.bind("<Escape>", self.on_escape)
-        
-
-    def img_thread(self,img):
-        if self.server_open:
-            self.server_tk = self.after(0,self.connect_server,img)
-        else:
-            pass
-    
-    def connect_server(self,img):
-        self.server = ClientVideoSocket("211.243.232.32",7100)
-        self.server.connectServer()
-        self.server.sendImages(img)
-        self.img = self.server.receiveImages()
-        # self.img.save("test.png")
 
         
     def firebase_init(self):
@@ -238,8 +224,10 @@ class MainUI(tk.Tk):
             
         tk.Button(self.win4, text="뒤로가기", command=lambda:[self.win3.tkraise()]).pack(padx=10,pady=10, side="top", anchor="ne")
         tk.Button(self.win4, text="바로 예약하기", width=15, height=5, command=lambda:[baro(),self.win12.tkraise()]).pack(pady=10)
-        tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()]).pack(pady=10)
-
+        if self.picam:
+            tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()]).pack(pady=10)
+        else:
+            tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.open_win5(),self.win5.tkraise()]).pack(pady=10)
     #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
     def open_win5(self):
         self.win5 = tk.Frame(self, relief="flat",bg="white")
@@ -254,9 +242,10 @@ class MainUI(tk.Tk):
             self.win5.imageLabel.config(image=resizedImg)
             self.win5.imageLabel.photo = resizedImg
             takePhoto_bt.destroy()
+            image_name = f"{self.user_info['name']}_photo.jpg"
             tk.Button(self.win5, text="다시 찍기", command=lambda:[AfterCapture(Capture(self.win5,self.picam))]).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            tk.Button(self.win5, text="사진 선택", command=lambda:[attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)]).place(x=350,y=680,width=100,height=40)
+            tk.Button(self.win5, text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)]).place(x=350,y=680,width=100,height=40)
         
         def AfterBrowse(image):
             frame = np.array(image)
@@ -266,8 +255,9 @@ class MainUI(tk.Tk):
             # Keeping a reference
             self.win5.imageLabel.photo = saved_image
             browse_bt.destroy()
+            image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            tk.Button(self.win5, text="사진 선택", command=lambda:[attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)]).place(x=350,y=580,width=100,height=40)
+            tk.Button(self.win5, text="사진 선택", command=lambda:[self.p.send(0),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise()]).place(x=350,y=580,width=100,height=40)
 
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
         tk.Button(self.win5, text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=700,y=1200,width=40,height=20)
@@ -335,7 +325,7 @@ class MainUI(tk.Tk):
             p_var = tk.DoubleVar()
             progress_bar = ttk.Progressbar(frame_progress, maximum=100, variable=p_var)
             progress_bar.pack(fill="x", padx=5, pady=5, ipady=5)
-
+            self.p.send((self.style,self.color))
             for i in range(100):
                 time.sleep(0.005)
                 p_var.set(i)
@@ -353,66 +343,69 @@ class MainUI(tk.Tk):
                     button_dict9[int_keys[0]].config(relief="flat", highlightthickness=0)         
                     button_dict9 = {}
                 button.config(relief="solid", highlightthickness=2, highlightbackground="red")
-                button_dict9[num9] = button
+                button_dict9[self.num9] = button
+                self.style = str(button.cget("text"))
 
         def forward_image9():
-            global num9,button_dict9
-            num9 = num9 - 1
+            global button_dict9
+            self.num9 = self.num9 - 1
             for j in range(4):
-                idx = num9 * 4 + j
+                idx = num9 * 4
                 if (idx>=0 and idx < len(img_list9) and idx < len(img_name9)):
                     button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
                     name_list9[1][j].configure(text=img_name9[idx])
-            if num9 in button_dict9.keys():           
-                button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
+            if self.num9 in button_dict9.keys():           
+                button_dict9[self.num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
         def next_image9():
-            global num9,button_dict9
-            num9 = num9 + 1
+            global button_dict9
+            self.num9 = self.num9 + 1
             for j in range(4):
-                idx = num9 * 4 + j
+                idx = self.num9 * 4 + j
                 if (idx>=0 and idx < len(img_list9) and idx < len(img_name9)):
                     button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
                     name_list9[1][j].configure(text=img_name9[idx])
 
-            if num9 in button_dict9.keys():           
-                button_dict9[num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
+            if self.num9 in button_dict9.keys():           
+                button_dict9[self.num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
         def toggle_border15(button):
-            global num15,button_dict15
+            global button_dict15
             if button.cget("relief") == "solid":
                 button.config(relief="flat", highlightthickness=0)
                 button_dict15 = {}
+                # self.color = str(button.cget("image"))
             else:
                 if bool(button_dict15):
                     int_keys = [k for k in button_dict15.keys() if isinstance(k, int)]
                     button_dict15[int_keys[0]].config(relief="flat", highlightthickness=0)         
                     button_dict15 = {}
                 button.config(relief="solid", highlightthickness=2, highlightbackground="red")
-                button_dict15[num15] = button
+                self.color = str(button.cget("text"))
+                button_dict15[self.num15] = button
             
         def forward_image15():
-            global num15,button_dict15
-            num15 = num15 - 1
+            global button_dict15
+            self.num15 = self.num15 - 1
             for j in range(4):
-                idx = num15 * 4 + j
+                idx = self.num15 * 4 + j
                 if (idx>=0 and idx < len(img_list15) and idx < len(img_name15)):
                     button_list15[1][j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
                     name_list15[1][j].configure(text=img_name15[idx])
 
-            if num15 in button_dict15.keys():           
-                button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
+            if self.num15 in button_dict15.keys():           
+                button_dict15[self.num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
                 
         def next_image15():
-            global num15,button_dict15
-            num15 = num15 + 1
+            global button_dict15
+            self.num15 = self.num15 + 1
             for j in range(4):
-                idx = num15 * 4 + j
+                idx = self.num15 * 4 + j
                 if (idx>=0 and idx < len(img_list15) and idx < len(img_name15)):
                     button_list15[1][j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
                     name_list15[1][j].configure(text=img_name15[idx])
-            if num15 in button_dict15.keys():           
-                button_dict15[num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
+            if self.num15 in button_dict15.keys():           
+                button_dict15[self.num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
         tk.Button(self.win6, text="뒤로가기", command=lambda:[self.win5.tkraise()]).grid(row=0, column=6)
         tk.Button(self.win6, text="헤어스타일 선택", command=progress_bar).grid(row=17, column=3)
@@ -485,7 +478,7 @@ class MainUI(tk.Tk):
             for j in range(4):
                 idx = i * 4 + j
                 if idx < len(img_list9):
-                    button_list9[i][j].configure(image=img_list9[idx],command=lambda i=i, j=j: toggle_border9(button_list9[i][j]))
+                    button_list9[i][j].configure(text=img_name9[idx],image=img_list9[idx],command=lambda i=i, j=j: toggle_border9(button_list9[i][j]))
                     name_list9[i][j].configure(text=img_name9[idx])
         
         # 이미지 로드 및 크기 조정
@@ -518,11 +511,12 @@ class MainUI(tk.Tk):
             for j in range(4):
                 idx = i * 4 + j
                 if idx < len(img_list15):
-                    button_list15[i][j].configure(image=img_list15[idx],command=lambda i=i, j=j: toggle_border15(button_list15[i][j]))
+                    button_list15[i][j].configure(text=img_name15[idx],image=img_list15[idx],command=lambda i=i, j=j: toggle_border15(button_list15[i][j]))
                     name_list15[i][j].configure(text=img_name15[idx])
 
 
     def open_win11(self):
+        self.img = self.p.recv()
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
@@ -572,23 +566,36 @@ class MainUI(tk.Tk):
             self.tk.quit()
 
 
+def main(p):
+    UI = MainUI(p)
 
-
-#7. 헤어스타일 선택
-# 범위 벗어난 인덱스에 대한 오류 처리 x
-# button_dict9 = {}
-# num9=2
-# button_dict15 = {}
-# num15=2
-# m='여자'
-
+def server(p):
+    server = ClientVideoSocket("211.243.232.32",7100)
+    server.connectServer()
+    mode= p.recv()
+    print(mode)
+    server.sock.send(str(mode).encode('utf-8'))
+    image_name = p.recv()
+    print(image_name)
+    server.sock.send(image_name.encode('utf-8'))
+    style,color = p.recv()
+    print(style,color)
+    server.sock.send(style.encode('utf-8'))
+    server.sock.send(color.encode('utf-8'))        
+    # cv2.imwrite("test.png",img)
+    # print(type(img))
+    # img.save("test.png")    
+    # img = server.receiveImages()
+    # p.send(img)
     
 
-# #11. 결과 출력/ 다시 찍기(-> #5), 헤어스타일 재선택(-> #7), 예약하기(-> #12) 버튼
-
-# # Creating tkinter variables
-
-# close window with key `ESC`
-
 if __name__ == "__main__":
-    UI = MainUI()
+    p,q = Pipe()
+    p1 = Process(target=main,args=(p,))
+    p2 = Process(target=server,args=(q,))
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+    
+    
