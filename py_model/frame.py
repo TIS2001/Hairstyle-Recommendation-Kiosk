@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter.ttk import *
 from PIL import Image, ImageTk
 import os
-
+import math
+from tkinter import messagebox
 
 class MainUI(tk.Tk):
     def __init__(self):
@@ -183,24 +184,36 @@ class MainUI(tk.Tk):
             dict=self.dict2
             dir_path="UI/hairstyles"
             format=".png"
-        
-        if page>=0:
-            self.make_btn(frame, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)],page)
+        img_path=[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)]
+        if page<0:
+            messagebox.showwarning('페이지 범위 오류', '처음 페이지입니다.')
+            if frame == self.frame3 :
+                self.page1+=1
+            elif frame == self.frame5 :   
+                self.page2+=1  
+        elif page>((len(img_path)//4)-1):
+            messagebox.showwarning('페이지 범위 오류', '마지막 페이지입니다.')            
+            if frame == self.frame3 :
+                self.page1-=1
+            elif frame == self.frame5 :   
+                self.page2-=1
+        else:
+            self.make_btn(frame, img_path,page)
             # print(f"frmae={frame},page: {page}")
         if page in dict.keys():           
             dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
-    def make_btn(self, frame, img_path,page):
+    def make_btn(self, frame, img_path,page):           
+        
         self.clear_frame(frame)
         img_name = []
         img_size = (150, 150)
-        buttons = []                
-
+        buttons = []     
         for i in range(4):
             idx=4*page+i
-            # if False:
             if idx==0 and (frame == self.frame3 or frame == self.frame5):
-                button = tk.Button(frame, text="X")                
+                button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))  
+                             
                 button.configure(command=lambda btn=button: self.toggle_border(btn))
                 button.grid(row=1, column=1, padx=5)
                 img_name.append("적용하지 않음")
@@ -299,7 +312,7 @@ class MainUI(tk.Tk):
             photo = ImageTk.PhotoImage(composite_image)
             # 합성 이미지를 표시할 라벨 생성
             label = tk.Label(self.frame1, image=photo)
-            label.grid(row=3, column=i+2)
+            label.grid(row=3, column=i+2,padx=5)
             # 라벨을 리스트에 추가
             labels.append(label)
             # ImageTk 객체에 대한 참조 유지
@@ -307,7 +320,7 @@ class MainUI(tk.Tk):
             image_name = backgrounds[i].split(".")[0]  # 이미지 파일 이름 (확장자 제외)
             name_label = tk.Radiobutton(self.frame1, font=("Arial", 15), text=image_name, variable=self.var, value=i+1,
                             command=lambda:self.personal_cmd())
-            name_label.grid(row=4, column=i+2)
+            name_label.grid(row=4, column=i+2,padx=5)
 
 if __name__ == "__main__":
     UI = MainUI()
