@@ -30,6 +30,7 @@ class MainUI(tk.Tk):
         self.dict2 = {}
         self.page1 = 0
         self.page2 = 0
+        self.ischeck = 0
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
         self.frame1.place(x=50, y=50)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
@@ -162,10 +163,6 @@ class MainUI(tk.Tk):
     #         dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
     def navi_click(self,frame,dir):
-        # # page = 0
-        # dict={}            
-        # dir_path=""
-        # format=""
         if frame == self.frame3 :  
             if dir=="prev":
                 self.page1-=1
@@ -199,12 +196,11 @@ class MainUI(tk.Tk):
                 self.page2-=1
         else:
             self.make_btn(frame, img_path,page)
-            # print(f"frmae={frame},page: {page}")
+        print(f"dict={dict},page: {page}")
         if page in dict.keys():           
             dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
-    def make_btn(self, frame, img_path,page):           
-        
+    def make_btn(self, frame, img_path,page):                  
         self.clear_frame(frame)
         img_name = []
         img_size = (150, 150)
@@ -212,8 +208,7 @@ class MainUI(tk.Tk):
         for i in range(4):
             idx=4*page+i
             if idx==0 and (frame == self.frame3 or frame == self.frame5):
-                button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))  
-                             
+                button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))                              
                 button.configure(command=lambda btn=button: self.toggle_border(btn))
                 button.grid(row=1, column=1, padx=5)
                 img_name.append("적용하지 않음")
@@ -258,10 +253,11 @@ class MainUI(tk.Tk):
             page=self.page1
         elif parent_frame == str(self.frame4) or parent_frame == str(self.frame5):  
             dict_var = self.dict2
-            page=self.page2
-        else:
-            dict_var = {}
-        
+            page=self.page
+        self.help(button,dict_var,page) 
+
+    def help(self,button,dict_var,page):
+        self.ischeck=0    
         if button.cget("relief") == "solid":
             button.config(relief="flat", highlightthickness=0)
             dict_var.clear()
@@ -273,6 +269,8 @@ class MainUI(tk.Tk):
             
             button.config(relief="solid", highlightthickness=2, highlightbackground="red")
             dict_var[page] = button
+            if button.winfo_parent() == str(self.frame2):
+                self.ischeck=1
 
     def personal_cmd(self):
         selected_image = self.var.get()
@@ -286,7 +284,8 @@ class MainUI(tk.Tk):
             dir_path = "UI/colors/겨쿨"
         
         self.make_btn(self.frame2, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".JPG")],0)
-        self.dict1={}
+        if self.ischeck==1:
+            self.dict1={}
 
 
     def select_personal(self):
