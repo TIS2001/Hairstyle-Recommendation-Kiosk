@@ -38,18 +38,17 @@ class Img_model:
         ## 3. 적용된 사진을 전송
         ## 4. 대기
         im_path1 = os.path.join(self.args.input_dir, "target.png")
-        im_path2 = os.path.join(self.args.input_dir, self.args.im_path2)
         
         # im_paths_not_embedded = 0
         im_paths_not_embedded = [img]
         
         ## DB에서 사진을 받아옴. 없으면 embedded
         if im_paths_not_embedded:
-            self.args.embedding_dir = self.args.output_dir
-            self.Embedding.invert_images_in_W(im_paths_not_embedded)
-            self.Embedding.invert_images_in_FS(im_paths_not_embedded)
-        # ii2s.invert_images_in_W(img)
-
+            latent_W = self.Embedding.invert_images_in_W(im_paths_not_embedded)
+            latent_FS = self.Embedding.invert_images_in_FS(im_paths_not_embedded,latent_W)
+            target_numpy = [latent_FS,latent_W]
+                # ii2s.invert_images_in_W(img)
+        return target_numpy
         # Step 2 : Hairstyle transfer using the above embedded vector or tensor
         
     def dying_main(self,img,color):
@@ -102,7 +101,7 @@ class Img_model:
         parser.add_argument('--output_dir', type=str, default='./output/',
                             help='The directory to save the output images')
         parser.add_argument('--im_path1', type=str, default='target.png', help='Identity image')
-        parser.add_argument('--im_path2', type=str, default='source6.png', help='Structure image')
+        parser.add_argument('--im_path2', type=str, default='', help='Structure image')
         parser.add_argument('--sign', type=str, default='fidelity', help='realistic or fidelity results')
         parser.add_argument('--smooth', type=int, default=5, help='dilation and erosion parameter')
 

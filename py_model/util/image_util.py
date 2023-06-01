@@ -51,7 +51,6 @@ def ShowFeed(win,picam):
 def imageBrowse(bucket,name):
     # Firebase Storage에서 사진 다운로드
     blob = bucket.blob(f'customers/{name}_photo.jpg')
-
     str = blob.download_as_bytes()
     return Image.open(io.BytesIO(str))
     # Configuring the label to display the frame
@@ -65,21 +64,29 @@ def attach_photo(bucket,name, image):
         # image.save expects a file-like as a argument
         image.save(imgByteArr, format='JPEG')
         # Turn the BytesIO object back into a bytes object
-        imgByteArr = imgByteArr.getvalue()
+        # imgByteArr = imgByteArr.getvalue()
         blob = bucket.blob(f'customers/{name}_photo.jpg')
-        blob.upload_from_string(imgByteArr)
+        blob.upload_from_file(imgByteArr)
         print("사진이 성공적으로 첨부되었습니다.")
     else:
         print("파일 없습니다.")
 
 
 if __name__ == "__main__":
-    cred = credentials.Certificate('../UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
-    firebase_app = initialize_app(cred, { 'storageBucket': 'easylogin-58c28.appspot.com'})
+    cred = credentials.Certificate('../UI/princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
+    firebase_app = initialize_app(cred, { 'storageBucket': 'princess-maker-1f45e.appspot.com'})
     db = firestore.client()
     bucket = storage.bucket(app=firebase_app)
-    img = Image.open("test.png")
+    image = Image.open("test.png")
+    with io.BytesIO() as imgByteArr:
+    # image.save expects a file-like as a argument
+        image.save(imgByteArr, format='JPEG')
+        # Turn the BytesIO object back into a bytes object
+        # imgByteArr = imgByteArr.getvalue()
+        blob = bucket.blob(f'customers/test_photo.jpg')
+        imgByteArr.seek(0)
+        blob.upload_from_file(imgByteArr)
+    # img = Image.open("test.png")
     # print(img.format)
-    # attach_photo(bucket,"dongjin",img)
-    img = imageBrowse(bucket,"dongjin")
-    img.save("test1.png")
+    # attach_photo(bucket,"dongjin",img)    
+    # print(bucket.blob(f'customers/'))
