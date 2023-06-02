@@ -545,6 +545,8 @@ class MainUI(tk.Tk):
         self.win12.place(x=0,y=0,width=800,height=1280)
         self.win12.bind("<Escape>", self.on_escape)
         self.reservation_buttons = []
+        times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
+        
         class designer():
             def __init__(self,name,win,y):
                 self.name=name
@@ -553,6 +555,7 @@ class MainUI(tk.Tk):
                 self.frame1.place(x=75, y=y)
                 self.frame2 = tk.Frame(win, width=400, height=200)
                 self.frame2.place(x=300, y=y)
+            
             def toggle_reservation(self,index):
                 # 버튼의 선택 상태를 변경하는 함수
                 if self.reservation_buttons[index]["relief"] == "sunken":
@@ -581,25 +584,35 @@ class MainUI(tk.Tk):
                     btn = tk.Button(self.frame2, text=time, state=btn_state, command=lambda i=index: self.toggle_reservation(i))
                     btn.grid(row=row, column=col, padx=10, pady=30)
                     self.reservation_buttons.append(btn) 
-        times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
-        
-        def make_reservation(designer_list):
-                # 예약 정보 저장 및 Firestore에 전달하는 함수
-                reservation_time = []
-                for designer in designer_list:
-                    for index, btn in enumerate(designer.reservation_buttons):
-                        if btn["relief"] == "sunken":
-                            reservation_time.append(times[index])   
-                # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
-                    data = {
-                        "reservation_time": reservation_time,
-                        # 추가 필드 정보 입력
-                    }
-                    # Firestore에 예약 정보 저장
-                    hairdresser_ref = self.db.collection("hairdresser").document(designer.name)
-                    hairdresser_ref.set(data)
-                print("예약이 완료되었습니다.")   
                 
+        def make_reservation(designer_list):
+            # 예약 정보 저장 및 Firestore에 전달하는 함수
+            for designer in designer_list:
+                reservation_time = []
+                
+                # 기존 예약 시간 불러오기
+                hairdresser_ref = self.db.collection("hairdresser").document(designer.name)
+                doc = hairdresser_ref.get()
+                
+                if doc.exists:
+                    reservation_time = doc.get("reservation_time")
+                
+                # 새로운 예약 시간 추가
+                for index, btn in enumerate(designer.reservation_buttons):
+                    if btn["relief"] == "sunken":
+                        reservation_time.append(times[index])   
+                
+                # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
+                data = {
+                    "reservation_time": reservation_time,
+                    # 추가 필드 정보 입력
+                }
+                
+                # Firestore에 예약 정보 저장
+                hairdresser_ref.set(data)
+                
+            print("예약이 완료되었습니다.")   
+       
         def download_image(filename):
             bucket = storage.bucket()
             blob = bucket.blob("stylist/" + filename)
@@ -616,11 +629,6 @@ class MainUI(tk.Tk):
             label = tk.Label(frame, image=img_tk)
             label.image = img_tk
             label.pack()
-            
-        # def clear_image():
-        #     label.configure(image="")
-        #     label.image = ""
-        
         
             
         tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback()).place(x=700, y=25)
@@ -642,6 +650,7 @@ class MainUI(tk.Tk):
         
         # open_win 함수에서 커스터마이징가능하게 만들어야함
         self.designer_list = [designer1,designer2,designer3]
+        
         # 예약하기 버튼 생성
         tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(self.designer_list), self.open_win13(),self.win13.tkraise()]).place(x=375, y=750)
 
