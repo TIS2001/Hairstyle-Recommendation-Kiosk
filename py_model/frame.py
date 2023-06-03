@@ -47,13 +47,13 @@ class MainUI(tk.Tk):
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
         self.frame1.place(x=50, y=50)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame2.place(x=50, y=250)
+        self.frame2.place(x=50, y=265)  #250
         self.frame3 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame3.place(x=10, y=450,width=780)
+        self.frame3.place(x=10, y=480,width=780)    #450
         self.frame4 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame4.place(x=50, y=650)
+        self.frame4.place(x=50, y=695) #650
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame5.place(x=10, y=850,width=780)
+        self.frame5.place(x=10, y=910,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
         self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
         self.make_btn(self.frame5, self.img_path2,0)
@@ -68,7 +68,7 @@ class MainUI(tk.Tk):
         # tk.Label(self.win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
 
     def append_list(self,img_path,img_list,img_name):
-        img = Image.open("UI/no_apply.png")
+        img = Image.open("UI/no_apply.jpg")
         img = img.resize((150, 150))
         img_list.append(ImageTk.PhotoImage(img))
         img_name.append("no_apply")
@@ -77,7 +77,6 @@ class MainUI(tk.Tk):
             img = img.resize((150, 150))
             img_list.append(ImageTk.PhotoImage(img))
             img_name.append(img_path[i].split('/')[-1].split('.')[0])
-
 
     def navi_click(self,frame,dir):
         if frame == self.frame3 :  
@@ -121,30 +120,10 @@ class MainUI(tk.Tk):
             elif frame == self.frame5 :   
                 self.page2-=1
         else:
-            # self.make_btn(frame, img_path,page)
             for i in range(4):
                 idx=4*page+i
-                # if page==0:
-                #     if idx==0:
-                #         img = Image.open("UI/no_apply.png")
-                #         img = img.resize((150, 150))
-                #         photo_img = ImageTk.PhotoImage(img)
-                #         self.buttons1[i].configure(image=photo_img)
-                #         self.labels1[i].configure(text="적용하지 않음")
-                #     else:
-                #         buttons[i].configure(image=img_list[idx], relief="flat", highlightthickness=0)
-                #         labels[i].configure(text=img_name[idx])
-                # #     button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))
-                # #     button.configure(command=lambda btn=button: self.toggle_border(btn))
-                # #     label = tk.Label(frame, text="적용하지 않음")
-                # #     button.grid(row=1,column=i+1,padx=5)
-                # #     label.grid(row=2,column=i+1,padx=5)
-                # else:
-                if 1:
-                    buttons[i].configure(image=img_list[idx], relief="flat", highlightthickness=0)
-                    # button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
-                    labels[i].configure(text=img_name[idx])
-        # print(f"dict={dict},page: {page}")
+                buttons[i].configure(image=img_list[idx], relief="flat", highlightthickness=0)
+                labels[i].configure(text=img_name[idx])
         if page in dict.keys():           
             dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
 
@@ -156,80 +135,52 @@ class MainUI(tk.Tk):
 
         for i in range(4):
             idx=4*page+i
-            # if idx==0 and (frame == self.frame3 or frame == self.frame5):
-            #     button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))                              
-            #     button.configure(image=None,command=lambda btn=button: self.toggle_border(btn))
-            #     button.grid(row=1, column=1, padx=5)
-            #     img_name.append("적용하지 않음")
-            #     label = tk.Label(frame, text=img_name[i])
             if frame == self.frame2 or frame == self.frame4:                
                 path = img_path[idx]
                 img = Image.open(path)
                 img = img.resize(img_size)
                 photo_img = ImageTk.PhotoImage(img)
-                button = tk.Button(frame, image=photo_img, command=lambda: self.toggle_border(button))
+                button = tk.Button(frame, image=photo_img)
+                button.configure(command=lambda btn=button: self.toggle_border(btn))
                 self.img_list.append(photo_img)
+                buttons.append(button)
                 img_name.append(img_path[idx].split('/')[-1].split('.')[0])
                 label = tk.Label(frame, text=img_name[i])
             
-            elif frame == self.frame3:
+            else:
                 button=tk.Button(frame)
                 button.configure(command=lambda btn=button: self.toggle_border(btn))
                 label = tk.Label(frame)
+
+            if frame == self.frame3:               
                 self.buttons1.append(button)
                 self.labels1.append(label)
-                img = Image.open("UI/no_apply.png")
-                img = img.resize(img_size)
-                # photo_img = ImageTk.PhotoImage(img)
-                # if idx==0:
-                #     # button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))
-                #     # button.configure(command=lambda btn=button: self.toggle_border(btn))
-                #     # label = tk.Label(frame, text="적용하지 않음")
-                #     # self.buttons1.append(button)
-                #     # self.labels1.append(label)
-                    
-                #     self.buttons1[i].configure(image=ImageTk.PhotoImage(img))
-                #     self.labels1[i].configure(text="적용하지 않음")
-                # else:    
-                if 1:            
-                    # button=tk.Button(frame,command=lambda btn=button: self.toggle_border(btn))
-                    # label = tk.Label(frame)
-                    # self.buttons1.append(button)
-                    # self.labels1.append(label)
-                    self.buttons1[i].configure(image=self.img_list1[idx])
-                    self.labels1[i].configure(text=self.img_name1[idx])
+                self.buttons1[i].configure(image=self.img_list1[idx])
+                self.labels1[i].configure(text=self.img_name1[idx])
 
             elif frame == self.frame5 :
-                if idx==0:
-                    button = tk.Button(frame, text="X", width=10,height=5, fg="red", font=("Arial", 15))
-                    button.configure(command=lambda: self.toggle_border(button))
-                    label = tk.Label(frame, text="적용하지 않음")
-                else:                
-                    button=tk.Button(frame,command=lambda btn=button: self.toggle_border(btn))
-                    label = tk.Label(frame)
-                    # print(f"after first: {button}")
-                    self.buttons2.append(button)
-                    self.labels2.append(label)
-                    self.buttons2[i-1].configure(image=self.img_list2[idx-1])
-                    self.labels2[i-1].configure(text=self.img_name2[idx-1])
+                self.buttons2.append(button)
+                self.labels2.append(label)
+                self.buttons2[i].configure(image=self.img_list2[idx])
+                self.labels2[i].configure(text=self.img_name2[idx])
 
             button.grid(row=1,column=i+1,padx=5)
             label.grid(row=2,column=i+1,padx=5)
             # print(f"idx: {idx}, button: {button}")
 
 
-        if frame == self.frame3 :  
-            button1 = tk.Button(self.frame3, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(self.frame3,direction))
+        if frame == self.frame3 or frame == self.frame5:  
+            button1 = tk.Button(frame, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(frame,direction))
             button1.grid(row=1, column=0, padx=5)
 
-            button2 = tk.Button(self.frame3, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(self.frame3,direction))
+            button2 = tk.Button(frame, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(frame,direction))
             button2.grid(row=1, column=5, padx=5)        
-        elif frame == self.frame5 :  
-            button3 = tk.Button(self.frame5, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(self.frame5,direction))
-            button3.grid(row=1, column=0, padx=5)
+        # elif frame == self.frame5 :  
+        #     button3 = tk.Button(self.frame5, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(self.frame5,direction))
+        #     button3.grid(row=1, column=0, padx=5)
 
-            button4 = tk.Button(self.frame5, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(self.frame5,direction))
-            button4.grid(row=1, column=5, padx=5) 
+        #     button4 = tk.Button(self.frame5, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(self.frame5,direction))
+        #     button4.grid(row=1, column=5, padx=5) 
            
 
     def toggle_border(self, button):
