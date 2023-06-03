@@ -16,12 +16,10 @@ class MainUI(tk.Tk):
         self.open_win6()
         self.mainloop()
         
-
     def clear_frame(self, frame):
         if frame is not None:
             for widget in frame.winfo_children():
                 widget.destroy()
-
 
     def open_win6(self):
         self.win6 = tk.Frame(self, relief="flat", bg="white")
@@ -59,7 +57,7 @@ class MainUI(tk.Tk):
         self.make_btn(self.frame5, self.img_path2,0)
         self.select_personal()
         
-        tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
+        tk.Button(self.win6, font=("Arial",15), text="뒤로가기").place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택").place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
         tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
         tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=245,width=665)
@@ -86,8 +84,6 @@ class MainUI(tk.Tk):
                 self.page1+=1
             page = self.page1
             dict=self.dict1
-            dir_path="UI/colors/전체"
-            format=".JPG"
             buttons=self.buttons1
             labels=self.labels1
             img_list=self.img_list1
@@ -100,32 +96,36 @@ class MainUI(tk.Tk):
                 self.page2+=1            
             page = self.page2
             dict=self.dict2
-            dir_path="UI/hairstyles_men"
-            format=".png"
             buttons=self.buttons2
             labels=self.labels2
             img_list=self.img_list2
             img_name=self.img_name2
-        img_path=[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(format)]
+
         if page<0:
             messagebox.showwarning('페이지 범위 오류', '첫 페이지입니다.')
             if frame == self.frame3 :
                 self.page1+=1
             elif frame == self.frame5 :   
                 self.page2+=1  
-        elif page>((len(img_path)//4)-1):
+            return
+        elif page>(math.ceil(len(img_list)/4)-1):
             messagebox.showwarning('페이지 범위 오류', '마지막 페이지입니다.')            
             if frame == self.frame3 :
                 self.page1-=1
             elif frame == self.frame5 :   
                 self.page2-=1
-        else:
-            for i in range(4):
-                idx=4*page+i
-                buttons[i].configure(image=img_list[idx], relief="flat", highlightthickness=0)
+            return
+        
+        for i in range(4):
+            idx=4*page+i
+            if idx>len(img_list)-1:
+                buttons[i].configure(state="disabled")
+                labels[i].configure(text="-")
+            else:
+                buttons[i].configure(state="normal",image=img_list[idx], relief="flat", highlightthickness=0)
                 labels[i].configure(text=img_name[idx])
         if page in dict.keys():           
-            dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")
+            dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")        
 
     def make_btn(self, frame, img_path,page):   
         self.clear_frame(frame)
@@ -166,8 +166,6 @@ class MainUI(tk.Tk):
 
             button.grid(row=1,column=i+1,padx=5)
             label.grid(row=2,column=i+1,padx=5)
-            # print(f"idx: {idx}, button: {button}")
-
 
         if frame == self.frame3 or frame == self.frame5:  
             button1 = tk.Button(frame, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(frame,direction))
@@ -178,7 +176,6 @@ class MainUI(tk.Tk):
 
 
     def toggle_border(self, button):
-        # print(button)
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
         if parent_frame == str(self.frame2) or parent_frame == str(self.frame3): 
             dict_var = self.dict1
