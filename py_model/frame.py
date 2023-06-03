@@ -26,6 +26,8 @@ class MainUI(tk.Tk):
         self.win6.place(x=0, y=0, width=800, height=1280)
         self.dict1 = {}
         self.dict2 = {}
+        self.select1={}
+        self.select2={}
         self.page1 = 0
         self.page2 = 0
         self.buttons1=[]
@@ -58,12 +60,17 @@ class MainUI(tk.Tk):
         self.select_personal()
         
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기").place(x=680, y=0)
-        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택").place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
+        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=self.print_dict).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
         tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
         tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=245,width=665)
         tk.Label(self.win6,font=("Arial",13),text='전체 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=450,width=780)
         tk.Label(self.win6,font=("Arial",13),text='얼굴형에 따른 추천 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=680,width=665)
         tk.Label(self.win6,font=("Arial",13),text='전체 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=885,width=780)
+
+    def print_dict(self):
+        style=self.dict1[next(iter(self.dict1))].cget("text")
+        color=self.dict2[next(iter(self.dict2))].cget("text")
+        print(f"style={style}, color={color}")
 
     def append_list(self,img_path,img_list,img_name):
         img = Image.open("UI/no_apply.jpg")
@@ -122,7 +129,7 @@ class MainUI(tk.Tk):
                 buttons[i].configure(state="disabled")
                 labels[i].configure(text="-")
             else:
-                buttons[i].configure(state="normal",image=img_list[idx], relief="flat", highlightthickness=0)
+                buttons[i].configure(text=img_name[idx],state="normal",image=img_list[idx], relief="flat", highlightthickness=0)
                 labels[i].configure(text=img_name[idx])
         if page in dict.keys():           
             dict[page].config(relief="solid", highlightthickness=2, highlightbackground="red")        
@@ -135,33 +142,32 @@ class MainUI(tk.Tk):
 
         for i in range(4):
             idx=4*page+i
-            if frame == self.frame2 or frame == self.frame4:                
+            if frame == self.frame2 or frame == self.frame4:   
                 path = img_path[idx]
                 img = Image.open(path)
                 img = img.resize(img_size)
                 photo_img = ImageTk.PhotoImage(img)
                 button = tk.Button(frame, image=photo_img)
-                button.configure(command=lambda btn=button: self.toggle_border(btn))
                 self.img_list.append(photo_img)
                 buttons.append(button)
                 img_name.append(img_path[idx].split('/')[-1].split('.')[0])
-                label = tk.Label(frame, text=img_name[i])
-            
+                label = tk.Label(frame, text=img_name[i])   
+                button.configure(text=img_name[i],command=lambda btn=button: self.toggle_border(btn))
             else:
                 button=tk.Button(frame)
-                button.configure(command=lambda btn=button: self.toggle_border(btn))
                 label = tk.Label(frame)
+                button.configure(command=lambda btn=button: self.toggle_border(btn))
 
             if frame == self.frame3:               
                 self.buttons1.append(button)
                 self.labels1.append(label)
-                self.buttons1[i].configure(image=self.img_list1[idx])
+                self.buttons1[i].configure(text=self.img_name1[idx],image=self.img_list1[idx])
                 self.labels1[i].configure(text=self.img_name1[idx])
 
             elif frame == self.frame5 :
                 self.buttons2.append(button)
                 self.labels2.append(label)
-                self.buttons2[i].configure(image=self.img_list2[idx])
+                self.buttons2[i].configure(text=self.img_name2[idx],image=self.img_list2[idx])
                 self.labels2[i].configure(text=self.img_name2[idx])
 
             button.grid(row=1,column=i+1,padx=5)
@@ -174,8 +180,11 @@ class MainUI(tk.Tk):
             button2 = tk.Button(frame, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(frame,direction))
             button2.grid(row=1, column=5, padx=5)        
 
+        # for label in self.labels1:
+        #     print(label.cget("text"))
 
-    def toggle_border(self, button):
+    def toggle_border(self,button):
+        # print(button.cget("text"))
         parent_frame = button.winfo_parent()  # button의 부모 프레임을 찾음
         if parent_frame == str(self.frame2) or parent_frame == str(self.frame3): 
             dict_var = self.dict1
@@ -216,7 +225,6 @@ class MainUI(tk.Tk):
         if self.ischeck==1:
             self.dict1={}
 
-
     def select_personal(self):
         # 배경 이미지 파일 경로
         backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
@@ -249,6 +257,7 @@ class MainUI(tk.Tk):
             name_label = tk.Radiobutton(self.frame1, font=("Arial", 13), text=image_name, variable=self.var, value=i+1,
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)
+
 
 if __name__ == "__main__":
     UI = MainUI()
