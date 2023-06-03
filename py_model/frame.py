@@ -69,9 +69,14 @@ class MainUI(tk.Tk):
 
     def print_dict(self):
         if bool(self.dict1) and bool(self.dict2):
+            selection=[]
             style=self.dict1[next(iter(self.dict1))].cget("text")
+            style_name=f"{style}.jpg"
             color=self.dict2[next(iter(self.dict2))].cget("text")
-            print(f"style={style}, color={color}")
+            color_name=f"{color}.jpg"
+            selection.append(style_name)
+            selection.append(color_name)
+            print(selection)
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
