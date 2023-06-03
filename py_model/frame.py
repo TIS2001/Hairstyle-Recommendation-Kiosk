@@ -45,13 +45,13 @@ class MainUI(tk.Tk):
         self.append_list(self.img_path1,self.img_list1,self.img_name1)
         self.append_list(self.img_path2,self.img_list2,self.img_name2)
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame1.place(x=50, y=50)
+        self.frame1.place(x=70, y=50,width=665)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame2.place(x=50, y=265)  #250
+        self.frame2.place(x=70, y=265,width=665)  #250
         self.frame3 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame3.place(x=10, y=480,width=780)    #450
+        self.frame3.place(x=10, y=470,width=780)    #450
         self.frame4 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame4.place(x=50, y=695) #650
+        self.frame4.place(x=70, y=705,width=665) #650
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=910,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
@@ -60,12 +60,12 @@ class MainUI(tk.Tk):
         self.select_personal()
         
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
-        # tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택", command=self.progress_bar).grid(row=17, column=3)
-        # tk.Label(self.win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.',height=1).grid(row=2, column=2,columnspan=3)
-        # tk.Label(self.win6,text='얼굴형에 따른 추천 헤어스타일',height=1).grid(row=5, column=2,columnspan=3)
-        # tk.Label(self.win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
-        # tk.Label(self.win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
-        # tk.Label(self.win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
+        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택").place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
+        tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
+        tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=250,width=665)
+        tk.Label(self.win6,font=("Arial",13),text='전체 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=455,width=780)
+        tk.Label(self.win6,font=("Arial",13),text='얼굴형에 따른 추천 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=690,width=665)
+        tk.Label(self.win6,font=("Arial",13),text='전체 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=895,width=780)
 
     def append_list(self,img_path,img_list,img_name):
         img = Image.open("UI/no_apply.jpg")
@@ -175,13 +175,7 @@ class MainUI(tk.Tk):
 
             button2 = tk.Button(frame, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(frame,direction))
             button2.grid(row=1, column=5, padx=5)        
-        # elif frame == self.frame5 :  
-        #     button3 = tk.Button(self.frame5, font=("Arial", 15), text="◀", command=lambda direction="prev": self.navi_click(self.frame5,direction))
-        #     button3.grid(row=1, column=0, padx=5)
 
-        #     button4 = tk.Button(self.frame5, font=("Arial", 15), text="▶", command=lambda direction="next": self.navi_click(self.frame5,direction))
-        #     button4.grid(row=1, column=5, padx=5) 
-           
 
     def toggle_border(self, button):
         # print(button)
@@ -255,7 +249,7 @@ class MainUI(tk.Tk):
             # ImageTk 객체에 대한 참조 유지
             label.image = photo
             image_name = backgrounds[i].split(".")[0]  # 이미지 파일 이름 (확장자 제외)
-            name_label = tk.Radiobutton(self.frame1, font=("Arial", 15), text=image_name, variable=self.var, value=i+1,
+            name_label = tk.Radiobutton(self.frame1, font=("Arial", 13), text=image_name, variable=self.var, value=i+1,
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)
 
