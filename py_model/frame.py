@@ -47,13 +47,13 @@ class MainUI(tk.Tk):
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
         self.frame1.place(x=70, y=50,width=665)
         self.frame2 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame2.place(x=70, y=265,width=665)  #250
+        self.frame2.place(x=70, y=260,width=665)  #250
         self.frame3 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame3.place(x=10, y=470,width=780)    #450
+        self.frame3.place(x=10, y=465,width=780)    #450
         self.frame4 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame4.place(x=70, y=705,width=665) #650
+        self.frame4.place(x=70, y=695,width=665) #650
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
-        self.frame5.place(x=10, y=910,width=780) #850
+        self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
         self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
         self.make_btn(self.frame5, self.img_path2,0)
@@ -62,10 +62,10 @@ class MainUI(tk.Tk):
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택").place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
         tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
-        tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=250,width=665)
-        tk.Label(self.win6,font=("Arial",13),text='전체 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=455,width=780)
-        tk.Label(self.win6,font=("Arial",13),text='얼굴형에 따른 추천 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=690,width=665)
-        tk.Label(self.win6,font=("Arial",13),text='전체 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=895,width=780)
+        tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=245,width=665)
+        tk.Label(self.win6,font=("Arial",13),text='전체 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=450,width=780)
+        tk.Label(self.win6,font=("Arial",13),text='얼굴형에 따른 추천 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=680,width=665)
+        tk.Label(self.win6,font=("Arial",13),text='전체 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=885,width=780)
 
     def append_list(self,img_path,img_list,img_name):
         img = Image.open("UI/no_apply.jpg")
