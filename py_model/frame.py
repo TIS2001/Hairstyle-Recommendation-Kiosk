@@ -68,9 +68,12 @@ class MainUI(tk.Tk):
         tk.Label(self.win6,font=("Arial",13),text='전체 헤어스타일').place(relx=0.5,anchor=tk.CENTER,y=885,width=780)
 
     def print_dict(self):
-        style=self.dict1[next(iter(self.dict1))].cget("text")
-        color=self.dict2[next(iter(self.dict2))].cget("text")
-        print(f"style={style}, color={color}")
+        if bool(self.dict1) and bool(self.dict2):
+            style=self.dict1[next(iter(self.dict1))].cget("text")
+            color=self.dict2[next(iter(self.dict2))].cget("text")
+            print(f"style={style}, color={color}")
+        else:
+            messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
     def append_list(self,img_path,img_list,img_name):
         img = Image.open("UI/no_apply.jpg")
