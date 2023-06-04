@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import tkinter.font as tkFont
 from tkinter import *
 import time
 from PIL import Image, ImageTk
@@ -47,15 +48,16 @@ class MainUI(tk.Tk):
         else:
             self.camera = cv2.VideoCapture(0)
 
-
-
     def Start_Frame(self):
         self.StartFrame = tk.Frame(self, relief="flat",bg="white")
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
-        tk.Button(self.StartFrame, text="시작하기", width=16, height=7, command=lambda:[self.win1.tkraise()]).pack(anchor="center",pady=200)
+        
+        button_start = tk.Button(self.StartFrame, text="시작하기", width=16, height=7, command=lambda:[self.win1.tkraise()])
+        button_start.pack(anchor="center",pady=200)
+        button_start.configure(font=(20))
+        
         self.StartFrame.bind("<Escape>", self.on_escape)
         
-
     def img_thread(self,img):
         if self.server_open:
             self.server_tk = self.after(0,self.connect_server,img)
@@ -69,20 +71,29 @@ class MainUI(tk.Tk):
         self.img = self.server.receiveImages()
         # self.img.save("test.png")
 
-        
     def firebase_init(self):
         cred = credentials.Certificate('./UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
         self.firebase_app = initialize_app(cred, { 'storageBucket': 'easylogin-58c28.appspot.com'})
         self.db = firestore.client()
+    
     
     #2. 회원가입, 로그인 버튼    
     def open_win1(self):
         self.win1 = tk.Frame(self, relief="flat",bg="white")
         self.win1.place(x=0,y=0,width=800,height=1280)
         self.win1.bind("<Escape>", self.on_escape)
-        tk.Button(self.win1, text="뒤로가기", command=lambda:self.StartFrame.tkraise).pack(padx=10,pady=10, side="top", anchor="ne")
-        tk.Button(self.win1, text="회원가입하기", width=15, height=5, command=lambda:[self.win2.tkraise()]).pack(pady=10)
-        tk.Button(self.win1, text="로그인하기", width=15, height=5, command=lambda:[self.win3.tkraise()]).pack(pady=10)
+        button_back = tk.Button(self.win1, text="뒤로가기", command=lambda:[self.StartFrame.tkraise()])
+        button_back.configure(font=(20))
+        button_back.place(x=670, y=10)
+        
+        button_reg = tk.Button(self.win1, text="회원가입하기", width=15, height=5, command=lambda:[self.win2.tkraise()])
+        button_reg.configure(font=(20))
+        button_reg.place(x=150, y=100)
+        
+        button_login = tk.Button(self.win1, text="로그인하기", width=15, height=5, command=lambda:[self.win3.tkraise()])
+        button_login.configure(font=(20))
+        button_login.place(x=450, y=100)
+    
     
     #3-1. 회원가입 페이지
     def open_win2(self):
@@ -151,40 +162,69 @@ class MainUI(tk.Tk):
         self.win2.bind("<Escape>", self.on_escape)
         
         # 뒤로가기 버튼 왼쪽 위에 생성
-        tk.Button(self.win2, text="뒤로가기", command=lambda:[self.win1.tkraise()]).pack(padx=10,pady=10, side="top", anchor="ne")
+        button_back = tk.Button(self.win2, text="뒤로가기", command=lambda:[self.win1.tkraise()])
+        button_back.configure(font=(20))
+        button_back.place(x=670, y=10)
         
         frame1 = Label(self.win2, bg='#dddddd')
-        frame1.pack()
-        frame2 = LabelFrame(frame1, text='Gender', padx=50, pady=10)
+        # frame1.config(width=600, height=600)
+        frame1.place(x=100, y=100)
+        frame2 = LabelFrame(frame1, text='성별 (Gender)', padx=50, pady=10)
+        frame2.configure(font=(30))
 
-        Label(frame1, text='이름').grid(row=0, column=0, padx=5, pady=5)
-        Label(frame1, text='아이디').grid(row=1, column=0, padx=5, pady=5)
-        Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
-        Label(frame1, text='전화번호').grid(row=3, column=0, padx=5, pady=5)
+        # 라벨 설정
+        label_name = Label(frame1, text='이름 (Name)')
+        label_name.configure(font=(30))
+        label_name.grid(row=0, column=0, padx=20, pady=15, sticky=W)
+        
+        label_id = Label(frame1, text='아이디 (Id)')
+        label_id.configure(font=(30))
+        label_id.grid(row=1, column=0, padx=20, pady=15, sticky=W)
+        
+        label_password = Label(frame1, text='비밀번호 (Password)')
+        label_password.configure(font=(30))
+        label_password.grid(row=2, column=0, padx=20, pady=15, sticky=W)
+        
+        label_phone = Label(frame1, text='전화번호 (PhoneNumber)')
+        label_phone.configure(font=(30))
+        label_phone.grid(row=3, column=0, padx=20, pady=15, sticky=W)
         
         var.set(None)
-        Radiobutton(frame2, text='남자', variable=var, value='남자').grid(row=0, column=0)
-        Radiobutton(frame2, text='여자', variable=var, value='여자').grid(row=0, column=1)
+        # frame 2 내의 버튼
+        button_man = Radiobutton(frame2, text='남자', variable=var, value='남자')
+        button_man.configure(font=(30))
+        button_man.grid(row=0, column=0, padx=30)
         
+        button_woman = Radiobutton(frame2, text='여자', variable=var, value='여자')
+        button_woman.configure(font=(30))
+        button_woman.grid(row=0, column=1, padx=30)
+        
+        # 입력창 관련
         name_Tf = Entry(frame1)
-        name_Tf.grid(row=0, column=2)
+        name_Tf.configure(font=(30))
+        name_Tf.grid(row=0, column=2, padx=20, pady=10)
         
         id_Tf = Entry(frame1)
-        id_Tf.grid(row=1, column=2)
+        id_Tf.configure(font=(30))
+        id_Tf.grid(row=1, column=2,padx=20, pady=10)
         
         password_Tf = Entry(frame1, show="*") # 비밀번호 보안을 위한 show='*'
-        password_Tf.grid(row=2, column=2)
+        password_Tf.configure(font=(30))
+        password_Tf.grid(row=2, column=2, padx=20, pady=10)
         
         phoneNumber_Tf = Entry(frame1)
-        phoneNumber_Tf.grid(row=3, column=2)
+        phoneNumber_Tf.configure(font=(30))
+        phoneNumber_Tf.grid(row=3, column=2, padx=20, pady=10)
         
         frame2.grid(row=4, columnspan=3,padx=30)
         
         check_btn = Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
-        check_btn.grid(row=5, columnspan=4, pady=5)
+        check_btn.configure(font=(30))
+        check_btn.grid(row=5, columnspan=4, pady=15)
         
         submit_btn = Button(frame1, text="Submit", command=submit, padx=50, pady=5, state=DISABLED)
-        submit_btn.grid(row=6, columnspan=4, pady=2)
+        submit_btn.configure(font=(30))
+        submit_btn.grid(row=6, columnspan=4, pady=15)
     
     #3-2. 로그인 페이지 
     def open_win3(self):
@@ -216,14 +256,35 @@ class MainUI(tk.Tk):
                 messagebox.showwarning("로그인 실패", "아이디와 비밀번호를 입력해주세요.")
 
 
-        Button(self.win3, text="뒤로가기", command=lambda:[self.win1.tkraise()]).grid(row=0, column=2, padx=10, pady=10, sticky="ne")
-        Label(self.win3, text='아이디').grid(row=1, column=0, padx=5, pady=5)    
-        Label(self.win3, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
-        id_entry = Entry(self.win3)
-        id_entry.grid(row=1, column=1)
-        password_entry = Entry(self.win3, show="*")
-        password_entry.grid(row=2, column=1)
-        Button(self.win3, text="로그인", command=login).grid(row=4, columnspan=3, padx=10, pady=10, sticky="s")
+        button_back = Button(self.win3, text="뒤로가기", command=lambda:[self.win1.tkraise()])
+        button_back.configure(font=(20))
+        button_back.place(x=670, y=10)
+        
+        frame1 = Label(self.win3, bg='#dddddd')
+        frame1.place(x=100, y=100)
+        
+        # 라벨 설정
+        label_id = Label(frame1, text='아이디 (Id)')
+        label_id.configure(font=(30))
+        label_id.grid(row=1, column=0, padx=20, pady=15, sticky=W)
+            
+        label_pw = Label(frame1, text='비밀번호 (Password)')
+        label_pw.configure(font=(30))
+        label_pw.grid(row=2, column=0, padx=20, pady=15, sticky=W)
+        
+        # 입력칸 설정
+        id_entry = Entry(frame1)
+        id_entry.configure(font=(30))
+        id_entry.grid(row=1, column=1, padx=20, pady=15)
+        
+        password_entry = Entry(frame1, show="*")
+        password_entry.configure(font=(30))
+        password_entry.grid(row=2, column=1, padx=20, pady=15)
+        
+        # 로그인 버튼
+        button_login = Button(frame1, text="로그인", command=login)
+        button_login.configure(font=(30))
+        button_login.grid(row=4, columnspan=3, padx=10, pady=30, sticky="s")
 
     #4. 카메라 실행/ 예약(-> #12), 헤어스타일 선택(-> #5) 버튼
     def open_win4(self):
@@ -553,6 +614,7 @@ class MainUI(tk.Tk):
                 self.frame1.place(x=75, y=y)
                 self.frame2 = tk.Frame(win, width=400, height=200)
                 self.frame2.place(x=300, y=y)
+           
             def toggle_reservation(self,index):
                 # 버튼의 선택 상태를 변경하는 함수
                 if self.reservation_buttons[index]["relief"] == "sunken":
@@ -581,6 +643,7 @@ class MainUI(tk.Tk):
                     btn = tk.Button(self.frame2, text=time, state=btn_state, command=lambda i=index: self.toggle_reservation(i))
                     btn.grid(row=row, column=col, padx=10, pady=30)
                     self.reservation_buttons.append(btn) 
+       
         times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
         
         def make_reservation(designer_list):
@@ -590,10 +653,10 @@ class MainUI(tk.Tk):
                     for index, btn in enumerate(designer.reservation_buttons):
                         if btn["relief"] == "sunken":
                             reservation_time.append(times[index])   
-                # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
+                    # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
                     data = {
                         "reservation_time": reservation_time,
-                        # 추가 필드 정보 입력
+                        # 추가 필드 필요시 여기에 정보 입력
                     }
                     # Firestore에 예약 정보 저장
                     hairdresser_ref = self.db.collection("hairdresser").document(designer.name)
@@ -617,13 +680,12 @@ class MainUI(tk.Tk):
             label.image = img_tk
             label.pack()
             
-        # def clear_image():
-        #     label.configure(image="")
-        #     label.image = ""
         
-        
-            
-        tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback()).place(x=700, y=25)
+        # 페이지 스타트 
+        # button_back = tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback())
+        button_back = tk.Button(self.win12, text="뒤로가기", command=lambda:[self.win4.tkraise()])
+        button_back.configure(font=(20))
+        button_back.place(x=670, y=10)
         
         designer1 = designer("김이발",self.win12, y=75)
         filename1 = "이승현님 여권 .jpg"
