@@ -5,7 +5,7 @@ import math
 from PIL import Image, ImageTk
 import cv2
 from tkinter import messagebox, filedialog
-from datetime import datetime
+import time
 import os
 from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
@@ -50,7 +50,7 @@ class MainUI(tk.Tk):
     def Start_Frame(self):
         self.StartFrame = tk.Frame(self, relief="flat",bg="white")
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
-        tk.Button(self.StartFrame, text="시작하기", width=16, height=7, command=lambda:[self.win1.tkraise()]).pack(anchor="center",pady=200)
+        tk.Button(self.StartFrame, font=("Arial",20), text="시작하기", width=20, height=8, command=lambda:[self.win1.tkraise()]).pack(anchor="center",pady=200)
         self.StartFrame.bind("<Escape>", self.on_escape)
         
     def firebase_init(self):
@@ -63,9 +63,9 @@ class MainUI(tk.Tk):
         self.win1 = tk.Frame(self, relief="flat",bg="white")
         self.win1.place(x=0,y=0,width=800,height=1280)
         self.win1.bind("<Escape>", self.on_escape)
-        tk.Button(self.win1, text="뒤로가기", command=lambda:self.StartFrame.tkraise).pack(padx=10,pady=10, side="top", anchor="ne")
-        tk.Button(self.win1, text="회원가입하기", width=15, height=5, command=lambda:[self.win2.tkraise()]).pack(pady=10)
-        tk.Button(self.win1, text="로그인하기", width=15, height=5, command=lambda:[self.win3.tkraise()]).pack(pady=10)
+        tk.Button(self.win1, text="뒤로가기", font=("Arial",15), command=lambda:self.StartFrame.tkraise).pack(padx=10,pady=10, side="top", anchor="ne")
+        tk.Button(self.win1, text="회원가입하기", font=("Arial",20),width=25, height=8, command=lambda:[self.win2.tkraise()]).pack(pady=30)
+        tk.Button(self.win1, text="로그인하기", font=("Arial",20), width=25, height=8, command=lambda:[self.win3.tkraise()]).pack(pady=30)
     
     #3-1. 회원가입 페이지
     def open_win2(self):
@@ -136,18 +136,18 @@ class MainUI(tk.Tk):
         # 뒤로가기 버튼 왼쪽 위에 생성
         tk.Button(self.win2, text="뒤로가기", command=lambda:[self.win1.tkraise()]).pack(padx=10,pady=10, side="top", anchor="ne")
         
-        frame1 = Label(self.win2, bg='#dddddd')
+        frame1 = tk.Label(self.win2, bg='#dddddd')
         frame1.pack()
-        frame2 = LabelFrame(frame1, text='Gender', padx=50, pady=10)
+        frame2 = LabelFrame(frame1, font=("Arial",15), text='Gender', padx=50, pady=10)
 
-        Label(frame1, text='이름').grid(row=0, column=0, padx=5, pady=5)
-        Label(frame1, text='아이디').grid(row=1, column=0, padx=5, pady=5)
-        Label(frame1, text='비밀번호').grid(row=2, column=0, padx=5, pady=5)
-        Label(frame1, text='전화번호').grid(row=3, column=0, padx=5, pady=5)
+        Label(frame1, font=("Arial",15), text='이름').grid(row=0, column=0, padx=10, pady=10)
+        Label(frame1,  font=("Arial",15),text='아이디').grid(row=1, column=0, padx=10, pady=10)
+        Label(frame1,  font=("Arial",15),text='비밀번호').grid(row=2, column=0, padx=10, pady=10)
+        Label(frame1,  font=("Arial",15),text='전화번호').grid(row=3, column=0, padx=10, pady=10)
         
         var.set(None)
-        Radiobutton(frame2, text='남자', variable=var, value='남자').grid(row=0, column=0)
-        Radiobutton(frame2, text='여자', variable=var, value='여자').grid(row=0, column=1)
+        Radiobutton(frame2,  font=("Arial",15),text='남자', variable=var, value='남자').grid(row=0, column=0)
+        Radiobutton(frame2,  font=("Arial",15),text='여자', variable=var, value='여자').grid(row=0, column=1)
         
         name_Tf = Entry(frame1)
         name_Tf.grid(row=0, column=2)
@@ -163,10 +163,10 @@ class MainUI(tk.Tk):
         
         frame2.grid(row=4, columnspan=3,padx=30)
         
-        check_btn = Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
+        check_btn = Checkbutton(frame1,  font=("Arial",15),text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
         check_btn.grid(row=5, columnspan=4, pady=5)
         
-        submit_btn = Button(frame1, text="Submit", command=submit, padx=50, pady=5, state=DISABLED)
+        submit_btn = Button(frame1,  font=("Arial",20),text="Submit", command=submit, padx=50, pady=5, state=DISABLED)
         submit_btn.grid(row=6, columnspan=4, pady=2)
     
     #3-2. 로그인 페이지 
@@ -230,43 +230,59 @@ class MainUI(tk.Tk):
         self.win5 = tk.Frame(self, relief="flat",bg="white")
         self.win5.place(x=0,y=0,width=800,height=1280)
         self.win5.bind("<Escape>", self.on_escape)
-        
+        def count_down(num):
+            self.win5.countdown_label.place(relx=0.5,y=50,anchor=tk.CENTER)
+            self.win5.countdown_label.configure(text=str(num))
+            if num>1:
+                self.win5.after(1000,count_down,num-1)
+            else:
+                self.win5.after(999,lambda:AfterCapture(Capture(self.win5,self.picam)))
+
         def AfterCapture(frame):
+            self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!")
             frame_rgb = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
             image = Image.fromarray(frame_rgb)
-            resizedImg = image.resize((200,200), Image.LANCZOS)
+            resizedImg = image.resize((300,300), Image.LANCZOS)
             resizedImg = ImageTk.PhotoImage(resizedImg)
             self.win5.imageLabel.config(image=resizedImg)
             self.win5.imageLabel.photo = resizedImg
-            takePhoto_bt.destroy()
+            # self.win5.countdown_label.place_forget()
+            # self.win5.takePhoto_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
-            tk.Button(self.win5, text="다시 찍기", command=lambda:[AfterCapture(Capture(self.win5,self.picam))]).place(x=350,y=630,width=100,height=40)    
+            self.win5.takePhoto_bt.configure(text="재촬영")
+            # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            tk.Button(self.win5, text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)]).place(x=350,y=680,width=100,height=40)
-        
+            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)])
+            select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
         def AfterBrowse(image):
             frame = np.array(image)
-            resizedImg = image.resize((200,200), Image.LANCZOS)
+            resizedImg = image.resize((300,300), Image.LANCZOS)
             saved_image=ImageTk.PhotoImage(resizedImg)
             self.win5.imageLabel.config(image=saved_image)
             # Keeping a reference
             self.win5.imageLabel.photo = saved_image
-            browse_bt.destroy()
+            # browse_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            tk.Button(self.win5, text="사진 선택", command=lambda:[self.p.send(0),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise()]).place(x=350,y=580,width=100,height=40)
+            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)])
+            select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
-        tk.Button(self.win5, text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=700,y=1200,width=40,height=20)
-        browse_bt=tk.Button(self.win5, text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
-        browse_bt.place(x=350,y=580,width=100,height=40)
-        takePhoto_bt=tk.Button(self.win5, text="사진 촬영", command=lambda:[AfterCapture(Capture(self.win5,self.picam))])
-        takePhoto_bt.place(x=350,y=630,width=100,height=40)
+        tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
+        browse_bt=tk.Button(self.win5,font=("Arial",15), text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
+        browse_bt.place(relx=0.5,anchor=tk.CENTER,y=990,width=200,height=70)
+        self.win5.takePhoto_bt=tk.Button(self.win5,font=("Arial",15), text="사진 촬영", command=lambda:[count_down(3)])
+        self.win5.takePhoto_bt.place(relx=0.5,anchor=tk.CENTER,y=1070,width=200,height=70)
         
         self.win5.cameraLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         self.win5.cameraLabel.place(x=144,y=50)
         self.win5.imageLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
-        self.win5.imageLabel.place(x=300,y=700)
+        self.win5.imageLabel.place(relx=0.5,anchor=tk.CENTER,rely=0.6)
+
+        # self.win5.imageLabel2 = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
+        # self.win5.imageLabel2.place(x=300,y=700)
+        self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
+        # self.win5.countdown_label.place(x=350,y=10)
         # Creating object of class VideoCapture with webcam index
         self.win5.cap = self.camera
         # Setting width and height
@@ -315,7 +331,7 @@ class MainUI(tk.Tk):
         self.make_btn(self.frame5, self.img_path2,0)
         self.select_personal()
         
-        tk.Button(self.win6, font=("Arial",15), text="뒤로가기").place(x=680, y=0)
+        tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: self.send_styles()).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
         tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
         tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=245,width=665)
@@ -326,13 +342,13 @@ class MainUI(tk.Tk):
     def send_styles(self):
         if bool(self.dict1) and bool(self.dict2):
             selection=[]
-            style=self.dict1[next(iter(self.dict1))].cget("text")
-            style_name=f"{style}.jpg"
-            color=self.dict2[next(iter(self.dict2))].cget("text")
+            color=self.dict1[next(iter(self.dict1))].cget("text")
             color_name=f"{color}.jpg"
+            style=self.dict2[next(iter(self.dict2))].cget("text")
+            style_name=f"{style}.jpg"
             selection.append(style_name)
             selection.append(color_name)
-            print(selection)
+            self.p.send(selection)  ##selection list=[style,color]
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -520,144 +536,6 @@ class MainUI(tk.Tk):
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)
 
-
-
-
-
-
-
-
-
-
-
-
-        # global img_list9,button_list9,button_dict9,img_list15,button_list15,button_dict15
-
-        # self.num9=2
-        # self.num15=2
-        # button_dict9 = {}
-        # button_dict15 = {}
-
-        # self.win6 = tk.Frame(self, relief="flat",bg="white")
-        # self.win6.place(x=0,y=0,width=800,height=1280)
-        # self.win6.bind("<Escape>", self.on_escape)
-        
-        # ##cmd 실행 안됨!!!!!!!
-        # def personal_cmd():
-        #     selected_image = var.get()
-        #     if selected_image == 1:
-        #         # 첫 번째 이미지에 대한 cmd 명령어 실행
-        #         print("봄웜")
-        #     elif selected_image == 2:
-        #         # 두 번째 이미지에 대한 cmd 명령어 실행
-        #         print("여쿨")
-        #     elif selected_image == 3:
-        #         # 세 번째 이미지에 대한 cmd 명령어 실행
-        #         print("갈웜")
-        #     elif selected_image == 4:
-        #         # 네 번째 이미지에 대한 cmd 명령어 실행
-        #         print("겨쿨")
-
-        # # 배경 이미지 파일 경로
-        # backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
-        # # 전경 이미지 파일 경로
-        # foreground = Image.open("UI/test.png")  ##이미지 받아오기!!!
-        # # 배경 이미지를 원하는 크기로 조정
-        # labels = []
-        # background_images = []
-        # for bg_path in backgrounds:
-        #     background = Image.open(bg_path)
-        #     resized_background = background.resize((80, 96))
-        #     background_images.append(resized_background)
-
-        # def progress_bar():
-        #     frame_progress = tk.LabelFrame(self.win6, text="진행상황")
-        #     frame_progress.grid(row=18, column=1, sticky="ew", padx=10, pady=10,columnspan=6)
-        #     p_var = tk.DoubleVar()
-        #     progress_bar = ttk.Progressbar(frame_progress, maximum=100, variable=p_var)
-        #     progress_bar.pack(fill="x", padx=5, pady=5, ipady=5)
-        #     self.p.send((self.style,self.color))
-        #     for i in range(100):
-        #         time.sleep(0.005)
-        #         p_var.set(i)
-        #         progress_bar.update()
-        #     self.win6.after(100,lambda:[frame_progress.grid_remove(),progress_bar.pack_forget(),self.open_win11(),self.win11.tkraise()])
-        
-        # def toggle_border9(button):
-        #     global num9,button_dict9
-        #     if button.cget("relief") == "solid":
-        #         button.config(relief="flat", highlightthickness=0)
-        #         button_dict9 = {}
-        #     else:
-        #         if bool(button_dict9):
-        #             int_keys = [k for k in button_dict9.keys() if isinstance(k, int)]
-        #             button_dict9[int_keys[0]].config(relief="flat", highlightthickness=0)         
-        #             button_dict9 = {}
-        #         button.config(relief="solid", highlightthickness=2, highlightbackground="red")
-        #         button_dict9[self.num9] = button
-        #         self.style = str(button.cget("text"))
-
-        # def forward_image9():
-        #     global button_dict9
-        #     self.num9 = self.num9 - 1
-        #     for j in range(4):
-        #         idx = num9 * 4
-        #         if (idx>=0 and idx < len(img_list9) and idx < len(img_name9)):
-        #             button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
-        #             name_list9[1][j].configure(text=img_name9[idx])
-        #     if self.num9 in button_dict9.keys():           
-        #         button_dict9[self.num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
-
-        # def next_image9():
-        #     global button_dict9
-        #     self.num9 = self.num9 + 1
-        #     for j in range(4):
-        #         idx = self.num9 * 4 + j
-        #         if (idx>=0 and idx < len(img_list9) and idx < len(img_name9)):
-        #             button_list9[1][j].configure(image=img_list9[idx], relief="flat", highlightthickness=0)
-        #             name_list9[1][j].configure(text=img_name9[idx])
-
-        #     if self.num9 in button_dict9.keys():           
-        #         button_dict9[self.num9].config(relief="solid", highlightthickness=2, highlightbackground="red")
-
-        # def toggle_border15(button):
-        #     global button_dict15
-        #     if button.cget("relief") == "solid":
-        #         button.config(relief="flat", highlightthickness=0)
-        #         button_dict15 = {}
-        #         # self.color = str(button.cget("image"))
-        #     else:
-        #         if bool(button_dict15):
-        #             int_keys = [k for k in button_dict15.keys() if isinstance(k, int)]
-        #             button_dict15[int_keys[0]].config(relief="flat", highlightthickness=0)         
-        #             button_dict15 = {}
-        #         button.config(relief="solid", highlightthickness=2, highlightbackground="red")
-        #         self.color = str(button.cget("text"))
-        #         button_dict15[self.num15] = button
-            
-        # def forward_image15():
-        #     global button_dict15
-        #     self.num15 = self.num15 - 1
-        #     for j in range(4):
-        #         idx = self.num15 * 4 + j
-        #         if (idx>=0 and idx < len(img_list15) and idx < len(img_name15)):
-        #             button_list15[1][j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
-        #             name_list15[1][j].configure(text=img_name15[idx])
-
-        #     if self.num15 in button_dict15.keys():           
-        #         button_dict15[self.num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
-                
-        # def next_image15():
-        #     global button_dict15
-        #     self.num15 = self.num15 + 1
-        #     for j in range(4):
-        #         idx = self.num15 * 4 + j
-        #         if (idx>=0 and idx < len(img_list15) and idx < len(img_name15)):
-        #             button_list15[1][j].configure(image=img_list15[idx], relief="flat", highlightthickness=0)
-        #             name_list15[1][j].configure(text=img_name15[idx])
-        #     if self.num15 in button_dict15.keys():           
-        #         button_dict15[self.num15].config(relief="solid", highlightthickness=2, highlightbackground="red")
-
         # tk.Button(self.win6, text="뒤로가기", command=lambda:[self.win5.tkraise()]).grid(row=0, column=6)
         # tk.Button(self.win6, text="헤어스타일 선택", command=progress_bar).grid(row=17, column=3)
         # tk.Button(self.win6, text="◀", command=forward_image9).grid(row=9, column=1)
@@ -669,101 +547,6 @@ class MainUI(tk.Tk):
         # tk.Label(self.win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
         # tk.Label(self.win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
         # tk.Label(self.win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
-
-        # var=IntVar()
-        # var.set(1)
-        # # 전경 이미지를 윈도우 크기로 조정
-        # resized_foreground = foreground.resize((80, 96))
-
-        # for i, background_image in enumerate(background_images):
-        #     composite_image = Image.alpha_composite(background_image, resized_foreground)
-        #     # ImageTk 객체 생성
-        #     photo = ImageTk.PhotoImage(composite_image)
-        #     # 합성 이미지를 표시할 라벨 생성
-        #     label = tk.Label(self.win6, image=photo)
-        #     label.grid(row=3, column=i+2)
-        #     # 라벨을 리스트에 추가
-        #     labels.append(label)
-        #     # ImageTk 객체에 대한 참조 유지
-        #     label.image = photo
-        #     image_name = backgrounds[i].split(".")[0]  # 이미지 파일 이름 (확장자 제외)
-        #     name_label = tk.Radiobutton(self.win6, text=image_name,variable=var, value=i+1,command=personal_cmd)
-        #     name_label.grid(row=4, column=i+2)
-
-        # if self.user_info["gender"]=='여자':
-        #     dir_path9 = "UI/hairstyles"
-        # elif self.user_info["gender"]=='남자':
-        #     dir_path9 = "UI/hairstyles_men"
-        # dir_path15="UI/colors"
-        # img_path9 = [os.path.join(dir_path9, f) for f in os.listdir(dir_path9) if f.endswith(".png")]
-        # img_path15 = [os.path.join(dir_path15, f) for f in os.listdir(dir_path15) if f.endswith(".png")]
-        # img_size = (80, 80)
-
-        # # 이미지 로드 및 크기 조정
-        # img_list9 = []
-        # img_name9=[]
-        # for i, path in enumerate(img_path9):
-        #     img = Image.open(path)
-        #     img = img.resize(img_size)
-        #     img_list9.append(ImageTk.PhotoImage(img))
-        #     img_name9.append(img_path9[i].split('/')[-1].split('.')[0])  # 경로에서 마지막 부분(파일 이름) 추출
-            
-        # # 이미지를 표시할 버튼 생성
-        # button_list9 = []
-        # name_list9=[]
-        # for i in range(2):
-        #     row_list = []
-        #     row_list2=[]
-        #     for j in range(4):
-        #         button = tk.Button(self.win6, image=None)
-        #         button.grid(row=3*i+6, column=j+2, padx=5)  # 추가 간격 설정
-        #         row_list.append(button)
-        #         label=tk.Label(self.win6,text='')
-        #         label.grid(row=3*i+7, column=j+2, padx=5)
-        #         row_list2.append(label)
-        #     button_list9.append(row_list)
-        #     name_list9.append(row_list2)
-
-        # # 이미지를 버튼에 할당
-        # for i in range(2):
-        #     for j in range(4):
-        #         idx = i * 4 + j
-        #         if idx < len(img_list9):
-        #             button_list9[i][j].configure(text=img_name9[idx],image=img_list9[idx],command=lambda i=i, j=j: toggle_border9(button_list9[i][j]))
-        #             name_list9[i][j].configure(text=img_name9[idx])
-        
-        # # 이미지 로드 및 크기 조정
-        # img_list15 = []
-        # img_name15=[]
-        # for i,path in enumerate(img_path15):
-        #     img = Image.open(path)
-        #     img = img.resize(img_size)
-        #     img_list15.append(ImageTk.PhotoImage(img))
-        #     img_name15.append(img_path15[i].split('/')[-1].split('.')[0])  # 경로에서 마지막 부분(파일 이름) 추출print(img)
-
-        # # 이미지를 표시할 버튼 생성
-        # button_list15 = []
-        # name_list15=[]
-        # for i in range(2):
-        #     row_list = []
-        #     row_list2=[]
-        #     for j in range(4):
-        #         button = tk.Button(self.win6, image=None)
-        #         button.grid(row=3*i+12, column=j+2, padx=5)  # 추가 간격 설정
-        #         row_list.append(button)
-        #         label=tk.Label(self.win6,text='')
-        #         label.grid(row=3*i+13, column=j+2, padx=5)
-        #         row_list2.append(label)
-        #     button_list15.append(row_list)
-        #     name_list15.append(row_list2)
-
-        # # 이미지를 버튼에 할당
-        # for i in range(2):
-        #     for j in range(4):
-        #         idx = i * 4 + j
-        #         if idx < len(img_list15):
-        #             button_list15[i][j].configure(text=img_name15[idx],image=img_list15[idx],command=lambda i=i, j=j: toggle_border15(button_list15[i][j]))
-        #             name_list15[i][j].configure(text=img_name15[idx])
 
 
     def open_win11(self):
