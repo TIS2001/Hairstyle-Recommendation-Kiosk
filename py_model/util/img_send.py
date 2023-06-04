@@ -20,7 +20,7 @@ class ClientVideoSocket:
             print(u'Client socket is connected with Server socket [ TCP_SERVER_IP: ' + self.TCP_SERVER_IP + ', TCP_SERVER_PORT: ' + str(self.TCP_SERVER_PORT) + ' ]')
             self.connectCount = 0
         except Exception as e:
-            print(e)
+            # print(e)
             time.sleep(1)
             self.connectServer()
     def sendImages(self,img):

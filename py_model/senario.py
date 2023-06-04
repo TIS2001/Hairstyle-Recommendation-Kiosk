@@ -345,10 +345,12 @@ class MainUI(tk.Tk):
             color=self.dict1[next(iter(self.dict1))].cget("text")
             color_name=f"{color}.jpg"
             style=self.dict2[next(iter(self.dict2))].cget("text")
-            style_name=f"{style}.jpg"
+            style_name=f"{style}.jpg"   ### ex) selection=[히피펌.jpg,여름소프트_뮤트브라운.jpg]
             selection.append(style_name)
             selection.append(color_name)
-            self.p.send(selection)  ##selection list=[style,color]
+            self.p.send(selection)  
+            self.open_win11()
+            self.win11.tkraise()
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -536,36 +538,32 @@ class MainUI(tk.Tk):
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)
 
-        # tk.Button(self.win6, text="뒤로가기", command=lambda:[self.win5.tkraise()]).grid(row=0, column=6)
-        # tk.Button(self.win6, text="헤어스타일 선택", command=progress_bar).grid(row=17, column=3)
-        # tk.Button(self.win6, text="◀", command=forward_image9).grid(row=9, column=1)
-        # tk.Button(self.win6, text="▶", command=next_image9).grid(row=9, column=6)
-        # tk.Button(self.win6, text="◀", command=forward_image15).grid(row=15, column=1)
-        # tk.Button(self.win6, text="▶", command=next_image15).grid(row=15, column=6)
-        # tk.Label(self.win6,text='간소화된 퍼스널컬러 자가진단: 선택 시 추천 컬러가 바뀝니다.',height=1).grid(row=2, column=2,columnspan=3)
-        # tk.Label(self.win6,text='얼굴형에 따른 추천 헤어스타일',height=1).grid(row=5, column=2,columnspan=3)
-        # tk.Label(self.win6,text='전체 헤어스타일',height=1).grid(row=8, column=3)
-        # tk.Label(self.win6,text='퍼스널컬러에 따른 추천 염색 컬러',height=1).grid(row=11, column=2, columnspan=3)
-        # tk.Label(self.win6,text='전체 염색 컬러',height=1).grid(row=14, column=3)
-
 
     def open_win11(self):
-        self.img = self.p.recv()
+        
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
+        self.win11.after(3000,lambda:[self.open_win12(),self.win12.tkraise()])
+        tk.Label(self.win11,font=("Arial",20),text="Loading..",bg="white").pack(pady=50)
+        self.gif_img = Image.open("UI/loading_blue.gif")
+        self.tk_img = ImageTk.PhotoImage(self.gif_img)
+        self.label = tk.Label(self.win11, image=self.tk_img)
+        self.label.pack(anchor=tk.CENTER,pady=5)
         
-        self.img = self.img.resize((320,240))  # 이미지 크기 조절        
-        photo = ImageTk.PhotoImage(self.img)
-        label = tk.Label(self.win11, image=photo)
-        label.image = photo  # 이미지 객체 유지
-        label.grid(row=2, column=1)
 
-        tk.Button(self.win11, text="뒤로가기", command=lambda:[self.win6.tkraise()]).grid(row=0,column=3)
-        tk.Button(self.win11, text="다시 찍기", command=lambda:[self.win5.tkraise()]).grid(row=3,column=1)
-        tk.Button(self.win11, text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).grid(row=4,column=1)
-        tk.Button(self.win11, text="예약하기", command=lambda:[self.win12.tkrais()]).grid(row=5,column=1)
+        self.update_gif()
+
+    def update_gif(self):
+        try:
+            self.gif_img.seek(self.gif_img.tell() + 1)
+            self.tk_img = ImageTk.PhotoImage(self.gif_img)
+            self.label.configure(image=self.tk_img)
+        except EOFError:
+            self.gif_img.seek(0)
         
+        self.after(100, self.update_gif)
+
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
     def open_win12(self):
         self.win12 = tk.Frame(self, relief="flat",bg="white")
