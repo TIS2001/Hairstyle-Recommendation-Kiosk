@@ -140,25 +140,37 @@ class face_predicter:
     
     
 if __name__=="__main__":
+    import os
+    from tqdm import tqdm
     pre = "dat/shape_predictor_81_face_landmarks.dat"
     det = "dat/mmod_human_face_detector.dat"
     mesh = face_predicter(pre,det)
+    path_ = "./test/man/square"
     
-    img = dlib.load_rgb_image("test.jpg")
-    print(img.shape)
-    print(type(img))
-    img = mesh.align_face(img)
-
-    img.save("align1.png")
+    circle_numpy = []
+    for i in tqdm(os.listdir(path_)):
+        img = dlib.load_rgb_image(os.path.join(path_,i))
+        img = mesh.align_face(img)
+        img = np.array(img)
+        d = mesh.get_landmark(img)
+        circle_numpy.append(d)
+    circle_np = np.array(circle_numpy)
+    circle_np = np.mean(circle_np)
     
-    img = cv2.imread("test.jpg")
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    print(img.shape)
-    print(type(img))
+    print(np.mean(circle_np,axis=0))
+    # np.save("square",circle_np)
+    # print(len(circle_numpy)
+    # print(d)
+    # img.save("align1.png")
+    
+    # img = cv2.imread("test.jpg")
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # print(img.shape)
+    # print(type(img))
 
 
-    img = mesh.align_face(img)
-    img.save("align2.png")
+    # img = mesh.align_face(img)
+    # img.save("align2.png")
 
     # print(type(img))
     # img = pre.run(img)
