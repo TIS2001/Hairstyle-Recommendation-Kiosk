@@ -412,8 +412,10 @@ class MainUI(tk.Tk):
         self.make_btn(self.frame3, self.img_path1,0)
         self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
         self.make_btn(self.frame5, self.img_path2,0)
-        img = self.p.recv()
-        self.select_personal(img)
+        # img = self.p.recv()     #real
+        # self.select_personal(img) #real
+        self.select_personal()  #test
+
         
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: self.send_styles()).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
@@ -589,12 +591,13 @@ class MainUI(tk.Tk):
         if self.ischeck==1:
             self.dict1={}
 
- 
-    def select_personal(self,img):
+    def select_personal(self):  #test
+    # def select_personal(self,img):    #real
         # 배경 이미지 파일 경로
         backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
         # 전경 이미지 파일 경로
-        foreground = img ##이미지 받아오기!!!
+        #foreground = img    #real
+        foreground=Image.open("UI/test.png")    #test
         # 배경 이미지를 원하는 크기로 조정
         labels = []
         background_images = []
