@@ -29,7 +29,6 @@ class ImagesDataset(Dataset):
         im_H = self.image_paths[index]
         # try:
         im_L = im_H.resize((256, 256), PIL.Image.LANCZOS)
-        im_name = "target"
         # except:
         #     im_path = self.image_paths[index]
         #     im_H = Image.open(im_path).convert('RGB')
@@ -40,7 +39,7 @@ class ImagesDataset(Dataset):
             im_H = self.image_transform(im_H)
             im_L = self.image_transform(im_L)
 
-        return im_H, im_L, im_name
+        return im_H, im_L
 
 
 

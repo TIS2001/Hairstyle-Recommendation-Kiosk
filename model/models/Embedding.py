@@ -93,7 +93,7 @@ class Embedding(nn.Module):
 
     def setup_dataloader(self, image_path=None):
 
-        self.dataset = ImagesDataset(opts=self.opts,image_path=image_path)
+        self.dataset = ImagesDataset(opts=self.opts,image_path=image_path)## image 들어가게 수정함.
         self.dataloader = DataLoader(self.dataset, batch_size=1, shuffle=False)
         print("Number of images: {}".format(len(self.dataset)))
 
@@ -209,13 +209,12 @@ class Embedding(nn.Module):
         return _source, target
 
 
-    def invert_images_in_W(self, image_path=None):
+    def invert_images_in_W(self, image_path=None): ## 이미지 들어가게 수정
         self.setup_dataloader(image_path=image_path)
         device = self.opts.device
         ibar = tqdm(self.dataloader, desc='Images')
 
-        for ref_im_H, ref_im_L, ref_name in ibar:
-            print(ref_name[0]) # todo : erease
+        for ref_im_H, ref_im_L in ibar:
             optimizer_W, latent = self.setup_W_optimizer()
             pbar = tqdm(range(self.opts.W_steps), desc='Embedding', leave=False)
             if self.opts.size == 256:
@@ -242,51 +241,50 @@ class Embedding(nn.Module):
                     pbar.set_description('Embedding: Loss: {:.3f}, L2 loss: {:.3f}, Perceptual loss: {:.3f}, P-norm loss: {:.3f}'
                                          .format(loss, loss_dic['l2'], loss_dic['percep'], loss_dic['p-norm']))
 
-                if self.opts.save_intermediate and step % self.opts.save_interval== 0:
-                    self.save_W_intermediate_results(ref_name, gen_im, latent_in, step)
+                # if self.opts.save_intermediate and step % self.opts.save_interval== 0:
+                #     self.save_W_intermediate_results(ref_name, gen_im, latent_in, step)
+            return latent_in.detach().cpu().numpy() ## latent_in 이 numpy파일
 
-            self.save_W_results(ref_name, gen_im, latent_in)
+    # def invert_images_in_W_with_pre_align(self, images):
+    #     device = self.opts.device
+    #     ibar = tqdm(self.dataloader, desc='Images')
+    #     for ref_im_H, ref_im_L, ref_name in ibar:
+    #         optimizer_W, latent = self.setup_W_optimizer()
+    #         pbar = tqdm(range(self.opts.W_steps), desc='Embedding', leave=False)
+    #         for step in pbar:
+    #             optimizer_W.zero_grad()
+    #             latent_in = torch.stack(latent).unsqueeze(0)
 
-    def invert_images_in_W_with_pre_align(self, images):
-        device = self.opts.device
-        ibar = tqdm(self.dataloader, desc='Images')
-        for ref_im_H, ref_im_L, ref_name in ibar:
-            optimizer_W, latent = self.setup_W_optimizer()
-            pbar = tqdm(range(self.opts.W_steps), desc='Embedding', leave=False)
-            for step in pbar:
-                optimizer_W.zero_grad()
-                latent_in = torch.stack(latent).unsqueeze(0)
+    #             gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False)
+    #             im_dict = {
+    #                 'ref_im_H': ref_im_H.to(device),
+    #                 'ref_im_L': ref_im_L.to(device),
+    #                 'gen_im_H': gen_im,
+    #                 'gen_im_L': self.downsample(gen_im)
+    #             }
 
-                gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False)
-                im_dict = {
-                    'ref_im_H': ref_im_H.to(device),
-                    'ref_im_L': ref_im_L.to(device),
-                    'gen_im_H': gen_im,
-                    'gen_im_L': self.downsample(gen_im)
-                }
+    #             loss, loss_dic = self.cal_loss(im_dict, latent_in)
+    #             loss.backward()
+    #             optimizer_W.step()
 
-                loss, loss_dic = self.cal_loss(im_dict, latent_in)
-                loss.backward()
-                optimizer_W.step()
+    #             if self.opts.verbose:
+    #                 pbar.set_description('Embedding: Loss: {:.3f}, L2 loss: {:.3f}, Perceptual loss: {:.3f}, P-norm loss: {:.3f}'
+    #                                      .format(loss, loss_dic['l2'], loss_dic['percep'], loss_dic['p-norm']))
 
-                if self.opts.verbose:
-                    pbar.set_description('Embedding: Loss: {:.3f}, L2 loss: {:.3f}, Perceptual loss: {:.3f}, P-norm loss: {:.3f}'
-                                         .format(loss, loss_dic['l2'], loss_dic['percep'], loss_dic['p-norm']))
+    #             # if self.opts.save_intermediate and step % self.opts.save_interval== 0:
+    #             #     self.save_W_intermediate_results(ref_name, gen_im, latent_in, step)
 
-                if self.opts.save_intermediate and step % self.opts.save_interval== 0:
-                    self.save_W_intermediate_results(ref_name, gen_im, latent_in, step)
+    #         return self.save_W_results(ref_name, gen_im, latent_in) # latent_in >> numpy 파일
 
-            self.save_W_results(ref_name, gen_im, latent_in)
-
-    def invert_images_in_FS(self, image_path=None, trg_name = ''):
+    def invert_images_in_FS(self, image_path=None,latent_W=None):
         self.setup_dataloader(image_path=image_path)
         output_dir = self.opts.output_dir
         embedding_dir = self.opts.embedding_dir
         device = self.opts.device
         ibar = tqdm(self.dataloader, desc='Images')
-        for ref_im_H, ref_im_L, ref_name in ibar:
-            latent_W_path = os.path.join(embedding_dir, 'W+', f'{ref_name[0]}.npy')
-            latent_W = torch.from_numpy(convert_npy_code(np.load(latent_W_path))).to(device)
+        for ref_im_H, ref_im_L in ibar:
+            # latent_W_path = os.path.join(embedding_dir, 'W+', f'{ref_name[0]}.npy')
+            latent_W = torch.from_numpy(convert_npy_code(latent_W)).to(device)
             F_init, _ = self.net.generator([latent_W], input_is_latent=True, return_latents=False, start_layer=0, end_layer=3)
             optimizer_FS, latent_F, latent_S = self.setup_FS_optimizer(latent_W, F_init)
 
@@ -308,13 +306,13 @@ class Embedding(nn.Module):
                 loss, loss_dic = self.cal_loss(im_dict, latent_in)
                 loss.backward()
                 optimizer_FS.step()
-
+                toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1)).save("test3.jpg")
                 if self.opts.verbose:
                     pbar.set_description(
                         'Embedding: Loss: {:.3f}, L2 loss: {:.3f}, Perceptual loss: {:.3f}, P-norm loss: {:.3f}, L_F loss: {:.3f}'
                         .format(loss, loss_dic['l2'], loss_dic['percep'], loss_dic['p-norm'], loss_dic['l_F']))
 
-            self.save_FS_results(ref_name, gen_im, latent_in, latent_F)
+            return {"latent_in":latent_in.detach().cpu().numpy(),"latent_F":latent_F.detach().cpu().numpy()}
 
 
 
@@ -334,50 +332,48 @@ class Embedding(nn.Module):
 
 
 
-    def save_W_results(self, ref_name, gen_im, latent_in):
-        save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
-        save_latent = latent_in.detach().cpu().numpy()
+    # def save_W_results(self, latent_in):
+    #     save_latent = latent_in.detach().cpu().numpy()
 
-        embedding_dir = os.path.join(self.opts.embedding_dir, 'W+')
-        os.makedirs(embedding_dir, exist_ok=True)
+    #     embedding_dir = os.path.join(self.opts.embedding_dir, 'W+')
+    #     os.makedirs(embedding_dir, exist_ok=True)
 
-        latent_path = os.path.join(embedding_dir, f'{ref_name[0]}.npy')
-        image_path = os.path.join(embedding_dir, f'{ref_name[0]}.png')
+    #     # save_im.save(image_path)
 
-        save_im.save(image_path)
-        np.save(latent_path, save_latent)
+    #     # np.save(latent_path, save_latent) ### 여기에 firebase에 올리도록 수정해야됨.
+    #     return save_latent
 
 
+    # def save_W_intermediate_results(self, gen_im, latent_in, step):
 
-    def save_W_intermediate_results(self, ref_name, gen_im, latent_in, step):
-
-        save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
-        save_latent = latent_in.detach().cpu().numpy()
-
-
-        intermediate_folder = os.path.join(self.opts.embedding_dir, 'W+', ref_name[0])
-        os.makedirs(intermediate_folder, exist_ok=True)
-
-        latent_path = os.path.join(intermediate_folder, f'{ref_name[0]}_{step:04}.npy')
-        image_path = os.path.join(intermediate_folder, f'{ref_name[0]}_{step:04}.png')
-
-        save_im.save(image_path)
-        np.save(latent_path, save_latent)
+    #     save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
+    #     save_latent = latent_in.detach().cpu().numpy()
 
 
-    def save_FS_results(self, ref_name, gen_im, latent_in, latent_F):
+    #     intermediate_folder = os.path.join(self.opts.embedding_dir, 'W+', ref_name[0])
+    #     os.makedirs(intermediate_folder, exist_ok=True)
 
-        save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
+    #     # latent_path = os.path.join(intermediate_folder, f'{ref_name[0]}_{step:04}.npy')
+    #     # image_path = os.path.join(intermediate_folder, f'{ref_name[0]}_{step:04}.png')
 
-        embedding_dir = os.path.join(self.opts.embedding_dir, 'FS')
-        os.makedirs(embedding_dir, exist_ok=True)
+    #     save_im.save(image_path)
+    #     np.save(latent_path, save_latent) 
 
-        latent_path = os.path.join(embedding_dir, f'{ref_name[0]}.npz')
-        image_path = os.path.join(embedding_dir, f'{ref_name[0]}.png')
 
-        save_im.save(image_path)
-        np.savez(latent_path, latent_in=latent_in.detach().cpu().numpy(),
-                 latent_F=latent_F.detach().cpu().numpy())
+    # def save_FS_results(self, latent_in, latent_F):
+
+    #     # save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
+
+    #     embedding_dir = os.path.join(self.opts.embedding_dir, 'FS')
+    #     os.makedirs(embedding_dir, exist_ok=True)
+
+    #     # latent_path = os.path.join(embedding_dir, f'{ref_name[0]}.npz')
+    #     # image_path = os.path.join(embedding_dir, f'{ref_name[0]}.png')
+
+    #     # save_im.save(image_path)
+    #     return 
+    #     # np.savez(latent_path, latent_in=latent_in.detach().cpu().numpy(),
+    #     #          latent_F=latent_F.detach().cpu().numpy())
 
 
     def set_seed(self):

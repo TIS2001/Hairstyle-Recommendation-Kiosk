@@ -54,10 +54,10 @@ def convert_npy_code(latent):
 
 
 
-def load_FS_latent(latent_path, device):
-    dict = np.load(latent_path)
-    latent_in = torch.from_numpy(dict['latent_in']).to(device)
-    latent_F = torch.from_numpy(dict['latent_F']).to(device)
+def load_FS_latent(latent, device):
+    # dict = np.load(latent_path)
+    latent_in = torch.from_numpy(latent['latent_in']).to(device)
+    latent_F = torch.from_numpy(latent['latent_F']).to(device)
 
     return latent_in, latent_F
 
