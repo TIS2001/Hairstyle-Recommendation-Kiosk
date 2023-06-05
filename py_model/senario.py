@@ -58,9 +58,9 @@ class MainUI(tk.Tk):
         self.StartFrame = tk.Frame(self, relief="flat",bg="white")
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
 
-        button_start = tk.Button(self.StartFrame, text="시작하기", width=16, height=7, command=lambda:[self.win1.tkraise()])
-        button_start.pack(anchor="center",pady=200)
-        button_start.configure(font=(20))
+        button_start = tk.Button(self.StartFrame, text="시작하기", width=20, height=7, command=lambda:[self.win1.tkraise()])
+        button_start.pack(anchor="center",pady=300)
+        button_start.configure(font=("Arial",18))
         
         self.StartFrame.bind("<Escape>", self.on_escape)
 
@@ -78,16 +78,16 @@ class MainUI(tk.Tk):
         self.win1.place(x=0,y=0,width=800,height=1280)
         self.win1.bind("<Escape>", self.on_escape)
         button_back = tk.Button(self.win1, text="뒤로가기", command=lambda:[self.StartFrame.tkraise()])
-        button_back.configure(font=(20))
-        button_back.place(x=670, y=10)
+        button_back.configure(font=("Arial",12))
+        button_back.place(x=700, y=10)
         
-        button_reg = tk.Button(self.win1, text="회원가입하기", width=15, height=5, command=lambda:[self.win2.tkraise()])
-        button_reg.configure(font=(20))
-        button_reg.place(x=150, y=100)
+        button_reg = tk.Button(self.win1, text="회원가입하기", width=20, height=5, command=lambda:[self.win2.tkraise()])
+        button_reg.configure(font=("Arial",18))
+        button_reg.place(relx=0.5,anchor=tk.CENTER, y=350)
         
-        button_login = tk.Button(self.win1, text="로그인하기", width=15, height=5, command=lambda:[self.win3.tkraise()])
-        button_login.configure(font=(20))
-        button_login.place(x=450, y=100)
+        button_login = tk.Button(self.win1, text="로그인하기", width=20, height=5, command=lambda:[self.win3.tkraise()])
+        button_login.configure(font=("Arial",18))
+        button_login.place(relx=0.5,anchor=tk.CENTER, y=550)
     
 
     
