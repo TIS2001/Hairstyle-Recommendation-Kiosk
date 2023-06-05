@@ -39,6 +39,8 @@ class MainUI(tk.Tk):
         self.open_win2()
         self.open_win3()
         self.open_win4()
+        self.open_win11()
+        # self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.open_win12()
         self.StartFrame.tkraise()
     
@@ -332,7 +334,8 @@ class MainUI(tk.Tk):
             self.win5.takePhoto_bt.configure(text="재촬영")
             # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise()])
+            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
+                                command=lambda:AfterSelelct(1,image_name,image))
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterBrowse(image):
@@ -346,9 +349,19 @@ class MainUI(tk.Tk):
             # browse_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise()])
+            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
+                                command=lambda:AfterSelelct(0,image_name,image))
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
+        def AfterSelelct(mode,image_name,image):
+            self.win11.tkraise()
+            self.win11.after(1000,lambda:[self.open_win6(),self.win6.tkraise()])
+            self.p.send(mode)
+            self.p.send(image_name)
+            attach_photo(self.bucket,self.user_info["name"],image)
+            
+            # self.win11.after(20000,self.win6.tkraise)
+            
 
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
         tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
@@ -435,8 +448,9 @@ class MainUI(tk.Tk):
             selection.append(style_name)
             selection.append(color_name)
             self.p.send(selection)  
-            self.open_win11()
+            # self.open_win11()
             self.win11.tkraise()
+            self.win11.after(3000,self.win12.tkraise)
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -629,18 +643,15 @@ class MainUI(tk.Tk):
 
 
     def open_win11(self):
-        
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
-        self.win11.after(3000,lambda:[self.open_win12(),self.win12.tkraise()])
+        # self.win11.after(3000,self.win12.tkraise)
         tk.Label(self.win11,font=("Arial",20),text="Loading..",bg="white").pack(pady=50)
         self.gif_img = Image.open("UI/loading_blue.gif")
         self.tk_img = ImageTk.PhotoImage(self.gif_img)
         self.label = tk.Label(self.win11, image=self.tk_img)
         self.label.pack(anchor=tk.CENTER,pady=5)
-        
-
         self.update_gif()
 
     def update_gif(self):
@@ -650,8 +661,6 @@ class MainUI(tk.Tk):
             self.label.configure(image=self.tk_img)
         except EOFError:
             self.gif_img.seek(0)
-
-        
         self.after(100, self.update_gif)
 
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
