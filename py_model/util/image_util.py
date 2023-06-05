@@ -59,15 +59,17 @@ def imageBrowse(bucket,name):
 def attach_photo(bucket,name, image):
     
     if image:
+        with io.BytesIO() as stream:
         # 이미지를 Firebase Storage에 업로드
-        imgByteArr = io.BytesIO()
+        # imgByteArr = io.BytesIO()
         # image.save expects a file-like as a argument
-        image.save(imgByteArr, format='JPEG')
-        # Turn the BytesIO object back into a bytes object
-        # imgByteArr = imgByteArr.getvalue()
-        blob = bucket.blob(f'customers/{name}_photo.jpg')
-        blob.upload_from_file(imgByteArr)
-        print("사진이 성공적으로 첨부되었습니다.")
+            image.save(stream, format='JPEG')
+            # Turn the BytesIO object back into a bytes object
+            # imgByteArr = imgByteArr.getvalue()
+            stream.seek(0)
+            blob = bucket.blob(f'customers/{name}_photo.jpg')
+            blob.upload_from_file(stream)
+            print("사진이 성공적으로 첨부되었습니다.")
     else:
         print("파일 없습니다.")
 

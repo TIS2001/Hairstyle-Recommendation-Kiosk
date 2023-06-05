@@ -589,25 +589,8 @@ class MainUI(tk.Tk):
         if self.ischeck==1:
             self.dict1={}
 
-<<<<<<< HEAD
+ 
     def select_personal(self,img):
-=======
-    def recommend_style(self):
-        selected_image = self.var.get()
-        if selected_image == 1:
-            dir_path = "UI/colors/봄웜"
-        elif selected_image == 2:
-            dir_path = "UI/colors/여쿨"
-        elif selected_image == 3:
-            dir_path = "UI/colors/갈웜"
-        elif selected_image == 4:
-            dir_path = "UI/colors/겨쿨"
-        
-        self.make_btn(self.frame2, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".JPG")],0)
-        if self.ischeck==1:
-            self.dict1={}
-    def select_personal(self):
->>>>>>> eab1acc1ae532cfc84368fbc96437a6e65cdacda
         # 배경 이미지 파일 경로
         backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
         # 전경 이미지 파일 경로
@@ -815,23 +798,18 @@ def main(p):
     UI = MainUI(p)
 
 def server(p):
-    # server = ClientVideoSocket("211.243.232.32",7100)
-    # server.connectServer()
+    server = ClientVideoSocket("211.243.232.32",7100)
+    server.connectServer()
     mode= p.recv()
     print(mode)
-    # server.sock.send(str(mode).encode('utf-8'))
+    server.sock.send(str(mode).encode('utf-8'))
     image_name = p.recv()
-<<<<<<< HEAD
     # print(image_name)
     
     
     server.sock.send(image_name.encode('utf-8'))
     img = server.receiveImages()
     p.send(img)
-=======
-    print(image_name)
-    # server.sock.send(image_name.encode('utf-8'))
->>>>>>> eab1acc1ae532cfc84368fbc96437a6e65cdacda
     style,color = p.recv()
     print(style,color)
     # server.sock.send(style.encode('utf-8'))
