@@ -1,3 +1,4 @@
+# -- coding: utf-8 --
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
@@ -7,21 +8,22 @@ from PIL import Image, ImageTk
 import cv2
 from tkinter import messagebox, filedialog
 import time
-import os
+import os, sys
 from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
 from multiprocessing import Process, Pipe
-
+import subprocess
 class MainUI(tk.Tk):
 
     def __init__(self,p,picam=True):
-
         tk.Tk.__init__(self)
         self.picam = picam
         self.p = p
         self.firebase_init()
+        # os.system("onboard")
+        
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
@@ -73,7 +75,6 @@ class MainUI(tk.Tk):
         self.win1 = tk.Frame(self, relief="flat",bg="white")
         self.win1.place(x=0,y=0,width=800,height=1280)
         self.win1.bind("<Escape>", self.on_escape)
-
         button_back = tk.Button(self.win1, text="뒤로가기", command=lambda:[self.StartFrame.tkraise()])
         button_back.configure(font=(20))
         button_back.place(x=670, y=10)
@@ -92,6 +93,7 @@ class MainUI(tk.Tk):
     def open_win2(self):
         var = StringVar()
         cb = IntVar()
+        subprocess.Popen(["onboard"])
         
         # def selection():
         #     ## global selection이 무슨 의민지 모르겠음
@@ -138,7 +140,7 @@ class MainUI(tk.Tk):
                 var.set(None)
                 
                 messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
-                
+                subprocess.call(["pkill","onboard"])
                 self.open_win1()
                 self.win2.withdraw()
             except Exception as ep:
@@ -223,6 +225,8 @@ class MainUI(tk.Tk):
     
     #3-2. 로그인 페이지 
     def open_win3(self):
+        subprocess.Popen(["onboard"])
+
         self.win3 = tk.Frame(self, relief="flat",bg="white")
         self.win3.place(x=0,y=0,width=800,height=1280)
         self.win3.bind("<Escape>", self.on_escape)
@@ -242,6 +246,7 @@ class MainUI(tk.Tk):
                     if password == customer_data['password']:
                         self.user_info = customer_data
                         messagebox.showinfo("로그인 성공", f'어서오세요, {self.user_info["name"]}님.')
+                        subprocess.call(["pkill","onboard"])
                         self.win4.tkraise()
                     else:
                         messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
@@ -327,7 +332,7 @@ class MainUI(tk.Tk):
             self.win5.takePhoto_bt.configure(text="재촬영")
             # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)])
+            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise()])
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterBrowse(image):
@@ -341,7 +346,7 @@ class MainUI(tk.Tk):
             # browse_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)])
+            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise()])
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
 
@@ -391,7 +396,7 @@ class MainUI(tk.Tk):
         self.img_name1=[]
         self.img_name2=[]
         self.img_path1=[os.path.join("UI/colors/전체", f) for f in os.listdir("UI/colors/전체") if f.endswith(".JPG")]
-        self.img_path2=[os.path.join("UI/hairstyles_men", f) for f in os.listdir("UI/hairstyles_men") if f.endswith(".png")]
+        self.img_path2=[os.path.join("UI/hairstyles/female/전체", f) for f in os.listdir("UI/hairstyles/female/전체") if f.endswith(".jpg")]
         self.append_list(self.img_path1,self.img_list1,self.img_name1)
         self.append_list(self.img_path2,self.img_list2,self.img_name2)
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
@@ -583,6 +588,20 @@ class MainUI(tk.Tk):
         if self.ischeck==1:
             self.dict1={}
 
+    def recommend_style(self):
+        selected_image = self.var.get()
+        if selected_image == 1:
+            dir_path = "UI/colors/봄웜"
+        elif selected_image == 2:
+            dir_path = "UI/colors/여쿨"
+        elif selected_image == 3:
+            dir_path = "UI/colors/갈웜"
+        elif selected_image == 4:
+            dir_path = "UI/colors/겨쿨"
+        
+        self.make_btn(self.frame2, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".JPG")],0)
+        if self.ischeck==1:
+            self.dict1={}
     def select_personal(self):
         # 배경 이미지 파일 경로
         backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
@@ -791,18 +810,18 @@ def main(p):
     UI = MainUI(p)
 
 def server(p):
-    server = ClientVideoSocket("211.243.232.32",7100)
-    server.connectServer()
+    # server = ClientVideoSocket("211.243.232.32",7100)
+    # server.connectServer()
     mode= p.recv()
     print(mode)
-    server.sock.send(str(mode).encode('utf-8'))
+    # server.sock.send(str(mode).encode('utf-8'))
     image_name = p.recv()
     print(image_name)
-    server.sock.send(image_name.encode('utf-8'))
+    # server.sock.send(image_name.encode('utf-8'))
     style,color = p.recv()
     print(style,color)
-    server.sock.send(style.encode('utf-8'))
-    server.sock.send(color.encode('utf-8'))        
+    # server.sock.send(style.encode('utf-8'))
+    # server.sock.send(color.encode('utf-8'))        
     # cv2.imwrite("test.png",img)
     # print(type(img))
     # img.save("test.png")    
