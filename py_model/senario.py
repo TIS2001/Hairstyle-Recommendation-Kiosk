@@ -14,7 +14,9 @@ import numpy as np
 from multiprocessing import Process, Pipe
 
 class MainUI(tk.Tk):
+
     def __init__(self,p,picam=True):
+
         tk.Tk.__init__(self)
         self.picam = picam
         self.p = p
@@ -246,6 +248,7 @@ class MainUI(tk.Tk):
             resizedImg = ImageTk.PhotoImage(resizedImg)
             self.win5.imageLabel.config(image=resizedImg)
             self.win5.imageLabel.photo = resizedImg
+
             # self.win5.countdown_label.place_forget()
             # self.win5.takePhoto_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
@@ -254,6 +257,7 @@ class MainUI(tk.Tk):
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
             select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)])
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
+
         def AfterBrowse(image):
             frame = np.array(image)
             resizedImg = image.resize((300,300), Image.LANCZOS)
@@ -261,11 +265,13 @@ class MainUI(tk.Tk):
             self.win5.imageLabel.config(image=saved_image)
             # Keeping a reference
             self.win5.imageLabel.photo = saved_image
+
             # browse_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
             select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", command=lambda:[self.p.send(1),self.p.send(image_name),attach_photo(self.bucket,self.user_info["name"],image),self.open_win6(),self.win6.tkraise(),self.img_thread(frame)])
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
+
 
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
         tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
@@ -517,7 +523,7 @@ class MainUI(tk.Tk):
             background = Image.open(bg_path)
             resized_background = background.resize((150, 150))
             background_images.append(resized_background)
-        
+
         # 전경 이미지를 윈도우 크기로 조정
         resized_foreground = foreground.resize((150, 150))
         self.var=tk.IntVar(value=-1)
@@ -534,6 +540,7 @@ class MainUI(tk.Tk):
             # ImageTk 객체에 대한 참조 유지
             label.image = photo
             image_name = backgrounds[i].split(".")[0]  # 이미지 파일 이름 (확장자 제외)
+
             name_label = tk.Radiobutton(self.frame1, font=("Arial", 13), text=image_name, variable=self.var, value=i+1,
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)

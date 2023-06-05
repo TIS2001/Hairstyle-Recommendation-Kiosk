@@ -12,3 +12,6 @@ py_model/UI/photos/
 model/models/__pycache__/Alignment.cpython-38.pyc
 model/models/face_parsing/__pycache__/model.cpython-38.pyc
 py_model/multitest.py
+model/models/__pycache__/Alignment.cpython-38.pyc
+model/utils/__pycache__/image_utils.cpython-38.pyc
+model/mmm.py

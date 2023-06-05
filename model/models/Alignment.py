@@ -114,10 +114,6 @@ class Alignment(nn.Module):
     def setup_align_loss_builder(self, no_face=False):
         self.loss_builder = AlignLossBuilder(self.opts, no_face = no_face)
 
-    def preprocess_img(self, img_path, is_downsampled = True):
-        im = Image.open(img_path)
-        return self.preprocess_PILImg(im, is_downsampled = is_downsampled)
-
     def preprocess_PILImg(self, im, is_downsampled = True):
         im = torchvision.transforms.ToTensor()(im)[:3].unsqueeze(0).to(self.opts.device)
         if is_downsampled:
@@ -135,28 +131,26 @@ class Alignment(nn.Module):
         seg_target = torch.argmax(down_seg, dim=1).long()
         return im, seg_target
 
-    def create_target_segmentation_mask(self, img_path1, img_path2, sign, save_intermediate=True, is_downsampled = True):
+    def create_target_segmentation_mask(self, img_path1, img2, style_numpy, sign, save_intermediate=True, is_downsampled = True): ## img1, img2 == PIL
 
         im = self.preprocess_PILImg(img_path1, is_downsampled = is_downsampled)
         im1, seg_target1 = self.get_img_and_seg_from_path(im, is_downsampled= is_downsampled)
 
-        if self.opts.save_all:
-            save_vis_mask(img_path1, img_path2, seg_target1[0].cpu(), self.opts.save_dir, count='0_initial_src_seg')
         ggg = torch.where(seg_target1 == 0, torch.zeros_like(seg_target1), torch.ones_like(seg_target1)) # 0 : background
         hair_mask1 = torch.where(seg_target1 == 10, torch.ones_like(seg_target1), torch.zeros_like(seg_target1)) # 10 : hair
         seg_target1 = seg_target1[0].byte().cpu().detach()
         seg_target1 = torch.where(seg_target1 == 10, torch.zeros_like(seg_target1), seg_target1) # hair 부분 제외한 나머지 segmap
 
-        im = self.preprocess_img(img_path2, is_downsampled=is_downsampled)
+        im = self.preprocess_PILImg(img2, is_downsampled=is_downsampled)
         im2, seg_target2 = self.get_img_and_seg_from_path(im, is_downsampled=is_downsampled)
-        original_img_path2 = img_path2
+        original_img_path2 = img2
 
         if self.opts.optimize_warped_trg_mask:
             # 220131 target warping optimization + 220204
             im1_for_kp = F.interpolate(im1, size=(256, 256))
             im1_for_kp = ((im1_for_kp + 1) / 2).clamp(0, 1) # [0, 1] 사이로 
             src_kp_hm = self.kp_extractor.face_alignment_net(im1_for_kp)
-            im2, warped_latent_2, warped_down_seg = self.warp_target(img_path2, src_kp_hm, None, img_path1) # Warping !!
+            im2, warped_latent_2, warped_down_seg = self.warp_target(style_numpy, src_kp_hm, None,img2) # Warping !!
 
             warped_down_seg, im2 = self.create_down_seg(warped_latent_2, is_downsampled=is_downsampled)
             if is_downsampled == False:
@@ -168,27 +162,18 @@ class Alignment(nn.Module):
 
         hair_mask2 = torch.where(seg_target2 == 10, torch.ones_like(seg_target2), torch.zeros_like(seg_target2))
         seg_target2 = seg_target2[0].byte().cpu().detach()
-        if self.opts.save_all:
-            save_vis_mask(img_path1, img_path2, seg_target1.cpu(), self.opts.save_dir, count='0_erased_src_seg')
+
         new_target = torch.where(seg_target2 == 10, 10 * torch.ones_like(seg_target1), seg_target1) # put target hair on the target seg 1 (Here, seg_target1 has no hair region)
-        if self.opts.save_all:
-            save_vis_mask(img_path1, img_path2, new_target.cpu(), self.opts.save_dir, count='0_initial_target_seg')
 
         if self.opts.mean_seg:
             if self.opts.warped_seg: # mean_seg is the warped target img's seg
                 mean_seg = warped_down_seg.cpu().squeeze().type(torch.ByteTensor) # 512, 512 or 256, 256
-                if self.opts.save_all:
-                    save_vis_mask(img_path1, img_path2, mean_seg.cpu(),self.opts.save_dir,count='1_warped_target_seg')
-
+                
             new_target_mean_seg = torch.where((new_target == 0) * (mean_seg != 0), mean_seg, new_target) ## 220213 edited by taeu
-            if self.opts.save_all:
-                save_vis_mask(img_path1, img_path2, new_target_mean_seg.cpu(), self.opts.save_dir,count='1_warped_target+source_seg')
             target_mask = new_target_mean_seg.unsqueeze(0).long().to(self.opts.device)
 
         #####################  Save Visualization of Target Segmentation Mask
-        if self.opts.save_all:
-            save_vis_mask(img_path1, img_path2, target_mask.squeeze().cpu(),self.opts.save_dir, count='2_final_target_seg')
-
+        
         hair_mask_target = torch.where(target_mask == 10, torch.ones_like(target_mask), torch.zeros_like(target_mask))
         if is_downsampled:
             hair_mask_target = F.interpolate(hair_mask_target.float().unsqueeze(0), size=(512, 512), mode='nearest')
@@ -196,16 +181,33 @@ class Alignment(nn.Module):
             hair_mask_target = F.interpolate(hair_mask_target.float().unsqueeze(0), size=(self.opts.size, self.opts.size), mode='nearest')
 
         if self.opts.optimize_warped_trg_mask:
-            im = self.preprocess_img(original_img_path2, is_downsampled=is_downsampled)
+            im = self.preprocess_PILImg(original_img_path2, is_downsampled=is_downsampled)
             im2, seg_target2 = self.get_img_and_seg_from_path(im, is_downsampled=is_downsampled)
             hair_mask2 = torch.where(seg_target2 == 10, torch.ones_like(seg_target2), torch.zeros_like(seg_target2))
             return target_mask, hair_mask_target, hair_mask1, hair_mask2, warped_latent_2
         else:
             return target_mask, hair_mask_target, hair_mask1, hair_mask2, None
 
-    def setup_align_optimizer(self, latent_path=None):
-        if latent_path:
-            latent_W = torch.from_numpy(convert_npy_code(np.load(latent_path))).to(self.opts.device).requires_grad_(True)
+    # def setup_align_optimizer(self, latent_path=None):
+    #     if latent_path:
+    #         latent_W = torch.from_numpy(convert_npy_code(np.load(latent_path))).to(self.opts.device).requires_grad_(True)
+    #     else:
+    #         latent_W = self.net.latent_avg.reshape(1, 1, 512).repeat(1, 18, 1).clone().detach().to(self.opts.device).requires_grad_(True)
+
+    #     opt_dict = {
+    #         'sgd': torch.optim.SGD,
+    #         'adam': torch.optim.Adam,
+    #         'sgdm': partial(torch.optim.SGD, momentum=0.9),
+    #         'adamax': torch.optim.Adamax
+    #     }
+
+    #     optimizer_align = opt_dict[self.opts.opt_name]([latent_W], lr=self.opts.learning_rate)
+
+    #     return optimizer_align, latent_W
+
+    def setup_align_optimizer(self, latent=None): ## input numpy
+        if latent.any():
+            latent_W = torch.from_numpy(convert_npy_code(latent)).to(self.opts.device).requires_grad_(True)
         else:
             latent_W = self.net.latent_avg.reshape(1, 1, 512).repeat(1, 18, 1).clone().detach().to(self.opts.device).requires_grad_(True)
 
@@ -275,7 +277,7 @@ class Alignment(nn.Module):
             optimizer_align_with_blend = opt_dict[self.opts.opt_name]([latent_1, latent_interpolation], lr=self.opts.learning_rate)
         return optimizer_align_with_blend, latent_1, latent_interpolation
 
-    def align_images(self, img_path1, img_path2, sign='realistic', align_more_region=False, smooth=5,
+    def align_images(self, img_path1, img_path2,target_numpy, style_numpy, sign='realistic', align_more_region=False, smooth=5,
                      save_intermediate=True):
 
 
@@ -289,20 +291,20 @@ class Alignment(nn.Module):
 
         # Step 2-1 : Warp target hair image with source pose
         target_mask, hair_mask_target, hair_mask1, hair_mask2, warped_latent_2 = \
-            self.create_target_segmentation_mask(img_path1=img_path1, img_path2=img_path2, sign=sign,
+            self.create_target_segmentation_mask(img_path1=img_path1, img2=img_path2, sign=sign,style_numpy=style_numpy,
                                                  save_intermediate=save_intermediate, is_downsampled = is_downsampled)
 
-        im_name_1 = "target" # source image : identity
-        im_name_2 = os.path.splitext(os.path.basename(img_path2))[0] # target image : hairstyle
+        # im_name_1 = "target" # source image : identity
+        # im_name_2 = os.path.splitext(os.path.basename(img_path2))[0] # target image : hairstyle
 
-        latent_FS_path_1 = os.path.join(embedding_dir, 'FS', f'{im_name_1}.npz')
-        latent_FS_path_2 = os.path.join(embedding_dir, 'FS', f'{im_name_2}.npz')
+        # latent_FS_path_1 = os.path.join(embedding_dir, 'FS', f'{im_name_1}.npz') ## FS_im_name_1.npz target
+        # latent_FS_path_2 = os.path.join(embedding_dir, 'FS', f'{im_name_2}.npz') ## FS_im_name_2.npz style
 
-        latent_1, latent_F_1 = load_FS_latent(latent_FS_path_1, device) # [1,18,512], [1, 512, 32, 32]
-        latent_2, latent_F_2 = load_FS_latent(latent_FS_path_2, device)
+        latent_1, latent_F_1 = load_FS_latent(target_numpy[0], device) # [1,18,512], [1, 512, 32, 32]
+        latent_2, latent_F_2 = load_FS_latent(style_numpy[0], device)
 
-        latent_W_path_1 = os.path.join(embedding_dir, 'W+', f'{im_name_1}.npy')
-        latent_W_path_2 = os.path.join(embedding_dir, 'W+', f'{im_name_2}.npy')
+        # latent_W_path_1 = os.path.join(embedding_dir, 'W+', f'{im_name_1}.npy') ## target numpy
+        # latent_W_path_2 = os.path.join(embedding_dir, 'W+', f'{im_name_2}.npy')
 
         pbar = tqdm(range(self.opts.align_steps1), desc='Align Step 1', leave=False) # Optimize src latent with Aligned Mask
 
@@ -313,7 +315,7 @@ class Alignment(nn.Module):
             I_1 = load_image(img_path2, downsample=is_downsampled).to(device).unsqueeze(0)
             I_2 = load_image(img_path2, downsample=is_downsampled).to(device).unsqueeze(0)  ## downsample True : 256, 256
 
-            down_seg2, _, _ = self.seg(self.preprocess_img(img_path2, is_downsampled=is_downsampled))
+            down_seg2, _, _ = self.seg(self.preprocess_PILImg(img_path2, is_downsampled=is_downsampled))
             down_seg2 = F.interpolate(down_seg2, size=(256, 256))
             seg_target2 = torch.argmax(down_seg2, dim=1).long()
             hair_mask_2 = (seg_target2 == 10) * 1.0
@@ -321,11 +323,10 @@ class Alignment(nn.Module):
             # HM_1D, _ = cuda_unsqueeze(dilate_erosion_mask_path(img_path1, self.seg, is_downsampled=is_downsampled), device)
             # HM_2D, HM_2E = cuda_unsqueeze(dilate_erosion_mask_path(img_path2, self.seg, is_downsampled=is_downsampled), device)
             if self.opts.align_src_first:
-                aligned_latent_1 = self.optimize_src_latent_with_aligned_mask(latent_W_path_1, target_mask, latent_1, is_downsampled)
+                aligned_latent_1 = self.optimize_src_latent_with_aligned_mask(target_numpy[1], target_mask, latent_1, is_downsampled)
                 aligned_latent_1 = aligned_latent_1.detach().clone().to(device)
                 optimizer_align_with_blend, _, latent_interpolation = self.setup_align_with_blend_optimizer(None, only_interpolation=True)
-            else:
-                optimizer_align_with_blend, aligned_latent_1, latent_interpolation = self.setup_align_with_blend_optimizer(latent_1)
+
             warped_latent_2 = warped_latent_2.detach().clone().to(device)
             with torch.no_grad():
                 warped_gen_im, _ = self.net.generator([warped_latent_2], input_is_latent=True, return_latents=False,
@@ -522,42 +523,37 @@ class Alignment(nn.Module):
 
         _, gen_im = self.create_down_seg(latent_in, is_downsampled=is_downsampled)
         save_im = toPIL(((gen_im + 1) / 2).clamp(0, 1).squeeze().cpu())
-        if self.opts.save_all:
-            save_im.save(os.path.join(self.opts.save_dir, '4_Aligned_src_img.png'))
+
 
         return latent_align_1
 
-    def save_align_results(self, im_name_1, im_name_2, sign, gen_im, latent_in, latent_F, save_intermediate=False, save_name ='1'):
+    # def save_align_results(self, im_name_1, im_name_2, sign, gen_im, latent_in, latent_F, save_intermediate=False, save_name ='1'):
 
-        save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
+    #     save_im = toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1))
 
-        save_dir = os.path.join(self.opts.output_dir, 'Align_{}'.format(sign))
-        os.makedirs(save_dir, exist_ok=True)
+    #     save_dir = os.path.join(self.opts.output_dir, 'Align_{}'.format(sign))
+    #     os.makedirs(save_dir, exist_ok=True)
 
-        latent_path = os.path.join(save_dir, '{}_{}.npz'.format(im_name_1, im_name_2))
-        if save_intermediate:
-            image_path = os.path.join(save_dir, '{}_{}_{}.png'.format(im_name_1, im_name_2, save_name))
-            save_im.save(image_path)
-        if self.opts.save_all:
-            save_im.save(os.path.join(self.opts.save_dir, '5_latent_F_mixed_output.png'))
-        np.savez(latent_path, latent_in=latent_in.detach().cpu().numpy(), latent_F=latent_F.detach().cpu().numpy())
+    #     latent_path = os.path.join(save_dir, '{}_{}.npz'.format(im_name_1, im_name_2))
 
-    def warp_target(self, img_path2, src_kp_hm, src_ypr, img_path1):
+    #     np.savez(latent_path, latent_in=latent_in.detach().cpu().numpy(), latent_F=latent_F.detach().cpu().numpy())
 
-        im_name_1 =  "target"
-        output_dir = self.opts.output_dir
-        embedding_dir = self.opts.embedding_dir
+    def warp_target(self, latent_style, src_kp_hm, src_ypr, img2):
+
+        # im_name_1 =  "target"
+        # output_dir = self.opts.output_dir
+        # embedding_dir = self.opts.embedding_dir
         is_downsampled = self.opts.size > 256
         device = self.opts.device
-        im_name_2 = os.path.splitext(os.path.basename(img_path2))[0]  # target image : hair
+        # im_name_2 = os.path.splitext(os.path.basename(img_path2))[0]  # target image : hair
 
-        latent_FS_path_2 = os.path.join(embedding_dir, 'FS', f'{im_name_2}.npz')
-        latent_W_path_2 = os.path.join(embedding_dir, 'W+', f'{im_name_2}.npy')
-        latent_2, latent_F_2 = load_FS_latent(latent_FS_path_2, device)  # [1,18,512], [1, 512, 32, 32]
+        # latent_FS_path_2 = os.path.join(embedding_dir, 'FS', f'{im_name_2}.npz')
+        # latent_W_path_2 = os.path.join(embedding_dir, 'W+', f'{im_name_2}.npy')
+        latent_2, latent_F_2 = load_FS_latent(latent_style[0], device)  # [1,18,512], [1, 512, 32, 32]
 
 
         # todo : change 40 to self.opts.warp_steps
-        optimizer_warp_w, latent_warped_2 = self.setup_align_optimizer(latent_W_path_2)
+        optimizer_warp_w, latent_warped_2 = self.setup_align_optimizer(latent_style[1]) ## 수정필요
         pbar = tqdm(range(self.opts.warp_steps), desc='Warp Target Step 1', leave=False)
         latent_W_optimized = latent_warped_2
         latent_F_optimized = None
@@ -565,40 +561,38 @@ class Alignment(nn.Module):
         if self.opts.warp_front_part:
             mode = 'w+_6'
 
-        cur_check_dir = None
         # cur_check_dir = f'{self.opts.output_dir}warped_result_{mode}_{self.opts.kp_type}/'
         # if self.opts.warp_loss_with_prev_list is not None:
         #     cur_check_dir += f'{self.opts.warp_loss_with_prev_list}/'
         # os.makedirs(cur_check_dir, exist_ok=True)
 
         warped_down_seg = None
-        latent_in, warped_down_seg = self.optimize_warping(pbar, optimizer_warp_w, latent_W_optimized, latent_F_optimized, mode, is_downsampled, src_kp_hm, im_name_1, im_name_2, cur_check_dir, img_path1, img_path2)
+        latent_in, warped_down_seg = self.optimize_warping(pbar, optimizer_warp_w, latent_W_optimized, latent_F_optimized, mode, is_downsampled, src_kp_hm, img2)
         latent_F = None
 
         ## save img
-        gen_im = self.save_warp_result(latent_F, latent_in, is_downsampled, cur_check_dir,im_name_2, im_name_1)
+        gen_im = self.save_warp_result(latent_F, latent_in, is_downsampled)
         return gen_im, latent_in, warped_down_seg
        
-    def save_warp_result(self, latent_F, latent_in, is_downsampled, cur_check_dir, im_name_2, im_name_1):
+    def save_warp_result(self, latent_F, latent_in, is_downsampled):
         if latent_F is not None:
             gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False,
                                            start_layer=4,
                                            end_layer=8, layer_in=latent_F)
         else:
             _, gen_im = self.create_down_seg(latent_in, is_downsampled=is_downsampled)
-        if cur_check_dir is not None:
-            save_im = toPIL(((gen_im + 1) / 2).clamp(0, 1).squeeze().cpu())
-            save_im.save(cur_check_dir + f'{im_name_2}_with_{im_name_1}_pose.png')
+        # if cur_check_dir is not None:
+        #     save_im = toPIL(((gen_im + 1) / 2).clamp(0, 1).squeeze().cpu())
+        #     save_im.save(cur_check_dir + f'{im_name_2}_with_{im_name_1}_pose.png')
         return gen_im
 
     def _loss_lpips(self, gen_im, ref_im, **kwargs): # added 220208
         return self.percept(gen_im, ref_im).sum()
 
     # 220303 added
-    def get_sp_mask(self, ref_im256_slic, seg_hair_ref256_slic, prev_centroids=None, im_path=None, im1024=None):
+    def get_sp_mask(self, ref_im256_slic, seg_hair_ref256_slic, prev_centroids=None, ref_im=None, im1024=None):
 
-        if im_path is not None:
-            ref_im = Image.open(im_path).convert('RGB')
+        if ref_im is not None:
             ref_im1024 = self.image_transform1024(ref_im).unsqueeze(0).to(self.opts.device)
         else:
             ref_im1024 = im1024
@@ -645,15 +639,12 @@ class Alignment(nn.Module):
         return grid_mask_large256.to(self.opts.device), sp_ref_im.to(
             self.opts.device), slic_segments, prev_centroids, closest_indices
 
-    def optimize_warping(self, pbar, optimizer_warp, latent_W_optimized, latent_F_optimized, mode, is_downsampled,
-                         src_kp_hm,
-                         im_name_1, im_name_2, cur_check_dir, img_path1, img_path2):
+    def optimize_warping(self, pbar, optimizer_warp, latent_W_optimized, latent_F_optimized, mode, is_downsampled, src_kp_hm, ref_im):
 
         if 'w+_6' == mode:
             latent_end = latent_W_optimized[:, 6:, :].clone().detach()
 
         # for style_loss
-        ref_im = Image.open(img_path2).convert('RGB')
         ref_im256 = ref_im.resize((256, 256), PIL.Image.LANCZOS)
         ref_im256 = self.image_transform(ref_im256).unsqueeze(0).to(self.opts.device)
 
@@ -679,8 +670,7 @@ class Alignment(nn.Module):
             self.slic_numSegments = 5 # todo : opts
             lambda_hair = 1000 #  todo : opts
 
-            # cur_check_dir += f'{self.slic_compactness}_{self.slic_numSegments}_{lambda_hair}/'
-            # os.makedirs(cur_check_dir, exist_ok=True)
+
 
             ref_im256_slic = (((ref_im256[0] + 1) / 2).clamp(0, 1)).permute(1, 2, 0).detach().cpu().numpy()
             seg_hair_ref256_slic = seg_hair_ref256[0].detach().cpu().numpy()
@@ -744,12 +734,12 @@ class Alignment(nn.Module):
 
                         sp_gen_mask_large256, sp_gen_im, prev_slic_segments, prev_centroids, closest_indices \
                             = self.get_sp_mask(gen_im256_slic, seg_hair_gen256_slic, prev_centroids=prev_centroids,
-                                               im_path=None, im1024=gen_im1024)
+                                               ref_im=None, im1024=gen_im1024)
 
                         if step == 0:
                             sp_ref_mask_large256, sp_ref_im, ref_slic_segments, ref_centroids, _ \
                                 = self.get_sp_mask(ref_im256_slic, seg_hair_ref256_slic, prev_centroids=prev_centroids_ref,
-                                                   im_path=img_path2)
+                                                   ref_im=ref_im)
                             points = prev_centroids[0].copy()  # n, 2
                             points_prev = ref_centroids[0].copy()  # 6, 2
                             points_repeat = np.repeat(np.array(points)[:, np.newaxis], ref_centroids.shape[0],
@@ -790,29 +780,10 @@ class Alignment(nn.Module):
 
             loss.backward()
             optimizer_warp.step()
-            # if step % 10 == 0 : ### warped result save step size
-            #     cur_check_dir = f'{self.opts.output_dir}check_hair/'
-            #     os.makedirs(cur_check_dir, exist_ok=True)
-            #     print(f'{step}: ', loss_dict)
-            #     save_im = toPIL(gen_im.squeeze().cpu())
-            #     aaa = torch.zeros((3, 256, 256))
-            #     kp_prob =  F.interpolate(torch.max(gen_kp_hm, dim=1)[0].unsqueeze(0).cpu(), size=(256, 256))
-            #     aaa[0] = kp_prob[0][0]
-            #     kp_im = toPIL(torch.cat((gen_im.squeeze().cpu(), aaa), dim=-1))
-            #
-            #     save_im.save(cur_check_dir + f'{im_name_2}_with_{im_name_1}_pose_{step}.png')
-            #     # added for debug
-            #     if 'style_hair_slic_large' in self.opts.warp_loss_with_prev_list:
-            #         save_image(torch.cat([sp_gen_im * sp_gen_mask_large256, sp_ref_im * sp_ref_mask_large256]),
-            #                    cur_check_dir + f'{im_name_2}_with_{im_name_1}_sp_gen_ref_{step}.png', normalize=True,
-            #                    nrow=sp_gen_im.shape[0])
-
             prev_im = gen_im.clone().detach()
             prev_seg = torch.argmax(down_seg.clone().detach(), dim=1).long()
 
-        if self.opts.save_all:
-            save_im = toPIL(gen_im.squeeze().cpu())
-            save_im.save(os.path.join(self.opts.save_dir, '1_warped_img.png'))
+
         if 'F' in mode:
             return latent_F_optimized, latent_W_optimized
         if self.opts.warped_seg:
