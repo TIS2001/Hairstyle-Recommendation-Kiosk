@@ -54,7 +54,7 @@ class ClientVideoSocket:
         data = numpy.frombuffer(base64.b64decode(stringData), dtype = numpy.uint8)
         decimg = cv2.imdecode(data, 1)
         pil_img = Image.fromarray(decimg, "RGB")
-        self.sock.close()
+        # self.sock.close()
         # pil_img.save("test.png")
         return pil_img
 

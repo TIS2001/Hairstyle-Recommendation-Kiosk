@@ -8,6 +8,9 @@ import numpy as np
 import pybase64 as base64
 import io
 from PIL import Image
+from rembg import remove
+
+
 
 class Database:
     def __init__(self):
@@ -64,17 +67,20 @@ if __name__ == "__main__":
     det = "utils/dat/mmod_human_face_detector.dat"
     mesh = face_predicter(pre,det)
     model = Img_model()
-    # server = ServerSocket()
+    server = ServerSocket()
     db = Database()
     
     for i in range(1):
-        # conn , addr = server.sock.accept()
-        # mode = conn.recv(1).decode('utf-8')
-        # image_name = conn.recv(64).decode('utf-8')
+        server.conn , server.addr = server.sock.accept()
+        mode = server.conn.recv(1).decode('utf-8')
+        image_name = server.conn.recv(64).decode('utf-8')
 
-        mode = 0
+        
+        # mode = 0
         image_name = "선동진_photo"
         img = db.download_image_file(f"customers/{image_name}.jpg")
+        output = remove(img)
+        server.sendImages(output)
         img = mesh.run(np.array(img))
         if mode: 
             ## 얼굴형 판단 후 고객 정보에 저장 구현 필요
@@ -99,6 +105,6 @@ if __name__ == "__main__":
         # cv2.imwrite("test4.jpg",res_img)
         # dying_img = model.dying_main(res_img,color)
         server.sendImages(dying_img)
-        conn.close()
+        server.conn.close()
         # except:
             # pass
