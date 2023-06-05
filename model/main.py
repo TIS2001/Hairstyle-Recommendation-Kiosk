@@ -75,6 +75,8 @@ if __name__ == "__main__":
         mode = 0
         image_name = "선동진_photo"
         img = db.download_image_file(f"customers/{image_name}.jpg")
+        
+        
         img = mesh.run(np.array(img))
         if mode: 
             ## 얼굴형 판단 후 고객 정보에 저장 구현 필요
