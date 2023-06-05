@@ -39,8 +39,8 @@ class MainUI(tk.Tk):
         self.open_win2()
         self.open_win3()
         self.open_win4()
-        self.open_win11()
-        # self.win11 = tk.Frame(self, relief="flat",bg="white")
+        # self.open_win10()
+        # self.win10 = tk.Frame(self, relief="flat",bg="white")
         self.open_win12()
         self.StartFrame.tkraise()
     
@@ -299,13 +299,21 @@ class MainUI(tk.Tk):
         def baro():
             self.isBaro=True
             # print(self.isBaro)
-            
-        tk.Button(self.win4, text="뒤로가기", command=lambda:[self.win3.tkraise()]).pack(padx=10,pady=10, side="top", anchor="ne")
-        tk.Button(self.win4, text="바로 예약하기", width=15, height=5, command=lambda:[baro(),self.win12.tkraise()]).pack(pady=10)
+
+        button_back = tk.Button(self.win4, text="뒤로가기", command=lambda:[self.win3.tkraise()])
+        button_back.configure(font=("Arial",12))
+        button_back.place(x=700, y=10)
+        
+        button_reg = tk.Button(self.win4, text="바로 예약하기", width=20, height=5, command=lambda:[baro(),self.win12.tkraise()])
+        button_reg.configure(font=("Arial",18))
+        button_reg.place(relx=0.5,anchor=tk.CENTER, y=350)
         if self.picam:
-            tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()]).pack(pady=10)
+            button_login = tk.Button(self.win4, text="헤어스타일 합성", width=20, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()])
         else:
-            tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.open_win5(),self.win5.tkraise()]).pack(pady=10)
+            button_login = tk.Button(self.win4, text="헤어스타일 합성", width=20, height=5, command=lambda:[self.open_win5(),self.win5.tkraise()])
+        button_login.configure(font=("Arial",18))
+        button_login.place(relx=0.5,anchor=tk.CENTER, y=550)
+
     #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
     def open_win5(self):
         self.win5 = tk.Frame(self, relief="flat",bg="white")
@@ -354,13 +362,13 @@ class MainUI(tk.Tk):
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterSelelct(mode,image_name,image):
-            self.win11.tkraise()
-            self.win11.after(1000,lambda:[self.open_win6(),self.win6.tkraise()])
-            self.p.send(mode)
-            self.p.send(image_name)
+            self.open_win10()
+            self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
+            # self.p.send(mode)   #real
+            # self.p.send(image_name) #real
             attach_photo(self.bucket,self.user_info["name"],image)
             
-            # self.win11.after(20000,self.win6.tkraise)
+            # self.win10.after(20000,self.win6.tkraise)
             
 
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
@@ -448,9 +456,9 @@ class MainUI(tk.Tk):
             selection.append(style_name)
             selection.append(color_name)
             self.p.send(selection)  
-            # self.open_win11()
-            self.win11.tkraise()
-            self.win11.after(3000,self.win12.tkraise)
+            self.open_win11()
+            self.open_win10()
+            self.win10.after(3000,lambda:[self.win10.destroy(),self.win11.tkraise()])
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -642,26 +650,45 @@ class MainUI(tk.Tk):
             name_label.grid(row=4, column=i+2,padx=5)
 
 
-    def open_win11(self):
-        self.win11 = tk.Frame(self, relief="flat",bg="white")
-        self.win11.place(x=0,y=0,width=800,height=1280)
-        self.win11.bind("<Escape>", self.on_escape)
-        # self.win11.after(3000,self.win12.tkraise)
-        tk.Label(self.win11,font=("Arial",20),text="Loading..",bg="white").pack(pady=50)
+    def open_win10(self):
+        self.win10 = tk.Toplevel(self, relief="flat",bg="white")
+        self.win10.geometry("800x1280")
+        self.win10.bind("<Escape>", self.on_escape)
+        # self.win10.after(3000,self.win12.tkraise)
+        tk.Label(self.win10,font=("Arial",20),text="Loading..",bg="white").pack(pady=50)
         self.gif_img = Image.open("UI/loading_blue.gif")
         self.tk_img = ImageTk.PhotoImage(self.gif_img)
-        self.label = tk.Label(self.win11, image=self.tk_img)
+        self.label = tk.Label(self.win10, image=self.tk_img)
         self.label.pack(anchor=tk.CENTER,pady=5)
         self.update_gif()
 
     def update_gif(self):
+        print("update")
         try:
             self.gif_img.seek(self.gif_img.tell() + 1)
             self.tk_img = ImageTk.PhotoImage(self.gif_img)
             self.label.configure(image=self.tk_img)
         except EOFError:
             self.gif_img.seek(0)
-        self.after(100, self.update_gif)
+        self.win10.after(100, self.update_gif)
+
+    def open_win11(self):
+        # self.img = self.p.recv()    #real
+        self.img=Image.open("UI/loading_basic.gif")
+        self.win11 = tk.Frame(self, relief="flat",bg="white")
+        self.win11.place(x=0,y=0,width=800,height=1280)
+        self.win11.bind("<Escape>", self.on_escape)
+        
+        self.img = self.img.resize((320,240))  # 이미지 크기 조절        
+        photo = ImageTk.PhotoImage(self.img)
+        label = tk.Label(self.win11, image=photo)
+        label.image = photo  # 이미지 객체 유지
+        label.grid(row=2, column=1)
+
+        tk.Button(self.win11, text="뒤로가기", command=lambda:[self.win6.tkraise()]).grid(row=0,column=3)
+        tk.Button(self.win11, text="다시 찍기", command=lambda:[self.win5.tkraise()]).grid(row=3,column=1)
+        tk.Button(self.win11, text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).grid(row=4,column=1)
+        tk.Button(self.win11, text="예약하기", command=lambda:[self.win12.tkraise()]).grid(row=5,column=1)
 
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
     def open_win12(self):
@@ -787,7 +814,7 @@ class MainUI(tk.Tk):
             # print("뒤로가기")
             return lambda:[self.win4.tkraise()]
         else:
-            return lambda:[self.win11.tkraise()]
+            return lambda:[self.win10.tkraise()]
 
     #13. 예약 완료 텍스트 or 확인 팝업창
     def open_win13(self):
