@@ -41,7 +41,7 @@ class MainUI(tk.Tk):
         self.open_win4()
         # self.open_win10()
         # self.win10 = tk.Frame(self, relief="flat",bg="white")
-        self.open_win12()
+      #  self.open_win12()
         self.StartFrame.tkraise()
     
     def camera_init(self):
@@ -67,8 +67,8 @@ class MainUI(tk.Tk):
 
 
     def firebase_init(self):
-        cred = credentials.Certificate('./UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
-        self.firebase_app = initialize_app(cred, { 'storageBucket': 'easylogin-58c28.appspot.com'})
+        cred = credentials.Certificate('./UI/princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
+        self.firebase_app = initialize_app(cred, { 'storageBucket': 'princess-maker-1f45e.appspot.com'})
         self.db = firestore.client()
     
     
@@ -130,7 +130,8 @@ class MainUI(tk.Tk):
                     'id': id,
                     'password': password,
                     'phoneNumber': phoneNumber,
-                    'gender' : gender
+                    'gender' : gender,
+                    'shape' : None
                 }
                 doc_ref.set(self.user_info)
                 
@@ -363,11 +364,17 @@ class MainUI(tk.Tk):
 
         def AfterSelelct(mode,image_name,image):
             self.open_win10()
-            self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
-            # self.p.send(mode)   #real
-            # self.p.send(image_name) #real
             attach_photo(self.bucket,self.user_info["name"],image)
-            
+
+            # while(self.user_info['shape']==None):
+            #     pass
+            #self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
+            self.p.send(mode)   #real
+            self.p.send(image_name) #real
+            while(self.user_info['shape']==None):
+                pass
+            self.open_win6()
+            self.win6.tkraise()
             # self.win10.after(20000,self.win6.tkraise)
             
 
@@ -431,12 +438,13 @@ class MainUI(tk.Tk):
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
+        self.recommend_style()
+        # self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
         self.make_btn(self.frame5, self.img_path2,0)
-        # img = self.p.recv()     #real
-        # self.select_personal(img) #real
-        self.select_personal()  #test
-
+        img = self.p.recv()     #real
+        self.select_personal(img) #real
+        # self.select_personal()  #test
+#
         
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: self.send_styles()).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
@@ -458,7 +466,9 @@ class MainUI(tk.Tk):
             self.p.send(selection)  
             self.open_win11()
             self.open_win10()
-            self.win10.after(3000,lambda:[self.win10.destroy(),self.win11.tkraise()])
+            self.img = self.p.recv()
+            self.win10.destroy()
+            self.win11.tkraise()
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -597,7 +607,10 @@ class MainUI(tk.Tk):
             dict_var[page] = button
             if button.winfo_parent() == str(self.frame2):
                 self.ischeck=1
-
+    def recommend_style(self):
+        dir_path="UI/hairstyles/female/"+self.user_info["shape"]
+        
+        self.make_btn(self.frame4,[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
     def personal_cmd(self):
         selected_image = self.var.get()
         if selected_image == 1:
@@ -613,13 +626,13 @@ class MainUI(tk.Tk):
         if self.ischeck==1:
             self.dict1={}
 
-    def select_personal(self):  #test
-    # def select_personal(self,img):    #real
+    # def select_personal(self):  #test
+    def select_personal(self,img):    #real
         # 배경 이미지 파일 경로
         backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
         # 전경 이미지 파일 경로
-        #foreground = img    #real
-        foreground=Image.open("UI/test.png")    #test
+        foreground = img    #real
+        # foreground=Image.open("UI/test.png")    #test
         # 배경 이미지를 원하는 크기로 조정
         labels = []
         background_images = []
@@ -651,6 +664,7 @@ class MainUI(tk.Tk):
 
 
     def open_win10(self):
+        print("open win10")
         self.win10 = tk.Toplevel(self, relief="flat",bg="white")
         self.win10.geometry("800x1280")
         self.win10.bind("<Escape>", self.on_escape)
@@ -663,7 +677,7 @@ class MainUI(tk.Tk):
         self.update_gif()
 
     def update_gif(self):
-        print("update")
+        # print("update")
         try:
             self.gif_img.seek(self.gif_img.tell() + 1)
             self.tk_img = ImageTk.PhotoImage(self.gif_img)
@@ -673,8 +687,8 @@ class MainUI(tk.Tk):
         self.win10.after(100, self.update_gif)
 
     def open_win11(self):
-        # self.img = self.p.recv()    #real
-        self.img=Image.open("UI/loading_basic.gif")
+        self.img = self.p.recv()    #real
+        # self.img=Image.open("UI/loading_basic.gif")  #test
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
