@@ -67,8 +67,8 @@ class MainUI(tk.Tk):
 
 
     def firebase_init(self):
-        cred = credentials.Certificate('./UI/easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
-        self.firebase_app = initialize_app(cred, { 'storageBucket': 'easylogin-58c28.appspot.com'})
+        cred = credentials.Certificate('./UI/princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
+        self.firebase_app = initialize_app(cred, { 'storageBucket': 'princess-maker-1f45e.appspot.com'})
         self.db = firestore.client()
     
     
@@ -112,6 +112,7 @@ class MainUI(tk.Tk):
             password = password_Tf.get()
             phoneNumber = phoneNumber_Tf.get()
             gender = var.get()
+            shape = None
 
             
             if not name or not id or not password or not phoneNumber or not gender:
@@ -130,7 +131,8 @@ class MainUI(tk.Tk):
                     'id': id,
                     'password': password,
                     'phoneNumber': phoneNumber,
-                    'gender' : gender
+                    'gender' : gender,
+                    'shape' : None
                 }
                 doc_ref.set(self.user_info)
                 
@@ -363,7 +365,12 @@ class MainUI(tk.Tk):
 
         def AfterSelelct(mode,image_name,image):
             self.open_win10()
-            self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
+            while (self.user_info["shape"]==None):
+                pass
+            self.win10.destroy()
+            self.open_win6()
+            self.win6.tkraise()
+            # self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
             # self.p.send(mode)   #real
             # self.p.send(image_name) #real
             attach_photo(self.bucket,self.user_info["name"],image)
@@ -599,8 +606,8 @@ class MainUI(tk.Tk):
             if button.winfo_parent() == str(self.frame2):
                 self.ischeck=1
 
-    def recommend_style(self):
-        dir_path="UI/hairstyles/female/"+self.p.recv()  #real ????
+    def recommend_style(self):       
+        dir_path="UI/hairstyles/female/"+self.user_info["shape"]  #real ????
         self.make_btn(self.frame4, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
         
     def personal_cmd(self):
