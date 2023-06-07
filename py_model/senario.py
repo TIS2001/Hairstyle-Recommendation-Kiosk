@@ -431,7 +431,8 @@ class MainUI(tk.Tk):
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
+        self.recommend_style()
+        # self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
         # img = self.p.recv()     #real
         # self.select_personal(img) #real
@@ -598,6 +599,10 @@ class MainUI(tk.Tk):
             if button.winfo_parent() == str(self.frame2):
                 self.ischeck=1
 
+    def recommend_style(self):
+        dir_path="UI/hairstyles/female/"+self.p.recv()  #real ????
+        self.make_btn(self.frame4, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
+        
     def personal_cmd(self):
         selected_image = self.var.get()
         if selected_image == 1:
@@ -673,14 +678,14 @@ class MainUI(tk.Tk):
         self.win10.after(100, self.update_gif)
 
     def open_win11(self):
-        # self.img = self.p.recv()    #real
-        self.img=Image.open("UI/loading_basic.gif")
+        # self.result = self.p.recv()    #real
+        self.result=Image.open("UI/loading_basic.gif")
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
         
-        self.img = self.img.resize((320,240))  # 이미지 크기 조절        
-        photo = ImageTk.PhotoImage(self.img)
+        self.result = self.result.resize((320,240))  # 이미지 크기 조절        
+        photo = ImageTk.PhotoImage(self.result)
         label = tk.Label(self.win11, image=photo)
         label.image = photo  # 이미지 객체 유지
         label.grid(row=2, column=1)
