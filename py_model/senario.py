@@ -320,6 +320,7 @@ class MainUI(tk.Tk):
         self.win5 = tk.Frame(self, relief="flat",bg="white")
         self.win5.place(x=0,y=0,width=800,height=1280)
         self.win5.bind("<Escape>", self.on_escape)
+        self.centerImage=0
         def count_down(num):
             self.win5.countdown_label.place(relx=0.5,y=50,anchor=tk.CENTER)
             self.win5.countdown_label.configure(text=str(num))
@@ -330,13 +331,17 @@ class MainUI(tk.Tk):
 
         def AfterCapture(frame):
             self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!")
+            if self.centerImage:
+                # resized=self.centerImage.resize((100,100), Image.LANCZOS)
+                # resizedImg = img.resize((100,100),Image.LANCZOS)
+                self.win5.imageLabel2.config(image=self.centerImage)
+                self.win5.imageLabel2.photo = self.centerImage
             frame_rgb = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
             image = Image.fromarray(frame_rgb)
             resizedImg = image.resize((300,300), Image.LANCZOS)
-            resizedImg = ImageTk.PhotoImage(resizedImg)
-            self.win5.imageLabel.config(image=resizedImg)
-            self.win5.imageLabel.photo = resizedImg
-
+            self.centerImage = ImageTk.PhotoImage(resizedImg)
+            self.win5.imageLabel.config(image=self.centerImage)
+            self.win5.imageLabel.photo = self.centerImage
             # self.win5.countdown_label.place_forget()
             # self.win5.takePhoto_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
@@ -344,16 +349,20 @@ class MainUI(tk.Tk):
             # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
             select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-                                command=lambda:AfterSelelct(1,image_name,image))
+                                command=lambda:AfterSelelct(1,image_name,self.centerImage))
             select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterBrowse(image):
-            frame = np.array(image)
+            if self.centerImage:
+                # resizedImg = img.resize((100,100),Image.LANCZOS)
+                # resized=self.centerImage.resize((100,100), Image.LANCZOS)
+                self.win5.imageLabel2.config(image=self.centerImage)
+                self.win5.imageLabel2.photo = self.centerImage
             resizedImg = image.resize((300,300), Image.LANCZOS)
-            saved_image=ImageTk.PhotoImage(resizedImg)
-            self.win5.imageLabel.config(image=saved_image)
+            self.centerImage=ImageTk.PhotoImage(resizedImg)
+            self.win5.imageLabel.config(image=self.centerImage)
             # Keeping a reference
-            self.win5.imageLabel.photo = saved_image
+            self.win5.imageLabel.photo = self.centerImage
 
             # browse_bt.destroy()
             image_name = f"{self.user_info['name']}_photo.jpg"
@@ -382,14 +391,17 @@ class MainUI(tk.Tk):
         tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
         browse_bt=tk.Button(self.win5,font=("Arial",15), text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
         browse_bt.place(relx=0.5,anchor=tk.CENTER,y=990,width=200,height=70)
-        self.win5.takePhoto_bt=tk.Button(self.win5,font=("Arial",15), text="사진 촬영", command=lambda:[count_down(3)])
-        self.win5.takePhoto_bt.place(relx=0.5,anchor=tk.CENTER,y=1070,width=200,height=70)
+        
         
         self.win5.cameraLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         self.win5.cameraLabel.place(x=144,y=50)
         self.win5.imageLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         self.win5.imageLabel.place(relx=0.5,anchor=tk.CENTER,rely=0.6)
+        self.win5.imageLabel2 = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
+        self.win5.imageLabel2.place(x=144,y=50)
 
+        self.win5.takePhoto_bt=tk.Button(self.win5,font=("Arial",15), text="사진 촬영", command=lambda:[count_down(3)])
+        self.win5.takePhoto_bt.place(relx=0.5,anchor=tk.CENTER,y=1070,width=200,height=70)
         # self.win5.imageLabel2 = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         # self.win5.imageLabel2.place(x=300,y=700)
         self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
