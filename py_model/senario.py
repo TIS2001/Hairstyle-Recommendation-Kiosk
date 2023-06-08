@@ -188,19 +188,6 @@ class MainUI(tk.Tk):
         button_login.configure(font=(20))
         button_login.place(x=450, y=100)
         
-        #채팅방 로드
-        self.driver.get(self.ChatRoom_LSH)  
-        time.sleep(3)  
-
-
-        #메시지 작성
-        self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료')
-        time.sleep(1)
-        self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼
-
-    
-
-    
     #3-1. 회원가입 페이지
     def open_win2(self):
         var = StringVar()
@@ -828,7 +815,16 @@ class MainUI(tk.Tk):
                 
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
-                
+            
+            #채팅방 로드
+            self.driver.get(self.ChatRoom_LSH)  
+            time.sleep(3)  
+
+
+            #메시지 작성
+            self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료', reservation_time)
+            time.sleep(1)
+            self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
             print("예약이 완료되었습니다.")   
        
         def download_image(filename):
