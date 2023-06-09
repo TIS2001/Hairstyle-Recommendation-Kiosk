@@ -17,7 +17,18 @@ class Database:
         self.cred = credentials.Certificate('./princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
         self.firebase_app = initialize_app(self.cred, { 'storageBucket': 'princess-maker-1f45e.appspot.com'})
         self.bucket = storage.bucket(app=self.firebase_app)
-
+        self.db = firestore.client()
+        self.shape_name = {0:"square_shaped",1:"circle_shaped",2:"egg_shaped",3:"long_shaped"}
+        
+    def get_info(self,id):
+        self.doc_ref = self.db.collection('customers').document(id)
+        doc = self.doc_ref.get()
+        self.customer_data = doc.to_dict()
+        
+    def shape_update(self,shape):
+        self.customer_data["shape"] = self.shape_name[shape]
+        self.doc_ref.set(customer_data)
+    
     def download_npy_file(self,file_name):
         with io.BytesIO() as stream:
             blob = self.bucket.blob(file_name)
@@ -65,23 +76,31 @@ class Database:
 if __name__ == "__main__":
     pre = "utils/dat/shape_predictor_81_face_landmarks.dat"
     det = "utils/dat/mmod_human_face_detector.dat"
-    mesh = face_predicter(pre,det)
+    face_pre = face_predicter(pre,det)
     model = Img_model()
     server = ServerSocket()
     db = Database()
-    
-    for i in range(1):
-        server.conn , server.addr = server.sock.accept()
-        mode = server.conn.recv(1).decode('utf-8')
-        image_name = server.conn.recv(64).decode('utf-8')
 
-        
+    
+    while True:
+        server.conn , server.addr = server.sock.accept()
+        print("Connected")
+        # try:
+        mode = server.conn.recv(1).decode('utf-8')
+        print(mode)
+        image_name = server.conn.recv(64).decode('utf-8').split(".")
+        print(image_name)
         # mode = 0
-        image_name = "선동진_photo"
-        img = db.download_image_file(f"customers/{image_name}.jpg")
+        # image_name = "선동진_photo"
+        info = db.get_info(image_name[0])
+        img = db.download_image_file(f"customers/{image_name[0]}.{image_name[1]}")
+        
         output = remove(img)
-        server.sendImages(output)
-        img = mesh.run(np.array(img))
+        server.sendImages_png(output)
+        img = face_pre.run(np.array(img))
+        shape = face_pre.face_shape(img,db.customer_data["gender"])
+        db.shape_update(shape)
+    
         if mode: 
             ## 얼굴형 판단 후 고객 정보에 저장 구현 필요
             target_numpy =  model.img_maker(img) ## [0] latent_in [1] latent_FS
@@ -104,7 +123,7 @@ if __name__ == "__main__":
         res_img = model.align.align_images(img, style_img,target_numpy,style_numpy, "fidelity", align_more_region=False, smooth=5)
         # cv2.imwrite("test4.jpg",res_img)
         # dying_img = model.dying_main(res_img,color)
-        server.sendImages(dying_img)
+        # server.sendImages(dying_img)
         server.conn.close()
         # except:
-            # pass
+        #     pass

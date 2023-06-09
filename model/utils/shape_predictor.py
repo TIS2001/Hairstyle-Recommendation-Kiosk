@@ -7,7 +7,7 @@ import dlib
 from pathlib import Path
 import torchvision
 import cv2
-
+import os
 """
 brief: face alignment with FFHQ method (https://github.com/NVlabs/ffhq-dataset)
 author: lzhbrian (https://lzhbrian.me)
@@ -27,6 +27,19 @@ class face_predicter:
     def __init__(self,pre,det):
         self.predictor = dlib.shape_predictor(pre)
         self.detector = dlib.cnn_face_detection_model_v1(det)
+        self.shape_init("./dat")
+    
+    def shape_init(self,path):
+        self.shape_numpy = {"man":[],"woman":[]}
+        paths = ["man","woman"]
+        for j in paths:
+            for i in os.listdir(os.path.join(path,j)):
+                if os.path.splitext(i)[1] != ".npy":
+                    continue ## 에러처리해야댐
+                # print(i)
+                np_path = os.path.join(path,j,i)
+                self.shape_numpy[j].append(np.load(np_path))
+            
     def get_landmark(self,img):
         """get landmark with dlib
         :return: np.array shape=(68, 2)
@@ -39,6 +52,30 @@ class face_predicter:
         lm = np.array([[tt.x, tt.y] for tt in shape.parts()])
 
         return lm
+
+    def face_shape(self,img,gender=1): # PIL
+        img = np.array(img)
+        target_landmark = self.get_landmark(img)
+        target_landmark = np.concatenate([target_landmark[0: 17],target_landmark[68:]])
+        # print(target_landmark)
+        if gender:
+            shape_dat = self.shape_numpy["man"]
+        else:
+            shape_dat = self.shape_numpy["woman"]
+        gb_error = float("inf")
+        for i,shape_landmark in enumerate(shape_dat):
+            # print(np.abs(shape_landmark - target_landmark))
+            error = sum(sum(np.abs(shape_landmark - target_landmark)))
+            print(error)
+            # print(error)
+            if gb_error > error :
+                gb_error = error
+                shape = i
+        return shape
+
+        
+
+
 
     def align_face(self,img):
         """
@@ -143,22 +180,49 @@ if __name__=="__main__":
     pre = "dat/shape_predictor_81_face_landmarks.dat"
     det = "dat/mmod_human_face_detector.dat"
     mesh = face_predicter(pre,det)
+    # img_shape = "long"
     
-    img = dlib.load_rgb_image("test.jpg")
-    print(img.shape)
-    print(type(img))
-    img = mesh.align_face(img)
-
-    img.save("align1.png")
+    # img_dir = "./test/woman/"+img_shape
+    img_path = "./test/woman/egg/다운로드2.jpg"
+    # circle = []
+    # for i in os.listdir(img_dir):
+    #     img_path = os.path.join(img_dir,i)
+    #     if os.path.splitext(img_path)[1] ==".npy":
+    #         continue 
+    #     img = dlib.load_rgb_image(img_path)
+    #     img = mesh.align_face(img)
+    #     img = np.array(img)
+    #     lan = mesh.get_landmark(img)
+    #     lan = np.concatenate([lan[0:17],lan[68:]])
+    #     circle.append(lan)
+    # circle = np.array(circle)
+    # circle = np.mean(circle,axis = 0)
+    # np.save(os.path.join(img_dir,img_shape),circle)
     
-    img = cv2.imread("test.jpg")
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    print(img.shape)
-    print(type(img))
-
-
+    
+    img = dlib.load_rgb_image(img_path)
     img = mesh.align_face(img)
-    img.save("align2.png")
+    img = np.array(img)
+    lan = mesh.get_landmark(img)
+    lan = np.concatenate([lan[0:17],lan[68:]])
+    shape = mesh.face_shape(img,0)
+
+    print(shape)
+
+
+    # print(circle)
+    # print(circle.shape)
+
+    # img.save("align1.png")
+    
+    # img = cv2.imread("test.jpg")
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # print(img.shape)
+    # print(type(img))
+
+
+    # img = mesh.align_face(img)
+    # img.save("align2.png")
 
     # print(type(img))
     # img = pre.run(img)
