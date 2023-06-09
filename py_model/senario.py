@@ -424,7 +424,7 @@ class MainUI(tk.Tk):
 
             elif label==2:
                 self.mode=self.mode1
-                self.selected=self.prevImage
+                self.selected=self.selectPhoto
                 print("left ",self.selected)
             if btn.cget("relief") == "solid":
                 btn.config(relief="flat", highlightthickness=0)
