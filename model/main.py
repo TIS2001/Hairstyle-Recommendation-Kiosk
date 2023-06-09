@@ -22,7 +22,7 @@ class Database:
         
     def get_info(self,id):
         self.doc_ref = self.db.collection('customers').document(id)
-        doc = doc_ref.get()
+        doc = self.doc_ref.get()
         self.customer_data = doc.to_dict()
         
     def shape_update(self,shape):
