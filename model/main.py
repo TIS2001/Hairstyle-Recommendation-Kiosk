@@ -10,24 +10,26 @@ import io
 from PIL import Image
 from rembg import remove
 
-
-
 class Database:
     def __init__(self):
         self.cred = credentials.Certificate('./princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
         self.firebase_app = initialize_app(self.cred, { 'storageBucket': 'princess-maker-1f45e.appspot.com'})
         self.bucket = storage.bucket(app=self.firebase_app)
         self.db = firestore.client()
-        self.shape_name = {0:"square_shaped",1:"circle_shaped",2:"egg_shaped",3:"long_shaped"}
+        self.shape_name = {0:"각진형",1:"둥근형",2:"계란형",3:"긴얼굴형"}
         
     def get_info(self,id):
         self.doc_ref = self.db.collection('customers').document(id)
         doc = self.doc_ref.get()
         self.customer_data = doc.to_dict()
+        if self.customer_data["gender"]=="여자":
+            self.customer_data["gender"]=0
+        else:
+            self.customer_data["gender"]=1
         
     def shape_update(self,shape):
         self.customer_data["shape"] = self.shape_name[shape]
-        self.doc_ref.set(customer_data)
+        self.doc_ref.set(self.customer_data)
     
     def download_npy_file(self,file_name):
         with io.BytesIO() as stream:
@@ -72,6 +74,16 @@ class Database:
             stream.seek(0)
             blob.upload_from_file(stream)
 
+    def get_HSV_from_Image(self,file_name):
+        img = self.download_image_file(file_name)
+        img = np.array(img)
+        hsvImage = cv2.cvtColor(img , cv2.COLOR_BGR2HSV)
+        hsvImage = np.float32(hsvImage)
+
+    # 채널로 분리하는 함수  ( 다차원일 경우 사용)
+        H, S, V = cv2.split(hsvImage)
+        return H[0][0],S[0][0],V[0][0]
+        
 
 if __name__ == "__main__":
     pre = "utils/dat/shape_predictor_81_face_landmarks.dat"
@@ -80,27 +92,38 @@ if __name__ == "__main__":
     model = Img_model()
     server = ServerSocket()
     db = Database()
-
+    gender_path = {0:"hairstyles_man",1:"hairstyles_woman"}
     
+    styel_path = "/workspace/princess_maker/Hairstyle-Recommendation-Kiosk/py_model/UI/hairstyles/female/전체/"
     while True:
+    # for i in os.listdir(styel_path):
+    #     img = Image.open(os.path.join(styel_path,i))
+    #     ## make embedding 
+    #     img = face_pre.run(np.array(img))
+    #     target_numpy =  model.img_maker(img) ## [0] latent_in [1] latent_FS
+    #     im = os.path.splitext(i)
+    #     db.upload_npz_file(target_numpy[0],f"hairstyles_woman/{im[0]}.npz")
+    #     db.upload_npy_file(target_numpy[1],f"hairstyles_woman/{im[0]}.npy")
+        
+        
         server.conn , server.addr = server.sock.accept()
         print("Connected")
         # try:
         mode = server.conn.recv(1).decode('utf-8')
         print(mode)
-        image_name = server.conn.recv(64).decode('utf-8').split(".")
+        image_name = server.conn.recv(64).decode('utf-8')
         print(image_name)
         # mode = 0
         # image_name = "선동진_photo"
-        info = db.get_info(image_name[0])
-        img = db.download_image_file(f"customers/{image_name[0]}.{image_name[1]}")
+        info = db.get_info(image_name)
+        img = db.download_image_file(f"customers/{image_name}.jpg")
         
         output = remove(img)
         server.sendImages_png(output)
         img = face_pre.run(np.array(img))
         shape = face_pre.face_shape(img,db.customer_data["gender"])
         db.shape_update(shape)
-    
+
         if mode: 
             ## 얼굴형 판단 후 고객 정보에 저장 구현 필요
             target_numpy =  model.img_maker(img) ## [0] latent_in [1] latent_FS
@@ -111,19 +134,23 @@ if __name__ == "__main__":
             latent_W = db.download_npy_file(f"customers_npy/{image_name}.npy")
             target_numpy =  [latent_FS,latent_W]
 
-        # style = conn.recv(64).decode('utf-8').split('\\')
+        style = server.conn.recv(64).decode('utf-8')
         # # style npz 불러오기
-        style_img = db.download_image_file(f'{style[0]}/{style[1]}.jpg')
-        latent_FS = db.download_npz_file(f'{style[0]}/{style[1]}.npz')
-        latent_W = db.download_npy_file(f'{style[0]}/{style[1]}.npy')
+        
+        style_img = db.download_image_file(f'{gender_path[db.customer_data["gender"]]}/{style}.jpg')
+        latent_FS = db.download_npz_file(f'{gender_path[db.customer_data["gender"]]}/{style}.npz')
+        latent_W = db.download_npy_file(f'{gender_path[db.customer_data["gender"]]}/{style}.npy')
         style_numpy = [latent_FS,latent_W]
-        # color = conn.recv(64)
-        # print(color.decode('utf-8'))
+        color = server.conn.recv(64)
+        print(color.decode('utf-8'))
+        color = db.get_HSV_from_Image(f'color/{color}.JPG')
         
         res_img = model.align.align_images(img, style_img,target_numpy,style_numpy, "fidelity", align_more_region=False, smooth=5)
-        # cv2.imwrite("test4.jpg",res_img)
-        # dying_img = model.dying_main(res_img,color)
-        # server.sendImages(dying_img)
+        cv2.imwrite("test4.jpg",res_img)
+        
+        dying_img = model.dying_main(res_img,color)
+        cv2.imwrite("test.jpg",dying_img)
+        server.sendImages(dying_img)
         server.conn.close()
         # except:
         #     pass
