@@ -458,7 +458,7 @@ class MainUI(tk.Tk):
         self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
         # self.win5.countdown_label.place(x=350,y=10)
         # Creating object of class VideoCapture with webcam index
-        image_name = f"{self.user_info['name']}_photo.jpg"
+        image_name = self.user_info['id']
         select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
                                 command=lambda:AfterSelelct(self.mode,image_name,self.selected))
         select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
@@ -506,7 +506,7 @@ class MainUI(tk.Tk):
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
         # self.recommend_style()  #real
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles/female/계란형", f) for f in os.listdir("UI/hairstyles") if f.endswith(".jpg")],0)   #test
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles/female/계란형", f) for f in os.listdir("UI/hairstyles/female/계란형") if f.endswith(".jpg")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
         img = self.p.recv()     #real
         self.select_personal(img) #real
@@ -525,11 +525,9 @@ class MainUI(tk.Tk):
         if bool(self.dict1) and bool(self.dict2):
             selection=[]
             color=self.dict1[next(iter(self.dict1))].cget("text")
-            color_name=f"{color}.jpg"
             style=self.dict2[next(iter(self.dict2))].cget("text")
-            style_name=f"{style}.jpg"   ### ex) selection=[히피펌.jpg,여름소프트_뮤트브라운.jpg]
-            selection.append(style_name)
-            selection.append(color_name)
+            selection.append(style)
+            selection.append(color)
             self.p.send(selection)  
             self.open_win11()
             self.open_win10()
