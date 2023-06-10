@@ -505,7 +505,8 @@ class MainUI(tk.Tk):
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
+        # self.recommend_style()  #real
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles/female/계란형", f) for f in os.listdir("UI/hairstyles") if f.endswith(".jpg")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
         img = self.p.recv()     #real
         self.select_personal(img) #real
