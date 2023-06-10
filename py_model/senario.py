@@ -458,7 +458,7 @@ class MainUI(tk.Tk):
         self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
         # self.win5.countdown_label.place(x=350,y=10)
         # Creating object of class VideoCapture with webcam index
-        image_name = f"{self.user_info['id']}.jpg"
+        image_name = self.user_info['id']
         select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
                                 command=lambda:AfterSelelct(self.mode,image_name,self.selected))
         select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
