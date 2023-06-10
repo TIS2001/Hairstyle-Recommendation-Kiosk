@@ -31,6 +31,8 @@ def dying(img,seg, color):
     # img = np.uint8(hsvImage)
     # img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
     #dying
+    color_code = {}
+    
     hue_code = color
     H = np.where(img_seg_==1,hue_code[0]/2,H)
     S = np.where(img_seg_==1,hue_code[1]/100*255,S)
@@ -52,5 +54,12 @@ def dying(img,seg, color):
     return final
     
 if __name__ == "__main__":
-    test_img = dying("source6.png","0_erased_src_seg.png")
-    cv2.imwrite('test_img.png',test_img)    
+    test_img = cv2.imread("/workspace/princess_maker/Hairstyle-Recommendation-Kiosk/py_model/UI/colors/갈웜/가을딥_다크브라운.JPG")
+    hsvImage = cv2.cvtColor(test_img , cv2.COLOR_BGR2HSV)
+    hsvImage = np.float32(hsvImage)
+
+    # 채널로 분리하는 함수  ( 다차원일 경우 사용)
+    H, S, V = cv2.split(hsvImage)
+    print(H[0][0],S[0][0],V[0][0])
+    # test_img = dying("source6.png","0_erased_src_seg.png")
+    # cv2.imwrite('test_img.png',test_img)    

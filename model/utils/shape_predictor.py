@@ -27,7 +27,7 @@ class face_predicter:
     def __init__(self,pre,det):
         self.predictor = dlib.shape_predictor(pre)
         self.detector = dlib.cnn_face_detection_model_v1(det)
-        self.shape_init("./dat")
+        self.shape_init("utils/dat")
     
     def shape_init(self,path):
         self.shape_numpy = {"man":[],"woman":[]}

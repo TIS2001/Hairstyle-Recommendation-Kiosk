@@ -1,7 +1,7 @@
 import socket
 import cv2
 import threading
-import numpy
+import numpy 
 import pybase64 as base64
 from PIL import Image
 
@@ -50,6 +50,35 @@ class ServerSocket:
     def sendImages(self,img):
         encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
         result, frame = cv2.imencode(".jpg",img,encode_param)
+        data = numpy.array(frame)
+        stringData = base64.b64encode(data)
+        
+        length = str(len(stringData))
+        # print(length)
+        self.conn.send(length.encode('utf-8').ljust(64))
+        self.conn.send(stringData)
+        print('send images')
+        # self.connectServer()
+        # self.sendImages()
+    
+    def sendImages(self,img):
+        encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
+        result, frame = cv2.imencode(".jpg",img,encode_param)
+        data = numpy.array(frame)
+        stringData = base64.b64encode(data)
+        
+        length = str(len(stringData))
+        # print(length)
+        self.conn.send(length.encode('utf-8').ljust(64))
+        self.conn.send(stringData)
+        print('send images')
+        # self.connectServer()
+        # self.sendImages()
+    
+    def sendImages_png(self,img):
+        # encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
+        img = numpy.array(img)
+        result, frame = cv2.imencode(".png",img)
         data = numpy.array(frame)
         stringData = base64.b64encode(data)
         
