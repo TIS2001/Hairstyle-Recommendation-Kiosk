@@ -41,7 +41,7 @@ class MainUI(tk.Tk):
         self.open_win4()
         # self.open_win10()
         # self.win10 = tk.Frame(self, relief="flat",bg="white")
-        self.open_win12()
+      #  self.open_win12()
         self.StartFrame.tkraise()
     
     def camera_init(self):
@@ -321,6 +321,15 @@ class MainUI(tk.Tk):
         self.win5 = tk.Frame(self, relief="flat",bg="white")
         self.win5.place(x=0,y=0,width=800,height=1280)
         self.win5.bind("<Escape>", self.on_escape)
+        self.selected=0
+        self.copyImage=0
+        self.prevImage=0
+        self.selectPhoto=0
+        self.presentImage=0
+        self.mode=1
+        self.mode1=1
+        self.mode2=1
+        self.list=[]
         def count_down(num):
             self.win5.countdown_label.place(relx=0.5,y=50,anchor=tk.CENTER)
             self.win5.countdown_label.configure(text=str(num))
@@ -331,70 +340,128 @@ class MainUI(tk.Tk):
 
         def AfterCapture(frame):
             self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!")
+            if self.copyImage:
+                self.selectPhoto=self.prevImage
+                self.win5.imageLabel2.config(image=self.copyImage)
+                self.win5.imageLabel2.photo = self.copyImage
+                if self.mode2==0:
+                    self.mode1=0
+                else:
+                    self.mode1=1
             frame_rgb = cv2.cvtColor(frame , cv2.COLOR_BGR2RGB)
-            image = Image.fromarray(frame_rgb)
-            resizedImg = image.resize((300,300), Image.LANCZOS)
-            resizedImg = ImageTk.PhotoImage(resizedImg)
-            self.win5.imageLabel.config(image=resizedImg)
-            self.win5.imageLabel.photo = resizedImg
-
+            self.presentImage = Image.fromarray(frame_rgb)
+            self.prevImage=self.presentImage
+            # self.presentImage=img
+            resizedImg = self.presentImage.resize((300,300), Image.LANCZOS)
+            self.copyImage = ImageTk.PhotoImage(resizedImg)
+            self.win5.imageLabel.config(image=self.copyImage)
+            self.win5.imageLabel.photo = self.copyImage
             # self.win5.countdown_label.place_forget()
             # self.win5.takePhoto_bt.destroy()
-            image_name = f"{self.user_info['name']}_photo.jpg"
+            # image_name = f"{self.user_info['name']}_photo.jpg"
             self.win5.takePhoto_bt.configure(text="재촬영")
+            self.win5.imageLabel.config(relief="flat", highlightthickness=0)
+            self.win5.imageLabel2.config(relief="flat", highlightthickness=0)
+            self.list.clear()
+            self.mode2=1
             # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-                                command=lambda:AfterSelelct(1,image_name,image))
-            select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
+            # select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
+            #                     command=lambda:AfterSelelct(1,image_name,image))
+            # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterBrowse(image):
-            frame = np.array(image)
+            self.presentImage=image
+            if self.copyImage:
+                # resizedImg = img.resize((100,100),Image.LANCZOS)
+                # resized=self.copyImage.resize((100,100), Image.LANCZOS)
+                self.selectPhoto=self.prevImage
+                self.win5.imageLabel2.config(image=self.copyImage)
+                self.win5.imageLabel2.photo = self.copyImage
+                if self.mode2==0:
+                    self.mode1=0
+                else:
+                    self.mode1=1
+            self.prevImage=image
             resizedImg = image.resize((300,300), Image.LANCZOS)
-            saved_image=ImageTk.PhotoImage(resizedImg)
-            self.win5.imageLabel.config(image=saved_image)
+            self.copyImage=ImageTk.PhotoImage(resizedImg)
+            self.win5.imageLabel.config(image=self.copyImage)
             # Keeping a reference
-            self.win5.imageLabel.photo = saved_image
+            self.win5.imageLabel.photo = self.copyImage
+            self.win5.imageLabel.config(relief="flat", highlightthickness=0)
+            self.win5.imageLabel2.config(relief="flat", highlightthickness=0)
+            self.list.clear()
+            self.mode2=0
 
             # browse_bt.destroy()
-            image_name = f"{self.user_info['name']}_photo.jpg"
+            # image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-                                command=lambda:AfterSelelct(0,image_name,image))
-            select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
+            # select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
+            #                     command=lambda:AfterSelelct(0,image_name,image))
+            # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterSelelct(mode,image_name,image):
-            self.open_win10()
-            while (self.user_info["shape"]==None):
-                pass
-            self.win10.destroy()
-            self.open_win6()
-            self.win6.tkraise()
-            # self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
-            # self.p.send(mode)   #real
-            # self.p.send(image_name) #real
-            attach_photo(self.bucket,self.user_info["name"],image)
-            
-            # self.win10.after(20000,self.win6.tkraise)
-            
+            if bool(self.list):
+                print("after select ", image)
+                self.open_win10()
+                self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
+                # self.p.send(mode)   #real
+                # self.p.send(image_name) #real
+                attach_photo(self.bucket,self.user_info["name"],image)
+                self.p.send(mode)   #real
+                self.p.send(image_name) #real
+                while(self.user_info['shape']==None):
+                    pass
+                self.open_win6()
+                self.win6.tkraise()
+            else:
+                messagebox.showwarning('사진 전송 오류', '헤어스타일 합성을 위한 사진을 선택해주세요.')
 
+        def tg_img(label,btn):
+            #오른쪽 버튼 선택
+            if label==1:
+                self.mode=self.mode2
+                self.selected=self.presentImage
+                print("right ",self.selected)
+
+            elif label==2:
+                self.mode=self.mode1
+                self.selected=self.selectPhoto
+                print("left ",self.selected)
+            if btn.cget("relief") == "solid":
+                btn.config(relief="flat", highlightthickness=0)
+                self.list.clear()
+            else:
+                if bool(self.list):
+                    self.list[0].config(relief="flat", highlightthickness=0)
+                    self.list.clear()
+                btn.config(relief="solid", highlightthickness=2, highlightbackground="red")
+                self.list.append(btn)
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
         tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
         browse_bt=tk.Button(self.win5,font=("Arial",15), text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
         browse_bt.place(relx=0.5,anchor=tk.CENTER,y=990,width=200,height=70)
-        self.win5.takePhoto_bt=tk.Button(self.win5,font=("Arial",15), text="사진 촬영", command=lambda:[count_down(3)])
-        self.win5.takePhoto_bt.place(relx=0.5,anchor=tk.CENTER,y=1070,width=200,height=70)
+        
         
         self.win5.cameraLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         self.win5.cameraLabel.place(x=144,y=50)
-        self.win5.imageLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
-        self.win5.imageLabel.place(relx=0.5,anchor=tk.CENTER,rely=0.6)
-
+        self.win5.imageLabel = Button(self.win5, bg="steelblue", borderwidth=3, relief="groove")
+        self.win5.imageLabel.config(command=lambda btn=self.win5.imageLabel:tg_img(1,btn))
+        self.win5.imageLabel.place(relx=0.5,anchor=tk.W,rely=0.6)
+        self.win5.imageLabel2 = Button(self.win5, bg="steelblue", borderwidth=3, relief="groove")
+        self.win5.imageLabel2.configure(command=lambda btn=self.win5.imageLabel2:tg_img(2,btn))
+        self.win5.imageLabel2.place(relx=0.5,anchor=tk.E,rely=0.6)
+        self.win5.takePhoto_bt=tk.Button(self.win5,font=("Arial",15), text="사진 촬영", command=lambda:[count_down(3)])
+        self.win5.takePhoto_bt.place(relx=0.5,anchor=tk.CENTER,y=1070,width=200,height=70)
         # self.win5.imageLabel2 = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         # self.win5.imageLabel2.place(x=300,y=700)
         self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
         # self.win5.countdown_label.place(x=350,y=10)
         # Creating object of class VideoCapture with webcam index
+        image_name = f"{self.user_info['name']}_photo.jpg"
+        select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
+                                command=lambda:AfterSelelct(self.mode,image_name,self.selected))
+        select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
         self.win5.cap = self.camera
         # Setting width and height
         self.win5.bind("<Escape>", self.on_escape)
@@ -438,13 +505,12 @@ class MainUI(tk.Tk):
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
-        self.recommend_style()
-        # self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)   #test
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
         self.make_btn(self.frame5, self.img_path2,0)
-        # img = self.p.recv()     #real
-        # self.select_personal(img) #real
-        self.select_personal()  #test
-
+        img = self.p.recv()     #real
+        self.select_personal(img) #real
+        # self.select_personal()  #test
+#
         
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: self.send_styles()).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
@@ -466,7 +532,9 @@ class MainUI(tk.Tk):
             self.p.send(selection)  
             self.open_win11()
             self.open_win10()
-            self.win10.after(3000,lambda:[self.win10.destroy(),self.win11.tkraise()])
+            self.img = self.p.recv()
+            self.win10.destroy()
+            self.win11.tkraise()
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -606,10 +674,6 @@ class MainUI(tk.Tk):
             if button.winfo_parent() == str(self.frame2):
                 self.ischeck=1
 
-    def recommend_style(self):       
-        dir_path="UI/hairstyles/female/"+self.user_info["shape"]  #real ????
-        self.make_btn(self.frame4, [os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
-        
     def personal_cmd(self):
         selected_image = self.var.get()
         if selected_image == 1:
@@ -625,13 +689,13 @@ class MainUI(tk.Tk):
         if self.ischeck==1:
             self.dict1={}
 
-    def select_personal(self):  #test
-    # def select_personal(self,img):    #real
+    # def select_personal(self):  #test
+    def select_personal(self,img):    #real
         # 배경 이미지 파일 경로
         backgrounds = ["UI/spring.png", "UI/summer.png", "UI/autumn.png", "UI/winter.png"]
         # 전경 이미지 파일 경로
-        #foreground = img    #real
-        foreground=Image.open("UI/test.png")    #test
+        foreground = img    #real
+        # foreground=Image.open("UI/test.png")    #test
         # 배경 이미지를 원하는 크기로 조정
         labels = []
         background_images = []
@@ -663,6 +727,7 @@ class MainUI(tk.Tk):
 
 
     def open_win10(self):
+        print("open win10")
         self.win10 = tk.Toplevel(self, relief="flat",bg="white")
         self.win10.geometry("800x1280")
         self.win10.bind("<Escape>", self.on_escape)
@@ -675,7 +740,7 @@ class MainUI(tk.Tk):
         self.update_gif()
 
     def update_gif(self):
-        print("update")
+        # print("update")
         try:
             self.gif_img.seek(self.gif_img.tell() + 1)
             self.tk_img = ImageTk.PhotoImage(self.gif_img)
@@ -685,8 +750,8 @@ class MainUI(tk.Tk):
         self.win10.after(100, self.update_gif)
 
     def open_win11(self):
-        # self.result = self.p.recv()    #real
-        self.result=Image.open("UI/loading_basic.gif")
+        # self.img = self.p.recv()    #real
+        self.img=Image.open("UI/loading_basic.gif")
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
