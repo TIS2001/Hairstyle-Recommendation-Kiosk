@@ -4,7 +4,7 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 
 # Firebase 초기화
-cred = credentials.Certificate('./easylogin-58c28-firebase-adminsdk-lz9v2-4c02999507.json')
+cred = credentials.Certificate('.\princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
 firebase_app = initialize_app(cred, {
     'storageBucket': 'easylogin-58c28.appspot.com'
 })

@@ -112,6 +112,7 @@ class MainUI(tk.Tk):
             password = password_Tf.get()
             phoneNumber = phoneNumber_Tf.get()
             gender = var.get()
+            shape = None
 
             
             if not name or not id or not password or not phoneNumber or not gender:
@@ -400,20 +401,21 @@ class MainUI(tk.Tk):
             # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterSelelct(mode,image_name,image):
-            print("after select ", image)
-            self.open_win10()
-            attach_photo(self.bucket,self.user_info["name"],image)
-
-            # while(self.user_info['shape']==None):
-            #     pass
-            #self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
-            self.p.send(mode)   #real
-            self.p.send(image_name) #real
-            while(self.user_info['shape']==None):
-                pass
-            self.open_win6()
-            self.win6.tkraise()
-            # self.win10.after(20000,self.win6.tkraise)
+            if bool(self.list):
+                print("after select ", image)
+                self.open_win10()
+                self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
+                # self.p.send(mode)   #real
+                # self.p.send(image_name) #real
+                attach_photo(self.bucket,self.user_info["name"],image)
+                self.p.send(mode)   #real
+                self.p.send(image_name) #real
+                while(self.user_info['shape']==None):
+                    pass
+                self.open_win6()
+                self.win6.tkraise()
+            else:
+                messagebox.showwarning('사진 전송 오류', '헤어스타일 합성을 위한 사진을 선택해주세요.')
 
         def tg_img(label,btn):
             #오른쪽 버튼 선택
@@ -503,13 +505,12 @@ class MainUI(tk.Tk):
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
-        self.recommend_style()
-        # self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles", f) for f in os.listdir("UI/hairstyles") if f.endswith(".png")],0)
         self.make_btn(self.frame5, self.img_path2,0)
         img = self.p.recv()     #real
         self.select_personal(img) #real
         # self.select_personal()  #test
-#
+
         
         tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
         tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: self.send_styles()).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
@@ -672,6 +673,7 @@ class MainUI(tk.Tk):
             dict_var[page] = button
             if button.winfo_parent() == str(self.frame2):
                 self.ischeck=1
+                
     def recommend_style(self):
         dir_path="UI/hairstyles/female/"+self.user_info["shape"]
         self.make_btn(self.frame4,[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
@@ -752,14 +754,14 @@ class MainUI(tk.Tk):
         self.win10.after(100, self.update_gif)
 
     def open_win11(self):
-        self.img = self.p.recv()    #real
-        # self.img=Image.open("UI/loading_basic.gif")  #test
+        # self.img = self.p.recv()    #real
+        self.img=Image.open("UI/loading_basic.gif")
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
         self.win11.bind("<Escape>", self.on_escape)
         
-        self.img = self.img.resize((320,240))  # 이미지 크기 조절        
-        photo = ImageTk.PhotoImage(self.img)
+        self.result = self.result.resize((320,240))  # 이미지 크기 조절        
+        photo = ImageTk.PhotoImage(self.result)
         label = tk.Label(self.win11, image=photo)
         label.image = photo  # 이미지 객체 유지
         label.grid(row=2, column=1)

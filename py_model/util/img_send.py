@@ -58,6 +58,12 @@ class ClientVideoSocket:
         # pil_img.save("test.png")
         return pil_img
 
+    def recieveShpae(self):
+        buf = self.recvall(self.sock,64)
+        shape = buf.decode('utf-8')
+        print(shape)
+        return shape
+        # stringData = self.recvall(self.sock,int(length1))
 def img_send(img):
     TCP_IP = "211.243.232.32"
     TCP_PORT = 7100
