@@ -713,7 +713,7 @@ class MainUI(tk.Tk):
                 self.frame1.place(x=75, y=y)
                 self.frame2 = tk.Frame(win, width=400, height=200)
                 self.frame2.place(x=300, y=y)
-                self.selected_button = None  # 선택된 버튼을 저장하는 변수
+                self.selected_button = None  # 선택된 버튼을 저장하는 변수            
                                 
             def toggle_reservation(self,index):
                 # 버튼의 선택 상태를 변경하고, 다른 버튼의 선택 상태를 초기화하는 함수
@@ -728,7 +728,7 @@ class MainUI(tk.Tk):
                     self.selected_button = self.reservation_buttons[index]
                         
             def read_reservation(self,db):
-            # Firestore에서 예약된 시간 읽어오기
+                # Firestore에서 예약된 시간 읽어오기
                 hairdresser_ref = db.collection("hairdresser").document(self.name)
                 doc = hairdresser_ref.get()
                 
@@ -753,6 +753,18 @@ class MainUI(tk.Tk):
                 
         def make_reservation(designer_list):
             # 예약 정보 저장 및 Firestore에 전달하는 함수
+            all_time = []
+            
+            # 버튼이 한개만 눌리게 만들려는 로직
+            for designer in designer_list:
+                selected_buttons = [btn for btn in designer.reservation_buttons if btn["relief"] == "sunken"]
+                
+                all_time.extend(selected_buttons)
+            
+            if len(all_time) != 1:
+                    messagebox.showwarning("경고", "하나의 시간대를 선택해야 합니다.")
+                    return  # 예약 중단
+            
             for designer in designer_list:
                 reservation_time = []
                 
@@ -779,17 +791,21 @@ class MainUI(tk.Tk):
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
             
-            # 카카오톡 관련
-            # #채팅방 로드
-            # self.driver.get(self.ChatRoom_LSH)  
-            # time.sleep(3)  
+           
+            self.open_win13()
+            self.win13.tkraise()
+                    
+                # 카카오톡 관련
+                # #채팅방 로드
+                # self.driver.get(self.ChatRoom_LSH)  
+                # time.sleep(3)  
 
 
-            # #메시지 작성
-            # self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료', reservation_time)
-            # time.sleep(1)
-            # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-            # print("예약이 완료되었습니다.")   
+                # #메시지 작성
+                # self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료', reservation_time)
+                # time.sleep(1)
+                # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+                # print("예약이 완료되었습니다.")   
        
         def download_image(filename):
             bucket = storage.bucket()
@@ -833,7 +849,7 @@ class MainUI(tk.Tk):
         self.designer_list = [designer1,designer2,designer3]
         
         # 예약하기 버튼 생성
-        tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(self.designer_list), self.open_win13(),self.win13.tkraise()]).place(x=375, y=750)
+        tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(self.designer_list)]).place(x=375, y=750)
 
     def BaroGoback(self):
         # print(self.isBaro)
