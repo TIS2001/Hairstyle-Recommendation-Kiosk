@@ -14,14 +14,14 @@ from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
 from multiprocessing import Process, Pipe
 
-# # 카카오톡 관련 
-# from selenium import webdriver
-# from selenium.webdriver.common.by import By
-# from datetime import datetime
-# from PIL import Image
-# import time
-# import configparser
-# import urllib
+# 카카오톡 관련 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from datetime import datetime
+from PIL import Image
+import time
+import configparser
+import urllib
 
 class MainUI(tk.Tk):
 
@@ -34,7 +34,7 @@ class MainUI(tk.Tk):
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
-        # self.Kakao_init() # 카톡
+        self.Kakao_init() # 카톡
         self.Frame_init()
         self.mainloop()
                 
@@ -49,51 +49,51 @@ class MainUI(tk.Tk):
         self.open_win12()
         self.StartFrame.tkraise()
 
-    # def Kakao_init(self):
-    #     #카카오톡 관련
-    #     #알리기
-    #     Config = configparser.ConfigParser()
+    def Kakao_init(self):
+        #카카오톡 관련
+        #알리기
+        Config = configparser.ConfigParser()
 
-    #     #카카오 아이디, 비번 불러오기
-    #     Config.read('../info.conf')
-    #     Config = Config['MAIN']
+        #카카오 아이디, 비번 불러오기
+        Config.read('../info.conf')
+        Config = Config['MAIN']
 
-    #     #아이디, 비번
-    #     id = Config['kakaoid']
-    #     pw = Config['kakaopw']
+        #아이디, 비번
+        id = Config['kakaoid']
+        pw = Config['kakaopw']
 
-    #     #카카오메인페이지 지정
-    #     KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
+        #카카오메인페이지 지정
+        KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
 
-    #     # 미용사에 따라 채팅룸 링크 지정
-    #     ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
-    #     self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
-    #     ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
-    #     options = webdriver.ChromeOptions()
+        # 미용사에 따라 채팅룸 링크 지정
+        ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
+        self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
+        ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
+        options = webdriver.ChromeOptions()
 
-    #     #user-agent
-    #     options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
-    #     #창을 띄우지 않고 실행
-    #     options.add_argument("headless")
+        #user-agent
+        options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
+        #창을 띄우지 않고 실행
+        options.add_argument("headless")
 
-    #     #크로니움 드라이버 로드
-    #     self.driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
-    #     self.driver.implicitly_wait(3)
+        #크로니움 드라이버 로드
+        self.driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
+        self.driver.implicitly_wait(3)
 
-    #     #카카오 메인페이지 로드
-    #     self.driver.get(KaKaoURL)
-    #     time.sleep(5)
+        #카카오 메인페이지 로드
+        self.driver.get(KaKaoURL)
+        time.sleep(5)
 
-    #     #로그인
-    #     idvar = self.driver.find_element(By.NAME, "loginKey")
-    #     idvar.send_keys(id)
-    #     pwvar =  self.driver.find_element(By.NAME, "password")
-    #     pwvar.send_keys(pw)
-    #     time.sleep(3)
-    #     self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-    #     time.sleep(10)
-    #     self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
-    #     time.sleep(1)
+        #로그인
+        idvar = self.driver.find_element(By.NAME, "loginKey")
+        idvar.send_keys(id)
+        pwvar =  self.driver.find_element(By.NAME, "password")
+        pwvar.send_keys(pw)
+        time.sleep(3)
+        self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
+        time.sleep(10)
+        self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
+        time.sleep(1)
 
 
 
@@ -352,6 +352,7 @@ class MainUI(tk.Tk):
             tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()]).pack(pady=10)
         else:
             tk.Button(self.win4, text="헤어스타일 합성", width=15, height=5, command=lambda:[self.open_win5(),self.win5.tkraise()]).pack(pady=10)
+    
     #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
     def open_win5(self):
         self.win5 = tk.Frame(self, relief="flat",bg="white")
@@ -795,17 +796,15 @@ class MainUI(tk.Tk):
             self.open_win13()
             self.win13.tkraise()
                     
-                # 카카오톡 관련
-                # #채팅방 로드
-                # self.driver.get(self.ChatRoom_LSH)  
-                # time.sleep(3)  
+            # 카카오톡 관련
+            #채팅방 로드
+            self.driver.get(self.ChatRoom_LSH)  
+            time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
 
-
-                # #메시지 작성
-                # self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료', reservation_time)
-                # time.sleep(1)
-                # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-                # print("예약이 완료되었습니다.")   
+            #메시지 작성
+            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
+            time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
        
         def download_image(filename):
             bucket = storage.bucket()
