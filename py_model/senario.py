@@ -525,11 +525,9 @@ class MainUI(tk.Tk):
         if bool(self.dict1) and bool(self.dict2):
             selection=[]
             color=self.dict1[next(iter(self.dict1))].cget("text")
-            color_name=f"{color}.jpg"
             style=self.dict2[next(iter(self.dict2))].cget("text")
-            style_name=f"{style}.jpg"   ### ex) selection=[히피펌.jpg,여름소프트_뮤트브라운.jpg]
-            selection.append(style_name)
-            selection.append(color_name)
+            selection.append(style)
+            selection.append(color)
             self.p.send(selection)  
             self.open_win11()
             self.open_win10()
