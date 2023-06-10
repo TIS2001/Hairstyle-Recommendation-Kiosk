@@ -421,7 +421,7 @@ class MainUI(tk.Tk):
             # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
             # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
             # select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-            #                     command=lambda:AfterSelelct(1,image_name,image))
+            #                     command=lambda:AfterSelect(1,image_name,image))
             # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterBrowse(image):
@@ -451,17 +451,17 @@ class MainUI(tk.Tk):
             # image_name = f"{self.user_info['name']}_photo.jpg"
             # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
             # select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-            #                     command=lambda:AfterSelelct(0,image_name,image))
+            #                     command=lambda:AfterSelect(0,image_name,image))
             # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
-        def AfterSelelct(mode,image_name,image):
+        def AfterSelect(mode,image_name,image):
             if bool(self.list):
                 print("after select ", image)
-                self.open_win10()
-                self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
+                # self.open_win10()
+                # self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
                 # self.p.send(mode)   #real
                 # self.p.send(image_name) #real
-                attach_photo(self.bucket,self.user_info["name"],image)
+                attach_photo(self.bucket,self.user_info["id"],image)
                 self.p.send(mode)   #real
                 self.p.send(image_name) #real
                 while(self.user_info['shape']==None):
@@ -476,12 +476,10 @@ class MainUI(tk.Tk):
             if label==1:
                 self.mode=self.mode2
                 self.selected=self.presentImage
-                print("right ",self.selected)
 
             elif label==2:
                 self.mode=self.mode1
                 self.selected=self.selectPhoto
-                print("left ",self.selected)
             if btn.cget("relief") == "solid":
                 btn.config(relief="flat", highlightthickness=0)
                 self.list.clear()
@@ -493,7 +491,7 @@ class MainUI(tk.Tk):
                 self.list.append(btn)
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
         tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
-        browse_bt=tk.Button(self.win5,font=("Arial",15), text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["name"]))])
+        browse_bt=tk.Button(self.win5,font=("Arial",15), text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["id"]))])
         browse_bt.place(relx=0.5,anchor=tk.CENTER,y=990,width=200,height=70)
         
         
@@ -514,7 +512,7 @@ class MainUI(tk.Tk):
         # Creating object of class VideoCapture with webcam index
         image_name = self.user_info['id']
         select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-                                command=lambda:AfterSelelct(self.mode,image_name,self.selected))
+                                command=lambda:AfterSelect(self.mode,image_name,self.selected))
         select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
         self.win5.cap = self.camera
         # Setting width and height
@@ -583,10 +581,11 @@ class MainUI(tk.Tk):
             selection.append(style)
             selection.append(color)
             self.p.send(selection)  
+            
+            # self.open_win10()
+            # self.img = self.p.recv()
             self.open_win11()
-            self.open_win10()
-            self.img = self.p.recv()
-            self.win10.destroy()
+            # self.win10.destroy()
             self.win11.tkraise()
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
@@ -782,7 +781,6 @@ class MainUI(tk.Tk):
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)
 
-
     def open_win10(self):
         print("open win10")
         self.win10 = tk.Toplevel(self, relief="flat",bg="white")
@@ -807,22 +805,22 @@ class MainUI(tk.Tk):
         self.win10.after(100, self.update_gif)
 
     def open_win11(self):
-        # self.img = self.p.recv()    #real
-        self.img=Image.open("UI/loading_basic.gif")
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
+        self.img = self.p.recv()    #real
+        # self.img=Image.open("UI/loading_basic.gif")
         self.win11.bind("<Escape>", self.on_escape)
         
-        self.result = self.result.resize((320,240))  # 이미지 크기 조절        
-        photo = ImageTk.PhotoImage(self.result)
+        self.img = self.img.resize((512, 512))  # 이미지 크기 조절        
+        photo = ImageTk.PhotoImage(self.img)
         label = tk.Label(self.win11, image=photo)
         label.image = photo  # 이미지 객체 유지
-        label.grid(row=2, column=1)
+        label.place(relx=0.5,anchor=tk.CENTER,y=300)
 
-        tk.Button(self.win11, text="뒤로가기", command=lambda:[self.win6.tkraise()]).grid(row=0,column=3)
-        tk.Button(self.win11, text="다시 찍기", command=lambda:[self.win5.tkraise()]).grid(row=3,column=1)
-        tk.Button(self.win11, text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).grid(row=4,column=1)
-        tk.Button(self.win11, text="예약하기", command=lambda:[self.win12.tkraise()]).grid(row=5,column=1)
+        tk.Button(self.win11, font=("Arial",15), text="뒤로가기", command=lambda:[self.win6.tkraise()]).place(x=680, y=0)
+        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.win5.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=895,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="예약하기", command=lambda:[self.open_win12(),self.win12.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=970,height=50)
 
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
     def open_win12(self):
@@ -830,7 +828,7 @@ class MainUI(tk.Tk):
         self.win12.place(x=0,y=0,width=800,height=1280)
         self.win12.bind("<Escape>", self.on_escape)
         self.reservation_buttons = []
-        times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
+        times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"]  # 예약 가능한 시간 리스트
         
         class designer():            
             def __init__(self,name,win,y):
@@ -840,7 +838,7 @@ class MainUI(tk.Tk):
                 self.frame1.place(x=75, y=y)
                 self.frame2 = tk.Frame(win, width=400, height=200)
                 self.frame2.place(x=300, y=y)
-                self.selected_button = None  # 선택된 버튼을 저장하는 변수
+                self.selected_button = None  # 선택된 버튼을 저장하는 변수            
                                 
             def toggle_reservation(self,index):
                 # 버튼의 선택 상태를 변경하고, 다른 버튼의 선택 상태를 초기화하는 함수
@@ -855,7 +853,7 @@ class MainUI(tk.Tk):
                     self.selected_button = self.reservation_buttons[index]
                         
             def read_reservation(self,db):
-            # Firestore에서 예약된 시간 읽어오기
+                # Firestore에서 예약된 시간 읽어오기
                 hairdresser_ref = db.collection("hairdresser").document(self.name)
                 doc = hairdresser_ref.get()
                 
@@ -871,8 +869,8 @@ class MainUI(tk.Tk):
                     if time in saved_times:
                         btn_state = tk.DISABLED
                 
-                    row = index // 4  # 버튼이 배치될 행 인덱스
-                    col = index % 4  # 버튼이 배치될 열 인덱스
+                    row = index // 5  # 버튼이 배치될 행 인덱스
+                    col = index % 5  # 버튼이 배치될 열 인덱스
                     
                     btn = tk.Button(self.frame2, text=time, state=btn_state, command=lambda i=index: self.toggle_reservation(i))
                     btn.grid(row=row, column=col, padx=10, pady=30)
@@ -880,6 +878,18 @@ class MainUI(tk.Tk):
                 
         def make_reservation(designer_list):
             # 예약 정보 저장 및 Firestore에 전달하는 함수
+            all_time = []
+            
+            # 버튼이 한개만 눌리게 만들려는 로직
+            for designer in designer_list:
+                selected_buttons = [btn for btn in designer.reservation_buttons if btn["relief"] == "sunken"]
+                
+                all_time.extend(selected_buttons)
+            
+            if len(all_time) != 1:
+                    messagebox.showwarning("경고", "하나의 시간대를 선택해야 합니다.")
+                    return  # 예약 중단
+            
             for designer in designer_list:
                 reservation_time = []
                 
@@ -905,62 +915,67 @@ class MainUI(tk.Tk):
                 
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
-            
-            # 카카오톡 관련
+           
+            self.open_win13()
+            self.win13.tkraise()
+                    
+            # # 카카오톡 관련
             # #채팅방 로드
             # self.driver.get(self.ChatRoom_LSH)  
-            # time.sleep(3)  
-
+            # time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
 
             # #메시지 작성
-            # self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료', reservation_time)
-            # time.sleep(1)
+            # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
+            # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
             # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-            # print("예약이 완료되었습니다.")   
        
-        def download_image(filename):
-            bucket = storage.bucket()
-            blob = bucket.blob("stylist/" + filename)
-            image_path = "temp.jpg"  # 다운로드 받은 이미지를 임시로 저장할 경로
-            blob.download_to_filename(image_path)
-            return image_path
+        # def download_image(filename):
+        #     bucket = storage.bucket()
+        #     blob = bucket.blob("stylist/" + filename)
+        #     image_path = "temp.jpg"  # 다운로드 받은 이미지를 임시로 저장할 경로
+        #     blob.download_to_filename(image_path)
+        #     return image_path
         
         def show_image(frame, filename):
             # 이미지를 다운로드하여 해당 프레임에 출력하는 함수
-            image_path = download_image(filename)
-            img = Image.open(image_path)
+            # image_path = download_image(filename)
+            img = Image.open(filename)
             img = img.resize((132, 170), Image.LANCZOS)
             img_tk = ImageTk.PhotoImage(img)
             label = tk.Label(frame, image=img_tk)
             label.image = img_tk
             label.pack()
-        
             
         # button_back = tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback())
-        button_back = tk.Button(self.win12, text="뒤로가기", command=lambda:[self.win4.tkraise()])
+        button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()])
         button_back.configure(font=(20))
         button_back.place(x=670, y=10)
         
-        designer1 = designer("김이발",self.win12, y=75)
-        filename1 = "이승현님 여권 .jpg"
+        designer1 = designer("이승현",self.win12, y=75)
+        filename1 = "이승현.jpg"
         show_image(designer1.frame1, filename1)  
         designer1.read_reservation(self.db)
 
-        designer2 = designer("최이발", self.win12, y=300)
-        filename2 = "이승현님 여권 .jpg"
+        designer2 = designer("선동진", self.win12, y=300)
+        filename2 = "이승현.jpg"
         show_image(designer2.frame1, filename2)
         designer2.read_reservation(self.db)
         
-        designer3 = designer("동이발", self.win12, y=525)
-        filename3 = "이승현님 여권 .jpg"
+        designer3 = designer("이가은", self.win12, y=525)
+        filename3 = "이승현.jpg"
         show_image(designer3.frame1, filename3)
         designer3.read_reservation(self.db)
         
+        designer4 = designer("신동훈", self.win12, y=750)
+        filename4 = "이승현.jpg"
+        show_image(designer4.frame1, filename4)
+        designer4.read_reservation(self.db)
+
         # open_win 함수에서 커스터마이징가능하게 만들어야함
-        self.designer_list = [designer1,designer2,designer3]
+        self.designer_list = [designer1,designer2,designer3,designer4]
         
         # 예약하기 버튼 생성
-        tk.Button(self.win12, text="예약하기", command=lambda:[make_reservation(self.designer_list), self.open_win13(),self.win13.tkraise()]).place(x=375, y=750)
+        tk.Button(self.win12, font=("Arial",15),text="예약하기", command=lambda:[make_reservation(self.designer_list)]).place(x=375, y=1050)
 
     def BaroGoback(self):
         # print(self.isBaro)
@@ -975,7 +990,7 @@ class MainUI(tk.Tk):
         self.win13 = tk.Frame(self, relief="flat",bg="white")
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
-        tk.Label(self.win13, text=self.user_info["name"] + "님 예약이 완료되었습니다.").pack(pady=10)
+        tk.Label(self.win13, bg="white",font=("Arial",23),text=self.user_info["name"] + "님 예약이 완료되었습니다.").pack(anchor=tk.CENTER)
     
     # esc 누르면 화면이 꺼지게 만드는 기능
     def on_escape(self,event=None):
@@ -985,7 +1000,6 @@ class MainUI(tk.Tk):
         def quit(self):
             """Quit the Tcl interpreter. All widgets will be destroyed."""
             self.tk.quit()
-
 
 def main(p):
     UI = MainUI(p)
@@ -999,20 +1013,20 @@ def server(p):
     image_name = p.recv()
     # print(image_name)
     
-    
     server.sock.send(image_name.encode('utf-8'))
-    img = server.receiveImages()
+    img = server.receiveImages_png()
     p.send(img)
     style,color = p.recv()
     print(style,color)
-    # server.sock.send(style.encode('utf-8'))
+    st=style+"/"+color
+    server.sock.send(st.encode('utf-8'))
+    # time.sleep(1)
     # server.sock.send(color.encode('utf-8'))        
     # cv2.imwrite("test.png",img)
     # print(type(img))
     # img.save("test.png")    
-    # img = server.receiveImages()
-    # p.send(img)
-    
+    img = server.receiveImages()
+    p.send(img)
 
 if __name__ == "__main__":
     p,q = Pipe()
