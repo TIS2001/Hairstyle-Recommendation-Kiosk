@@ -15,9 +15,17 @@ from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
 import numpy as np
 from multiprocessing import Process, Pipe
 import subprocess
-class MainUI(tk.Tk):
 
+class MainUI(tk.Tk):
     def __init__(self,p,picam=True):
+# # 카카오톡 관련 
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+# from datetime import datetime
+# from PIL import Image
+# import time
+# import configparser
+# import urllib
         tk.Tk.__init__(self)
         self.picam = picam
         self.p = p
@@ -27,10 +35,10 @@ class MainUI(tk.Tk):
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
+        # self.Kakao_init() # 카톡
         self.Frame_init()
         self.mainloop()
-        
-        
+                
     #1. 첫번째 페이지- 시작하기
     def Frame_init(self):
         self.camera_init()
@@ -43,7 +51,55 @@ class MainUI(tk.Tk):
         # self.win10 = tk.Frame(self, relief="flat",bg="white")
       #  self.open_win12()
         self.StartFrame.tkraise()
-    
+
+    # def Kakao_init(self):
+    #     #카카오톡 관련
+    #     #알리기
+    #     Config = configparser.ConfigParser()
+
+    #     #카카오 아이디, 비번 불러오기
+    #     Config.read('../info.conf')
+    #     Config = Config['MAIN']
+
+    #     #아이디, 비번
+    #     id = Config['kakaoid']
+    #     pw = Config['kakaopw']
+
+    #     #카카오메인페이지 지정
+    #     KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
+
+    #     # 미용사에 따라 채팅룸 링크 지정
+    #     ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
+    #     self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
+    #     ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
+    #     options = webdriver.ChromeOptions()
+
+    #     #user-agent
+    #     options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
+    #     #창을 띄우지 않고 실행
+    #     options.add_argument("headless")
+
+    #     #크로니움 드라이버 로드
+    #     self.driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
+    #     self.driver.implicitly_wait(3)
+
+    #     #카카오 메인페이지 로드
+    #     self.driver.get(KaKaoURL)
+    #     time.sleep(5)
+
+    #     #로그인
+    #     idvar = self.driver.find_element(By.NAME, "loginKey")
+    #     idvar.send_keys(id)
+    #     pwvar =  self.driver.find_element(By.NAME, "password")
+    #     pwvar.send_keys(pw)
+    #     time.sleep(3)
+    #     self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
+    #     time.sleep(10)
+    #     self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
+    #     time.sleep(1)
+
+
+
     def camera_init(self):
         if self.picam:
             from picamera2 import Picamera2
@@ -63,8 +119,6 @@ class MainUI(tk.Tk):
         button_start.configure(font=("Arial",18))
         
         self.StartFrame.bind("<Escape>", self.on_escape)
-
-
 
     def firebase_init(self):
         cred = credentials.Certificate('./UI/princess-maker-1f45e-firebase-adminsdk-dwlbp-74b3b65023.json')
@@ -778,7 +832,7 @@ class MainUI(tk.Tk):
         self.reservation_buttons = []
         times = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # 예약 가능한 시간 리스트
         
-        class designer():
+        class designer():            
             def __init__(self,name,win,y):
                 self.name=name
                 self.reservation_buttons = list()
@@ -786,18 +840,25 @@ class MainUI(tk.Tk):
                 self.frame1.place(x=75, y=y)
                 self.frame2 = tk.Frame(win, width=400, height=200)
                 self.frame2.place(x=300, y=y)
-            
+                self.selected_button = None  # 선택된 버튼을 저장하는 변수
+                                
             def toggle_reservation(self,index):
-                # 버튼의 선택 상태를 변경하는 함수
-                if self.reservation_buttons[index]["relief"] == "sunken":
-                    self.reservation_buttons[index]["relief"] = "raised"
+                # 버튼의 선택 상태를 변경하고, 다른 버튼의 선택 상태를 초기화하는 함수
+                for btn in self.reservation_buttons:
+                    if btn["relief"] == "sunken":
+                        btn["relief"] = "raised"
+
+                if self.selected_button == self.reservation_buttons[index]:
+                    self.selected_button = None
                 else:
-                    self.reservation_buttons[index]["relief"] = "sunken"    
-            
+                    self.reservation_buttons[index]["relief"] = "sunken"
+                    self.selected_button = self.reservation_buttons[index]
+                        
             def read_reservation(self,db):
             # Firestore에서 예약된 시간 읽어오기
                 hairdresser_ref = db.collection("hairdresser").document(self.name)
                 doc = hairdresser_ref.get()
+                
                 if doc.exists:
                     reservation_time = doc.get("reservation_time")
                     saved_times = reservation_time if isinstance(reservation_time, list) else []
@@ -806,6 +867,7 @@ class MainUI(tk.Tk):
 
                 for index, time in enumerate(times):
                     btn_state = tk.NORMAL
+                    # 인덱스와 시간을 흝으면서, 예약 시간이 이미 잡혀있다면 버튼 비활성화.
                     if time in saved_times:
                         btn_state = tk.DISABLED
                 
@@ -831,7 +893,9 @@ class MainUI(tk.Tk):
                 # 새로운 예약 시간 추가
                 for index, btn in enumerate(designer.reservation_buttons):
                     if btn["relief"] == "sunken":
-                        reservation_time.append(times[index])   
+                        new_time = times[index]
+                        if new_time not in reservation_time:  # 중복 확인
+                            reservation_time.append(new_time)   
                 
                 # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
                 data = {
@@ -841,8 +905,18 @@ class MainUI(tk.Tk):
                 
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
-                
-            print("예약이 완료되었습니다.")   
+            
+            # 카카오톡 관련
+            # #채팅방 로드
+            # self.driver.get(self.ChatRoom_LSH)  
+            # time.sleep(3)  
+
+
+            # #메시지 작성
+            # self.driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료', reservation_time)
+            # time.sleep(1)
+            # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+            # print("예약이 완료되었습니다.")   
        
         def download_image(filename):
             bucket = storage.bucket()
