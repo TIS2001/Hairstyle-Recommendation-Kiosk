@@ -674,8 +674,8 @@ class MainUI(tk.Tk):
                 self.ischeck=1
     def recommend_style(self):
         dir_path="UI/hairstyles/female/"+self.user_info["shape"]
-        
         self.make_btn(self.frame4,[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
+    
     def personal_cmd(self):
         selected_image = self.var.get()
         if selected_image == 1:
