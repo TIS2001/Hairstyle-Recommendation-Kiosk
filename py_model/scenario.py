@@ -542,8 +542,12 @@ class MainUI(tk.Tk):
         self.img_list2=[]
         self.img_name1=[]
         self.img_name2=[]
+        if self.customer_data["gender"]=="여자":
+            self.gender="female"
+        else:
+            self.gender="male"
         self.img_path1=[os.path.join("UI/colors/전체", f) for f in os.listdir("UI/colors/전체") if f.endswith(".JPG")]
-        self.img_path2=[os.path.join("UI/hairstyles/female/전체", f) for f in os.listdir("UI/hairstyles/female/전체") if f.endswith(".jpg")]
+        self.img_path2=[os.path.join("UI/hairstyles/"+self.gender+"/전체", f) for f in os.listdir("UI/hairstyles/"+self.gender+"/전체") if f.endswith(".jpg")]
         self.append_list(self.img_path1,self.img_list1,self.img_name1)
         self.append_list(self.img_path2,self.img_list2,self.img_name2)
         self.frame1 = tk.Frame(self.win6, bg='#dddddd')
@@ -558,7 +562,7 @@ class MainUI(tk.Tk):
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
         # self.recommend_style()  #real
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles/female/계란형", f) for f in os.listdir("UI/hairstyles/female/계란형") if f.endswith(".jpg")],0)   #test
+        self.make_btn(self.frame4, [os.path.join("UI/hairstyles/"+self.gender+"/계란형", f) for f in os.listdir("UI/hairstyles/"+self.gender+"/계란형") if f.endswith(".jpg")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
         img = self.p.recv()     #real
         self.select_personal(img) #real
@@ -727,7 +731,7 @@ class MainUI(tk.Tk):
                 self.ischeck=1
                 
     def recommend_style(self):
-        dir_path="UI/hairstyles/female/"+self.user_info["shape"]
+        dir_path="UI/hairstyles/"+self.gender+"/"+self.user_info["shape"]
         self.make_btn(self.frame4,[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
     
     def personal_cmd(self):
