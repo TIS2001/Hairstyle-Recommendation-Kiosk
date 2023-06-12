@@ -46,11 +46,9 @@ def ShowFeed(win,picam):
     # if success :
     #     messagebox.showinfo("SUCCESS", "IMAGE CAPTURED AND SAVED IN " + imgName)
     
-    
-    
 def imageBrowse(bucket,name):
     # Firebase Storage에서 사진 다운로드
-    blob = bucket.blob(f'customers/{name}_photo.jpg')
+    blob = bucket.blob(f'customers/{name}.jpg')
     str = blob.download_as_bytes()
     return Image.open(io.BytesIO(str))
     # Configuring the label to display the frame
@@ -67,7 +65,7 @@ def attach_photo(bucket,name, image):
             # Turn the BytesIO object back into a bytes object
             # imgByteArr = imgByteArr.getvalue()
             stream.seek(0)
-            blob = bucket.blob(f'customers/{name}_photo.jpg')
+            blob = bucket.blob(f'customers/{name}.jpg')
             blob.upload_from_file(stream)
             print("사진이 성공적으로 첨부되었습니다.")
     else:

@@ -37,6 +37,7 @@ class ClientVideoSocket:
         time.sleep(1)
         # self.connectServer()
         # self.sendImages()
+        
     def recvall(self, sock, count):
         buf = b''
         while count:
@@ -47,6 +48,18 @@ class ClientVideoSocket:
         return buf
     
     def receiveImages(self):
+        length = self.recvall(self.sock,64)
+        length1 = length.decode('utf-8')
+        print(length1)
+        stringData = self.recvall(self.sock,int(length1))
+        data = numpy.frombuffer(base64.b64decode(stringData), dtype = numpy.uint8)
+        decimg = cv2.imdecode(data, -1)
+        pil_img = Image.fromarray(decimg, "RGB")
+        # self.sock.close()
+        # pil_img.save("test.png")
+        return pil_img
+    
+    def receiveImages_png(self):
         length = self.recvall(self.sock,64)
         length1 = length.decode('utf-8')
         print(length1)
