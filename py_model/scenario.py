@@ -935,7 +935,8 @@ class MainUI(tk.Tk):
             # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
             # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
             # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-       
+            # self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
+        
         # def download_image(filename):
         #     bucket = storage.bucket()
         #     blob = bucket.blob("stylist/" + filename)
