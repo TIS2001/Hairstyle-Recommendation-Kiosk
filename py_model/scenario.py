@@ -179,7 +179,7 @@ class MainUI(tk.Tk):
         
             try:
                 # Firebase에 고객 정보 저장
-                doc_ref = self.db.collection('customers').document(id)
+                self.doc_ref = self.db.collection('customers').document(id)
                 self.user_info = {
                     'name': name,
                     'id': id,
@@ -188,7 +188,7 @@ class MainUI(tk.Tk):
                     'gender' : gender,
                     'shape' : None
                 }
-                doc_ref.set(self.user_info)
+                self.doc_ref.set(self.user_info)
                 
                 # 저장 후 필드 초기화
                 name_Tf.delete(0, tk.END)
@@ -202,6 +202,7 @@ class MainUI(tk.Tk):
                 self.open_win1()
                 self.win2.withdraw()
             except Exception as ep:
+
                 messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
                 
         def termsCheck():
@@ -295,8 +296,8 @@ class MainUI(tk.Tk):
 
             if id and password:
                 # Firebase에서 사용자 데이터 조회
-                doc_ref = self.db.collection('customers').document(id)
-                doc = doc_ref.get()
+                self.doc_ref = self.db.collection('customers').document(id)
+                doc = self.doc_ref.get()
 
                 if doc.exists:
                     customer_data = doc.to_dict()
@@ -464,10 +465,13 @@ class MainUI(tk.Tk):
                 attach_photo(self.bucket,self.user_info["id"],image)
                 self.p.send(mode)   #real
                 self.p.send(image_name) #real
+                self.open_win10()
+                self.win10.tkraise()
                 while(self.user_info['shape']==None):
                     pass
                 self.open_win6()
                 self.win6.tkraise()
+                self.win10.destroy()
             else:
                 messagebox.showwarning('사진 전송 오류', '헤어스타일 합성을 위한 사진을 선택해주세요.')
 
