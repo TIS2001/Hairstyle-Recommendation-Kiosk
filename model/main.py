@@ -31,8 +31,13 @@ class Database:
         
     def shape_update(self,shape):
         self.customer_data["shape"] = self.shape_name[shape]
+        if self.customer_data["gender"]==0:
+            self.customer_data["gender"]=="여자"
+        else:
+            self.customer_data["gender"]="남자"
+                
         self.doc_ref.set(self.customer_data)
-    
+
     def download_npy_file(self,file_name):
         with io.BytesIO() as stream:
             blob = self.bucket.blob(file_name)
@@ -102,7 +107,7 @@ if __name__ == "__main__":
     model = Img_model()
     server = ServerSocket()
     db = Database()
-    gender_path = {0:"hairstyles_man",1:"hairstyles_woman"}
+    gender_path = {0:"hairstyles_woman",1:"hairstyles_man"}
     
     styel_path = "/workspace/princess_maker/Hairstyle-Recommendation-Kiosk/py_model/UI/hairstyles/male/전체/"
     while True:
