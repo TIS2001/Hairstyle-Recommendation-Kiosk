@@ -1,4 +1,4 @@
-# -- coding: utf-8 --
+#-*-coding:utf-8-*-
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
@@ -591,12 +591,18 @@ class MainUI(tk.Tk):
             selection.append(style)
             selection.append(color)
             self.p.send(selection)  
-            
+            self.open_win10()
+            self.win10.tkraise()
+            while(self.user_info['shape']==None):
+                pass
             # self.open_win10()
             # self.img = self.p.recv()
             self.open_win11()
             # self.win10.destroy()
             self.win11.tkraise()
+            self.win10.destroy()
+
+
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
