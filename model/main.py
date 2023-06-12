@@ -9,6 +9,8 @@ import pybase64 as base64
 import io
 from PIL import Image
 from rembg import remove
+import time
+from tqdm import tqdm
 
 class Database:
     def __init__(self):
@@ -79,10 +81,18 @@ class Database:
         img = np.array(img)
         hsvImage = cv2.cvtColor(img , cv2.COLOR_BGR2HSV)
         hsvImage = np.float32(hsvImage)
-
-    # 채널로 분리하는 함수  ( 다차원일 경우 사용)
+        # 채널로 분리하는 함수  ( 다차원일 경우 사용)
         H, S, V = cv2.split(hsvImage)
         return H[0][0],S[0][0],V[0][0]
+
+    def upload_img_file(self,f,file_name):
+        with io.BytesIO() as stream:
+            blob = self.bucket.blob(f'hairstyles_man/{file_name}')
+            # np.savez(stream, latent_in=f["latent_in"], latent_F=f["latent_F"])
+            f.save(stream,format='JPEG')
+            stream.seek(0)
+            blob.upload_from_file(stream)
+    
         
 
 if __name__ == "__main__":
@@ -94,63 +104,69 @@ if __name__ == "__main__":
     db = Database()
     gender_path = {0:"hairstyles_man",1:"hairstyles_woman"}
     
-    styel_path = "/workspace/princess_maker/Hairstyle-Recommendation-Kiosk/py_model/UI/hairstyles/female/전체/"
+    styel_path = "/workspace/princess_maker/Hairstyle-Recommendation-Kiosk/py_model/UI/hairstyles/male/전체/"
     while True:
-    # for i in os.listdir(styel_path):
+    # for i in tqdm(os.listdir(styel_path)):
     #     img = Image.open(os.path.join(styel_path,i))
     #     ## make embedding 
     #     img = face_pre.run(np.array(img))
+    #     db.upload_img_file(img,i)
+    #     # img.save("1.jpg")
     #     target_numpy =  model.img_maker(img) ## [0] latent_in [1] latent_FS
     #     im = os.path.splitext(i)
-    #     db.upload_npz_file(target_numpy[0],f"hairstyles_woman/{im[0]}.npz")
-    #     db.upload_npy_file(target_numpy[1],f"hairstyles_woman/{im[0]}.npy")
-        
+    #     db.upload_npz_file(target_numpy[0],f"hairstyles_man/{im[0]}.npz")
+    #     db.upload_npy_file(target_numpy[1],f"hairstyles_man/{im[0]}.npy")
         
         server.conn , server.addr = server.sock.accept()
         print("Connected")
-        # try:
-        mode = server.conn.recv(1).decode('utf-8')
-        print(mode)
-        image_name = server.conn.recv(64).decode('utf-8')
-        print(image_name)
-        # mode = 0
-        # image_name = "선동진_photo"
-        info = db.get_info(image_name)
-        img = db.download_image_file(f"customers/{image_name}.jpg")
-        
-        output = remove(img)
-        server.sendImages_png(output)
-        img = face_pre.run(np.array(img))
-        shape = face_pre.face_shape(img,db.customer_data["gender"])
-        db.shape_update(shape)
+        try:
+            mode = int(server.conn.recv(1).decode('utf-8'))
+            print(mode)
+            image_name = server.conn.recv(64).decode('utf-8')
+            print(image_name)
+            # mode = 0
+            # image_name = "선동진_photo"
+            info = db.get_info(image_name)
+            # time.sleep(0.5)
+            img = db.download_image_file(f"customers/{image_name}.jpg")
 
-        if mode: 
-            ## 얼굴형 판단 후 고객 정보에 저장 구현 필요
-            target_numpy =  model.img_maker(img) ## [0] latent_in [1] latent_FS
-            db.upload_npz_file(target_numpy[0],f"customers_npz/{image_name}.npz")
-            db.upload_npy_file(target_numpy[1],f"customers_npy/{image_name}.npy")
-        else:
-            latent_FS = db.download_npz_file(f"customers_npz/{image_name}.npz")
-            latent_W = db.download_npy_file(f"customers_npy/{image_name}.npy")
-            target_numpy =  [latent_FS,latent_W]
+            output = remove(img)
+            server.sendImages_png(output)
+            img = cv2.cvtColor(np.array(img),cv2.COLOR_RGB2BGR)
+            img = face_pre.run(img)
+            shape = face_pre.face_shape(img,db.customer_data["gender"])
+            db.shape_update(shape)
 
-        style = server.conn.recv(64).decode('utf-8')
-        # # style npz 불러오기
-        
-        style_img = db.download_image_file(f'{gender_path[db.customer_data["gender"]]}/{style}.jpg')
-        latent_FS = db.download_npz_file(f'{gender_path[db.customer_data["gender"]]}/{style}.npz')
-        latent_W = db.download_npy_file(f'{gender_path[db.customer_data["gender"]]}/{style}.npy')
-        style_numpy = [latent_FS,latent_W]
-        color = server.conn.recv(64)
-        print(color.decode('utf-8'))
-        color = db.get_HSV_from_Image(f'color/{color}.JPG')
-        
-        res_img = model.align.align_images(img, style_img,target_numpy,style_numpy, "fidelity", align_more_region=False, smooth=5)
-        cv2.imwrite("test4.jpg",res_img)
-        
-        dying_img = model.dying_main(res_img,color)
-        cv2.imwrite("test.jpg",dying_img)
-        server.sendImages(dying_img)
-        server.conn.close()
-        # except:
-        #     pass
+            if mode: 
+                ## 얼굴형 판단 후 고객 정보에 저장 구현 필요
+                target_numpy =  model.img_maker(img) ## [0] latent_in [1] latent_FS
+                db.upload_npz_file(target_numpy[0],f"customers_npz/{image_name}.npz")
+                db.upload_npy_file(target_numpy[1],f"customers_npy/{image_name}.npy")
+            else:
+                latent_FS = db.download_npz_file(f"customers_npz/{image_name}.npz")
+                latent_W = db.download_npy_file(f"customers_npy/{image_name}.npy")
+                target_numpy =  [latent_FS,latent_W]
+
+            style, color = server.conn.recv(64).decode('utf-8').split('/')
+            # # style npz 불러오기
+            print(style)
+            style_img = db.download_image_file(f'{gender_path[db.customer_data["gender"]]}/{style}.jpg')
+            latent_FS = db.download_npz_file(f'{gender_path[db.customer_data["gender"]]}/{style}.npz')
+            latent_W = db.download_npy_file(f'{gender_path[db.customer_data["gender"]]}/{style}.npy')
+            style_numpy = [latent_FS,latent_W]
+            # color = server.conn.recv(64).decode('utf-8')
+            print(color)
+            color = db.get_HSV_from_Image(f'color/{color}.JPG')
+            
+            res_img = model.align.align_images(img, style_img,target_numpy,style_numpy, "fidelity", align_more_region=False, smooth=5)
+            cv2.imwrite("test4.jpg",res_img)
+            dying_img = model.dying_main(res_img,color)
+            cv2.imwrite("test.jpg",dying_img)
+            dying_img = cv2.cvtColor(dying_img , cv2.COLOR_RGB2BGR)
+            cv2.imwrite("test2.jpg",dying_img)
+
+            server.sendImages(dying_img)
+            server.conn.close()
+        except Exception as e: 
+            print(e)
+            server.conn.close()
