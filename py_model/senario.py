@@ -826,6 +826,7 @@ class MainUI(tk.Tk):
             time.sleep(1)
             self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
             print("예약이 완료되었습니다.")   
+            self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
        
         def download_image(filename):
             bucket = storage.bucket()
