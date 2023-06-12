@@ -459,7 +459,6 @@ class MainUI(tk.Tk):
 
         def AfterSelect(mode,image_name,image):
             if bool(self.list):
-                print("after select ", image)
                 # self.open_win10()
                 # self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
                 # self.p.send(mode)   #real
@@ -545,7 +544,7 @@ class MainUI(tk.Tk):
         self.img_list2=[]
         self.img_name1=[]
         self.img_name2=[]
-        if self.customer_data["gender"]=="여자":
+        if self.user_info["gender"]=='여자':
             self.gender="female"
         else:
             self.gender="male"
