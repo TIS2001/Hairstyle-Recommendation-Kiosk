@@ -26,7 +26,7 @@ import subprocess
 # import urllib
 
 class MainUI(tk.Tk):
-    def __init__(self,p,picam=True):
+    def __init__(self,p,picam=False):
 
         tk.Tk.__init__(self)
         self.picam = picam
@@ -886,6 +886,7 @@ class MainUI(tk.Tk):
         def make_reservation(designer_list):
             # 예약 정보 저장 및 Firestore에 전달하는 함수
             all_time = []
+            send_time = []
             
             # 버튼이 한개만 눌리게 만들려는 로직
             for designer in designer_list:
@@ -897,9 +898,9 @@ class MainUI(tk.Tk):
                     messagebox.showwarning("경고", "하나의 시간대를 선택해야 합니다.")
                     return  # 예약 중단
             
-            for designer in designer_list:
+            for designer in designer_list:                
                 reservation_time = []
-                
+
                 # 기존 예약 시간 불러오기
                 hairdresser_ref = self.db.collection("hairdresser").document(designer.name)
                 doc = hairdresser_ref.get()
@@ -912,7 +913,9 @@ class MainUI(tk.Tk):
                     if btn["relief"] == "sunken":
                         new_time = times[index]
                         if new_time not in reservation_time:  # 중복 확인
-                            reservation_time.append(new_time)   
+                            reservation_time.append(new_time)
+                            send_time.append(new_time)
+
                 
                 # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
                 data = {
@@ -922,20 +925,20 @@ class MainUI(tk.Tk):
                 
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
-           
-            self.open_win13()
-            self.win13.tkraise()
-                    
+            
             # # 카카오톡 관련
             # #채팅방 로드
             # self.driver.get(self.ChatRoom_LSH)  
-            # time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
-
+            # time.sleep(2)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            # #사진전송
+            # self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') 
             # #메시지 작성
-            # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
-            # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
+            # # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
             # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-            # self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
+            
+            self.open_win13()
+            self.win13.tkraise()
         
         # def download_image(filename):
         #     bucket = storage.bucket()
