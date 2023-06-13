@@ -114,9 +114,15 @@ class MainUI(tk.Tk):
     def Start_Frame(self):
         self.StartFrame = tk.Frame(self, relief="flat",bg="white")
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
-
+        img = Image.open("UI/beginning.jpg")
+        img=img.resize((800,1280))
+        photo=ImageTk.PhotoImage(img)
+        label=tk.Label(self.StartFrame,image=photo,text="start")
+        label.place(x=0,y=0)
+        label.configure(image=photo)
+        label.image=photo
         button_start = tk.Button(self.StartFrame, text="시작하기", width=20, height=7, command=lambda:[self.win1.tkraise()])
-        button_start.pack(anchor="center",pady=300)
+        button_start.place(relx=0.5,anchor=tk.CENTER, y=700)
         button_start.configure(font=("Arial",18))
         
         self.StartFrame.bind("<Escape>", self.on_escape)
@@ -173,35 +179,37 @@ class MainUI(tk.Tk):
                 messagebox.showwarning('회원가입 실패', '이미 사용 중인 아이디입니다.')
                 return
         
-            try:
-                # Firebase에 고객 정보 저장
-                self.doc_ref = self.db.collection('customers').document(id)
-                self.user_info = {
-                    'name': name,
-                    'id': id,
-                    'password': password,
-                    'phoneNumber': phoneNumber,
-                    'gender' : gender,
-                    'shape' : None
-                }
-                self.doc_ref.set(self.user_info)
-                
-                # 저장 후 필드 초기화
-                name_En.delete(0, tk.END)
-                id_Tf.delete(0, tk.END)
-                password_Tf.delete(0, tk.END)
-                phoneNumber_Tf.delete(0, tk.END)
-                var.set(None)
-                
-                messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
-                subprocess.call(["pkill","onboard"])
-                self.win1.tkraise()
-                # self.open_win1()
-                # self.win2.withdraw()
-            except Exception as ep:
+            #try:
+            # Firebase에 고객 정보 저장
+            self.doc_ref = self.db.collection('customers').document(id)
+            self.user_info = {
+                'name': name,
+                'id': id,
+                'password': password,
+                'phoneNumber': phoneNumber,
+                'gender' : gender,
+                'shape' : None
+            }
+            self.doc_ref.set(self.user_info)
+            
+            # 저장 후 필드 초기화
+            name_En.delete("1.0","end")
+            name_Ko.delete("1.0","end")
+            id_Tf.delete(0, tk.END)
+            password_Tf.delete(0, tk.END)
+            phoneNumber_Tf.delete(0, tk.END)
+            var.set(None)
+            
+            messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
+            subprocess.call(["pkill","onboard"])
+            self.win1.tkraise()
+            # self.open_win1()
+            # self.win2.withdraw()
 
-                messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
-                
+            # except Exception as ep:
+
+            #     messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
+ 
         def termsCheck():
             if cb.get() == 1:
                 submit_btn['state'] = NORMAL
@@ -262,7 +270,7 @@ class MainUI(tk.Tk):
         name_Ko.configure(font=("Arial",15))
         name_Ko.grid(row=0, column=3, padx=0, pady=10)
         name_En.bind("<Key>", return_btn)
-
+        frame1.bind("<Map>",name_En.focus_set())
         id_Tf = Entry(frame1)
         id_Tf.configure(font=("Arial",15))
         id_Tf.grid(row=1,columnspan=4,column=2,padx=20, pady=10)
@@ -980,7 +988,7 @@ class MainUI(tk.Tk):
         designer2.read_reservation(self.db)
         
         designer3 = designer("이가은", self.win12, y=525)
-        filename3 = "이승현.jpg"
+        filename3 = "이가은.jpg"
         show_image(designer3.frame1, filename3)
         designer3.read_reservation(self.db)
         
@@ -1008,7 +1016,7 @@ class MainUI(tk.Tk):
         self.win13 = tk.Frame(self, relief="flat",bg="white")
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
-        tk.Label(self.win13, bg="white",font=("Arial",23),text=self.user_info["name"] + "님 예약이 완료되었습니다.").pack(anchor=tk.CENTER)
+        tk.Label(self.win13, bg="white",font=("Arial",22),text=self.user_info["name"] + "님 예약이 완료되었습니다.").place(relx=0.5,y=300,anchor=tk.CENTER)
     
     # esc 누르면 화면이 꺼지게 만드는 기능
     def on_escape(self,event=None):
