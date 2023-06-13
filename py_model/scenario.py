@@ -12,6 +12,7 @@ import os, sys
 from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
+from util.keyboard import en2ko
 import numpy as np
 from multiprocessing import Process, Pipe
 import subprocess
@@ -100,8 +101,6 @@ class MainUI(tk.Tk):
     #     self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
     #     time.sleep(1)
 
-
-
     def camera_init(self):
         if self.picam:
             from picamera2 import Picamera2
@@ -153,23 +152,18 @@ class MainUI(tk.Tk):
         cb = IntVar()
         subprocess.Popen(["onboard"])
         
-        # def selection():
-        #     ## global selection이 무슨 의민지 모르겠음
-        #     self.m = var.get()
-        
         def check_duplicate_id(id):
             customer_ref = self.db.collection('customers')
             query = customer_ref.where('id', '==', id).limit(1).get()
             return len(query) > 0
 
         def submit():
-            name = name_Tf.get()
+            name = name_Ko.get("1.0", "end").strip()
             id = id_Tf.get()
             password = password_Tf.get()
             phoneNumber = phoneNumber_Tf.get()
             gender = var.get()
             shape = None
-
             
             if not name or not id or not password or not phoneNumber or not gender:
                 messagebox.showwarning('회원가입 실패', '모든 필드를 입력해주세요.')
@@ -193,7 +187,7 @@ class MainUI(tk.Tk):
                 self.doc_ref.set(self.user_info)
                 
                 # 저장 후 필드 초기화
-                name_Tf.delete(0, tk.END)
+                name_En.delete(0, tk.END)
                 id_Tf.delete(0, tk.END)
                 password_Tf.delete(0, tk.END)
                 phoneNumber_Tf.delete(0, tk.END)
@@ -245,7 +239,6 @@ class MainUI(tk.Tk):
         label_phone = Label(frame1, text='전화번호 (PhoneNumber)')
         label_phone.configure(font=("Arial",15))
         label_phone.grid(row=3, column=0, padx=20, pady=15, sticky=W)
-        
         var.set(None)
         # frame 2 내의 버튼
         button_man = Radiobutton(frame2, text='남자', variable=var, value='남자')
@@ -255,26 +248,34 @@ class MainUI(tk.Tk):
         button_woman = Radiobutton(frame2, text='여자', variable=var, value='여자')
         button_woman.configure(font=("Arial",15))
         button_woman.grid(row=0, column=1, padx=30)
-
+        
+        def return_btn(event):
+            main_in = name_En.get("1.0", END)
+            name_Ko.delete("1.0","end")
+            name_Ko.insert(END,en2ko(main_in))
         
         # 입력창 관련
-        name_Tf = Entry(frame1)
-        name_Tf.configure(font=("Arial",15))
-        name_Tf.grid(row=0, column=2, padx=20, pady=10)
-        
+        name_En = Text(frame1,width=1, fg="white",height=1)
+        name_En.configure(font=("Arial",15))
+        name_En.grid(row=0, column=2, padx=0, pady=10)
+        name_Ko = Text(frame1,width=16, height=1)
+        name_Ko.configure(font=("Arial",15))
+        name_Ko.grid(row=0, column=3, padx=0, pady=10)
+        name_En.bind("<Key>", return_btn)
+
         id_Tf = Entry(frame1)
         id_Tf.configure(font=("Arial",15))
-        id_Tf.grid(row=1, column=2,padx=20, pady=10)
+        id_Tf.grid(row=1,columnspan=4,column=2,padx=20, pady=10)
         
         password_Tf = Entry(frame1, show="*") # 비밀번호 보안을 위한 show='*'
         password_Tf.configure(font=("Arial",15))
-        password_Tf.grid(row=2, column=2, padx=20, pady=10)
+        password_Tf.grid(row=2, columnspan=4,column=2, padx=20, pady=10)
         
         phoneNumber_Tf = Entry(frame1)
         phoneNumber_Tf.configure(font=("Arial",15))
-        phoneNumber_Tf.grid(row=3, column=2, padx=20, pady=10)
+        phoneNumber_Tf.grid(row=3, columnspan=4, column=2, padx=20, pady=10)
         
-        frame2.grid(row=4, columnspan=3,padx=30)
+        frame2.grid(row=4, columnspan=4,padx=30)
         
         check_btn = Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
         check_btn.configure(font=("Arial",15))
