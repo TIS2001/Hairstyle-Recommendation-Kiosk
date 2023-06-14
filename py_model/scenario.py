@@ -12,6 +12,7 @@ import os, sys
 from firebase_admin import credentials, firestore, initialize_app, storage
 from util.img_send import ClientVideoSocket
 from util.image_util import Capture, ShowFeed, attach_photo, imageBrowse
+from util.keyboard import en2ko
 import numpy as np
 from multiprocessing import Process, Pipe
 import subprocess
@@ -100,8 +101,6 @@ class MainUI(tk.Tk):
     #     self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
     #     time.sleep(1)
 
-
-
     def camera_init(self):
         if self.picam:
             from picamera2 import Picamera2
@@ -115,9 +114,15 @@ class MainUI(tk.Tk):
     def Start_Frame(self):
         self.StartFrame = tk.Frame(self, relief="flat",bg="white")
         self.StartFrame.place(x=0,y=0,width=800,height=1280)
-
+        img = Image.open("UI/beginning.jpg")
+        img=img.resize((800,1280))
+        photo=ImageTk.PhotoImage(img)
+        label=tk.Label(self.StartFrame,image=photo,text="start")
+        label.place(x=0,y=0)
+        label.configure(image=photo)
+        label.image=photo
         button_start = tk.Button(self.StartFrame, text="시작하기", width=20, height=7, command=lambda:[self.win1.tkraise()])
-        button_start.pack(anchor="center",pady=300)
+        button_start.place(relx=0.5,anchor=tk.CENTER, y=700)
         button_start.configure(font=("Arial",18))
         
         self.StartFrame.bind("<Escape>", self.on_escape)
@@ -151,11 +156,7 @@ class MainUI(tk.Tk):
     def open_win2(self):
         var = StringVar()
         cb = IntVar()
-        # subprocess.Popen(["onboard"])
-        
-        # def selection():
-        #     ## global selection이 무슨 의민지 모르겠음
-        #     self.m = var.get()
+        subprocess.Popen(["onboard"])
         
         def check_duplicate_id(id):
             customer_ref = self.db.collection('customers')
@@ -163,13 +164,12 @@ class MainUI(tk.Tk):
             return len(query) > 0
 
         def submit():
-            name = name_Tf.get()
+            name = name_Ko.get("1.0", "end").strip()
             id = id_Tf.get()
             password = password_Tf.get()
             phoneNumber = phoneNumber_Tf.get()
             gender = var.get()
             shape = None
-
             
             if not name or not id or not password or not phoneNumber or not gender:
                 messagebox.showwarning('회원가입 실패', '모든 필드를 입력해주세요.')
@@ -179,35 +179,37 @@ class MainUI(tk.Tk):
                 messagebox.showwarning('회원가입 실패', '이미 사용 중인 아이디입니다.')
                 return
         
-            try:
-                # Firebase에 고객 정보 저장
-                self.doc_ref = self.db.collection('customers').document(id)
-                self.user_info = {
-                    'name': name,
-                    'id': id,
-                    'password': password,
-                    'phoneNumber': phoneNumber,
-                    'gender' : gender,
-                    'shape' : None
-                }
-                self.doc_ref.set(self.user_info)
-                
-                # 저장 후 필드 초기화
-                name_Tf.delete(0, tk.END)
-                id_Tf.delete(0, tk.END)
-                password_Tf.delete(0, tk.END)
-                phoneNumber_Tf.delete(0, tk.END)
-                var.set(None)
-                
-                messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
-                # subprocess.call(["pkill","onboard"])
-                self.win1.tkraise()
-                # self.open_win1()
-                # self.win2.withdraw()
-            except Exception as ep:
+            #try:
+            # Firebase에 고객 정보 저장
+            self.doc_ref = self.db.collection('customers').document(id)
+            self.user_info = {
+                'name': name,
+                'id': id,
+                'password': password,
+                'phoneNumber': phoneNumber,
+                'gender' : gender,
+                'shape' : None
+            }
+            self.doc_ref.set(self.user_info)
+            
+            # 저장 후 필드 초기화
+            name_En.delete("1.0","end")
+            name_Ko.delete("1.0","end")
+            id_Tf.delete(0, tk.END)
+            password_Tf.delete(0, tk.END)
+            phoneNumber_Tf.delete(0, tk.END)
+            var.set(None)
+            
+            messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
+            subprocess.call(["pkill","onboard"])
+            self.win1.tkraise()
+            # self.open_win1()
+            # self.win2.withdraw()
 
-                messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
-                
+            # except Exception as ep:
+
+            #     messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
+ 
         def termsCheck():
             if cb.get() == 1:
                 submit_btn['state'] = NORMAL
@@ -245,7 +247,6 @@ class MainUI(tk.Tk):
         label_phone = Label(frame1, text='전화번호 (PhoneNumber)')
         label_phone.configure(font=("Arial",15))
         label_phone.grid(row=3, column=0, padx=20, pady=15, sticky=W)
-        
         var.set(None)
         # frame 2 내의 버튼
         button_man = Radiobutton(frame2, text='남자', variable=var, value='남자')
@@ -255,26 +256,34 @@ class MainUI(tk.Tk):
         button_woman = Radiobutton(frame2, text='여자', variable=var, value='여자')
         button_woman.configure(font=("Arial",15))
         button_woman.grid(row=0, column=1, padx=30)
-
+        
+        def return_btn(event):
+            main_in = name_En.get("1.0", END)
+            name_Ko.delete("1.0","end")
+            name_Ko.insert(END,en2ko(main_in))
         
         # 입력창 관련
-        name_Tf = Entry(frame1)
-        name_Tf.configure(font=("Arial",15))
-        name_Tf.grid(row=0, column=2, padx=20, pady=10)
-        
+        name_En = Text(frame1,width=1, fg="white",height=1)
+        name_En.configure(font=("Arial",15))
+        name_En.grid(row=0, column=2, padx=0, pady=10)
+        name_Ko = Text(frame1,width=16, height=1)
+        name_Ko.configure(font=("Arial",15))
+        name_Ko.grid(row=0, column=3, padx=0, pady=10)
+        name_En.bind("<Key>", return_btn)
+        frame1.bind("<Map>",name_En.focus_set())
         id_Tf = Entry(frame1)
         id_Tf.configure(font=("Arial",15))
-        id_Tf.grid(row=1, column=2,padx=20, pady=10)
+        id_Tf.grid(row=1,columnspan=4,column=2,padx=20, pady=10)
         
         password_Tf = Entry(frame1, show="*") # 비밀번호 보안을 위한 show='*'
         password_Tf.configure(font=("Arial",15))
-        password_Tf.grid(row=2, column=2, padx=20, pady=10)
+        password_Tf.grid(row=2, columnspan=4,column=2, padx=20, pady=10)
         
         phoneNumber_Tf = Entry(frame1)
         phoneNumber_Tf.configure(font=("Arial",15))
-        phoneNumber_Tf.grid(row=3, column=2, padx=20, pady=10)
+        phoneNumber_Tf.grid(row=3, columnspan=4, column=2, padx=20, pady=10)
         
-        frame2.grid(row=4, columnspan=3,padx=30)
+        frame2.grid(row=4, columnspan=4,padx=30)
         
         check_btn = Checkbutton(frame1, text='Accept the terms & conditions', variable=cb, onvalue=1, offvalue=0,command=termsCheck)
         check_btn.configure(font=("Arial",15))
@@ -992,7 +1001,7 @@ class MainUI(tk.Tk):
         designer2.read_reservation(self.db)
         
         designer3 = designer("이가은", self.win12, y=525)
-        filename3 = "이승현.jpg"
+        filename3 = "이가은.jpg"
         show_image(designer3.frame1, filename3)
         designer3.read_reservation(self.db)
         
@@ -1020,7 +1029,7 @@ class MainUI(tk.Tk):
         self.win13 = tk.Frame(self, relief="flat",bg="white")
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
-        tk.Label(self.win13, bg="white",font=("Arial",23),text=self.user_info["name"] + "님 예약이 완료되었습니다.").pack(anchor=tk.CENTER)
+        tk.Label(self.win13, bg="white",font=("Arial",22),text=self.user_info["name"] + "님 예약이 완료되었습니다.").place(relx=0.5,y=300,anchor=tk.CENTER)
     
     # esc 누르면 화면이 꺼지게 만드는 기능
     def on_escape(self,event=None):
