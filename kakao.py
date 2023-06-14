@@ -5,6 +5,7 @@ from PIL import Image
 import time
 import configparser
 import urllib
+from selenium.webdriver.chrome.service import Service
 
 
 #if ~ 예약이 완료되면:
@@ -27,6 +28,7 @@ ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
 ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
 ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
 options = webdriver.ChromeOptions()
+service = Service(executable_path=r'/usr/bin/chromedriver')
 
 #user-agent
 options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
@@ -34,7 +36,7 @@ options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) Appl
 # options.add_argument("headless")
 
 #크로니움 드라이버 로드
-driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
+driver = webdriver.Chrome(service=service, options=options)
 driver.implicitly_wait(3)
 
 #카카오 메인페이지 로드
