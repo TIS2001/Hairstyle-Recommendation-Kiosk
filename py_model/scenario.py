@@ -26,14 +26,14 @@ import subprocess
 # import urllib
 
 class MainUI(tk.Tk):
-    def __init__(self,p,picam=True):
+    def __init__(self,p,picam=False):
 
         tk.Tk.__init__(self)
         self.picam = picam
         self.p = p
         self.firebase_init()
         # os.system("onboard")
-        
+        self.img = None
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
@@ -151,7 +151,7 @@ class MainUI(tk.Tk):
     def open_win2(self):
         var = StringVar()
         cb = IntVar()
-        subprocess.Popen(["onboard"])
+        # subprocess.Popen(["onboard"])
         
         # def selection():
         #     ## global selection이 무슨 의민지 모르겠음
@@ -200,7 +200,7 @@ class MainUI(tk.Tk):
                 var.set(None)
                 
                 messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
-                subprocess.call(["pkill","onboard"])
+                # subprocess.call(["pkill","onboard"])
                 self.win1.tkraise()
                 # self.open_win1()
                 # self.win2.withdraw()
@@ -287,7 +287,7 @@ class MainUI(tk.Tk):
     
     #3-2. 로그인 페이지 
     def open_win3(self):
-        subprocess.Popen(["onboard"])
+        # subprocess.Popen(["onboard"])
 
         self.win3 = tk.Frame(self, relief="flat",bg="white")
         self.win3.place(x=0,y=0,width=800,height=1280)
@@ -308,7 +308,7 @@ class MainUI(tk.Tk):
                     if password == customer_data['password']:
                         self.user_info = customer_data
                         messagebox.showinfo("로그인 성공", f'어서오세요, {self.user_info["name"]}님.')
-                        subprocess.call(["pkill","onboard"])
+                        # subprocess.call(["pkill","onboard"])
                         self.win4.tkraise()
                     else:
                         messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
@@ -570,7 +570,13 @@ class MainUI(tk.Tk):
         # self.recommend_style()  #real
         self.make_btn(self.frame4, [os.path.join("UI/hairstyles/"+self.gender+"/계란형", f) for f in os.listdir("UI/hairstyles/"+self.gender+"/계란형") if f.endswith(".jpg")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
-        img = self.p.recv()     #real
+        img = None
+        while not img:
+            if self.p.poll(timeout=2):
+                img = self.p.recv()
+            else:
+                self.p.send(1) #not receive img
+        self.p.send(0) #receive img
         self.select_personal(img) #real
         # self.select_personal()  #test
 
@@ -818,12 +824,19 @@ class MainUI(tk.Tk):
             self.label.configure(image=self.tk_img)
         except EOFError:
             self.gif_img.seek(0)
-        self.win10.after(100, self.update_gif)
+        if self.img:
+            self.win10.destory()
+        else:
+            self.win10.after(100, self.update_gif)
 
     def open_win11(self):
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
-        self.img = self.p.recv()    #real
+        # self.img = None
+        while not self.img:
+            if self.p.poll(timeout=1):
+                self.img = self.p.recv()
+                #real
         # self.img=Image.open("UI/loading_basic.gif")
         self.win11.bind("<Escape>", self.on_escape)
         
@@ -1033,6 +1046,10 @@ def server(p):
     server.sock.send(image_name.encode('utf-8'))
     img = server.receiveImages_png()
     p.send(img)
+    while p.recv():
+        p.send(img)
+    
+    
     style,color = p.recv()
     print(style,color)
     st=style+"/"+color
@@ -1044,6 +1061,8 @@ def server(p):
     # img.save("test.png")    
     img = server.receiveImages()
     p.send(img)
+    while p.recv():
+        p.send(img)
 
 if __name__ == "__main__":
     p,q = Pipe()
