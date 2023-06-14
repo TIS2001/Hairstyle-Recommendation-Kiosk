@@ -59,6 +59,7 @@ class MainUI(tk.Tk):
     #     #알리기
     #     Config = configparser.ConfigParser()
 
+
     #     #카카오 아이디, 비번 불러오기
     #     Config.read('../info.conf')
     #     Config = Config['MAIN']
@@ -69,7 +70,7 @@ class MainUI(tk.Tk):
 
     #     #카카오메인페이지 지정
     #     KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
-
+    #     ChatRoom = 'https://center-pf.kakao.com/_xgyjyxj/chats'
     #     # 미용사에 따라 채팅룸 링크 지정
     #     ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
     #     self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
@@ -96,9 +97,9 @@ class MainUI(tk.Tk):
     #     pwvar.send_keys(pw)
     #     time.sleep(3)
     #     self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-    #     time.sleep(10)
-    #     self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
-    #     time.sleep(1)
+    #     time.sleep(7)
+    #     driver.get(ChatRoom)
+    #     time.sleep(3)
 
 
 
@@ -308,6 +309,12 @@ class MainUI(tk.Tk):
                         self.user_info = customer_data
                         messagebox.showinfo("로그인 성공", f'어서오세요, {self.user_info["name"]}님.')
                         subprocess.call(["pkill","onboard"])
+                        # self.driver.find_element(By.NAME, 'keyword').send_keys('name')#사용자 이름 검색
+                        #     time.sleep(1)
+                        # self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[1]/div[2]/form/fieldset/div/button/span').click()
+                        #     time.sleep(1)
+                        # self.driver .find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[3]/div/div/li/a/div').click()
+                        #     time.sleep(5)
                         self.win4.tkraise()
                     else:
                         messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
@@ -925,6 +932,7 @@ class MainUI(tk.Tk):
                 
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
+            #
             
             # # 카카오톡 관련
             # #채팅방 로드
