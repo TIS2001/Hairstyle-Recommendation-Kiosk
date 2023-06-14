@@ -21,17 +21,19 @@ pw = Config['kakaopw']
 
 #카카오메인페이지 지정
 KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
+ChatRoom = 'https://center-pf.kakao.com/_xgyjyxj/chats'
 
 # 미용사에 따라 채팅룸 링크 지정
 ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
 ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
 ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
+ChatRoom_SDH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876782985684096'
 options = webdriver.ChromeOptions()
 
 #user-agent
 options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
 #창을 띄우지 않고 실행
-options.add_argument("headless")
+#options.add_argument("headless")
 
 #크로니움 드라이버 로드
 driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
@@ -39,7 +41,7 @@ driver.implicitly_wait(3)
 
 #카카오 메인페이지 로드
 driver.get(KaKaoURL)
-time.sleep(5)
+time.sleep(3)
 
 #로그인
 idvar = driver.find_element(By.NAME, "loginKey")
@@ -48,19 +50,44 @@ pwvar = driver.find_element(By.NAME, "password")
 pwvar.send_keys(pw)
 time.sleep(3)
 driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-time.sleep(10)
-driver.find_element(By.CLASS_NAME, "tit_invite").click()
+time.sleep(7)
+# driver.find_element(By.CLASS_NAME, "tit_invite").click()
+# time.sleep(1)
+# driver.find_element(By.XPATH, '//*[@id="mFeature"]/div[1]/div[2]/ul/li[3]/a').click()
+# time.sleep(1)
+# driver.find_element(By.XPATH, '//*[@id="mFeature"]/div[1]/div[2]/ul/li[3]/ul/li[1]/a').click()
+# time.sleep(1)
+driver.get(ChatRoom)
+time.sleep(3)
+driver.find_element(By.NAME, 'keyword').send_keys('선동진')#사용자 이름 검색
 time.sleep(1)
+driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[1]/div[2]/form/fieldset/div/button/span').click()
+time.sleep(1)
+driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[3]/div/div/li/a/div').click()
+time.sleep(5)
+#driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg')
+
+#오리지널 창 저장
+#original_window = driver.current_window_handle
+# 팝업창으로 전환
+driver.switch_to.window(driver.window_handles[-1])
+driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
+#팝업창 닫기
+#driver.close()
+#원래 창으로 전화
+#driver.switch_to.window(original_window)
+
 
 #채팅방 로드
-driver.get(ChatRoom_SDJ)
-time.sleep(3)
+driver.get(ChatRoom_SDH)  
+time.sleep(3)  
 
 
 #메시지 작성
 driver.find_element(By.ID, 'chatWrite').send_keys('예약 완료')
 time.sleep(1)
 driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼
+driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
 
 
 # driver.find_element(By.CLASS_NAME, "ico_rocket ico_list").click()
@@ -83,7 +110,7 @@ while True:
     # driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼
 
     #디자이너 동진
-    #elif      :
+    #elif      :/home/pi/robot/
     #채팅방 로드
     # driver.get(ChatRoom_SDJ)
     # time.sleep(3)
