@@ -213,7 +213,7 @@ class Embedding(nn.Module):
         self.setup_dataloader(image_path=image_path)
         device = self.opts.device
         ibar = tqdm(self.dataloader, desc='Images')
-
+        
         for ref_im_H, ref_im_L in ibar:
             optimizer_W, latent = self.setup_W_optimizer()
             pbar = tqdm(range(self.opts.W_steps), desc='Embedding', leave=False)
@@ -232,11 +232,13 @@ class Embedding(nn.Module):
                     'gen_im_L': self.downsample(gen_im)
                 }
                 #import pdb ; pdb.set_trace()
+                toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1)).save("test_W.jpg")
+
                 loss, loss_dic = self.cal_loss(im_dict, latent_in)
 
                 loss.backward()
                 optimizer_W.step()
-
+            
                 if self.opts.verbose:
                     pbar.set_description('Embedding: Loss: {:.3f}, L2 loss: {:.3f}, Perceptual loss: {:.3f}, P-norm loss: {:.3f}'
                                          .format(loss, loss_dic['l2'], loss_dic['percep'], loss_dic['p-norm']))
@@ -306,7 +308,7 @@ class Embedding(nn.Module):
                 loss, loss_dic = self.cal_loss(im_dict, latent_in)
                 loss.backward()
                 optimizer_FS.step()
-                toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1)).save("test3.jpg")
+                toPIL(((gen_im[0] + 1) / 2).detach().cpu().clamp(0, 1)).save("test_FS.jpg")
                 if self.opts.verbose:
                     pbar.set_description(
                         'Embedding: Loss: {:.3f}, L2 loss: {:.3f}, Perceptual loss: {:.3f}, P-norm loss: {:.3f}, L_F loss: {:.3f}'

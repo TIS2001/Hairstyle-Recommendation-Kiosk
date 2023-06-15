@@ -26,7 +26,8 @@ requirements:
 class face_predicter:
     def __init__(self,pre,det):
         self.predictor = dlib.shape_predictor(pre)
-        self.detector = dlib.cnn_face_detection_model_v1(det)
+        # self.detector = dlib.cnn_face_detection_model_v1(det)
+        self.detector = dlib.get_frontal_face_detector()
         self.shape_init("utils/dat")
     
     def shape_init(self,path):
@@ -46,7 +47,10 @@ class face_predicter:
         """
         # self.detector = dlib.cnn_face_detection_model_v1(det)
         # print(type(img))
-        det = self.detector(img, 1)[0].rect
+        try:
+            det = self.detector(img, 1)[0]
+        except:
+            return None
         shape = self.predictor(img, det)
 
         lm = np.array([[tt.x, tt.y] for tt in shape.parts()])
@@ -84,7 +88,8 @@ class face_predicter:
         """
 
         lm = self.get_landmark(img)
-
+        if type(lm)==type(None):
+            return None
         lm_chin = lm[0: 17]  # left-right
         lm_eyebrow_left = lm[17: 22]  # left-right
         lm_eyebrow_right = lm[22: 27]  # left-right
@@ -169,6 +174,8 @@ class face_predicter:
     
     def run(self,img):
         face = self.align_face(img)
+        if type(face)==type(None):
+            return None
         face_tensor = torchvision.transforms.ToTensor()(face).unsqueeze(0).cuda()
         face_tensor_lr = face_tensor[0].cpu().detach().clamp(0, 1)
         face = torchvision.transforms.ToPILImage()(face_tensor_lr)

@@ -6,7 +6,7 @@ def dying(img,seg, color):
     # img = cv2.imread(img)
     img = cv2.resize(img,(512,512))
     # img_seg = cv2.imread(seg)
-    hsvImage = cv2.cvtColor(img , cv2.COLOR_RGB2BGR)
+    # hsvImage = cv2.cvtColor(img , cv2.COLOR_RGB2BGR)
     h,w = seg.size()
     img_seg_ = np.zeros((h, w), dtype=np.uint8)
     img_seg_bag = np.zeros((h, w), dtype=np.uint8)
@@ -17,7 +17,7 @@ def dying(img,seg, color):
             elif int(seg[i,j])==0:
                 img_seg_bag[i,j] = 1
         
-    hsvImage = cv2.cvtColor(hsvImage , cv2.COLOR_BGR2HSV)
+    hsvImage = cv2.cvtColor(img , cv2.COLOR_BGR2HSV)
     hsvImage = np.float32(hsvImage)
 
     # 채널로 분리하는 함수  ( 다차원일 경우 사용)
@@ -31,26 +31,24 @@ def dying(img,seg, color):
     # img = np.uint8(hsvImage)
     # img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
     #dying
-    color_code = {}
+    # color_code = {}
     
     hue_code = color
     H = np.where(img_seg_==1,hue_code[0],H)
     S = np.where(img_seg_==1,hue_code[1],S)
     V = np.where(img_seg_==1,hue_code[2],V)
-    H = np.where(img_seg_bag==1,0,H)
-    S = np.where(img_seg_bag==1,0,S)
-    V = np.where(img_seg_bag==1,255,V)
     
     hsvImage = cv2.merge( [ H,S,V ] )
 
     hsvImage = np.uint8(hsvImage)
 
     
-    imgBgr = cv2.cvtColor(hsvImage, cv2.COLOR_HSV2RGB)
-
-    alpha=0.7
+    imgBgr = cv2.cvtColor(hsvImage, cv2.COLOR_HSV2BGR)
+    cv2.imwrite("dying_img.jpg",imgBgr)
+    alpha=0.8
     final=cv2.addWeighted(img, alpha, imgBgr, 1-alpha, 0)
-    
+    cv2.imwrite("dying_test.jpg",img)
+    cv2.imwrite("dying_final.jpg",final)
     return final
     
 if __name__ == "__main__":

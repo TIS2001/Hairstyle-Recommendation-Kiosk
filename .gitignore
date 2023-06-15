@@ -3,7 +3,7 @@ model/output/
 *.pyc
 *.cpython-38
 *.png
-*.jpg
+*.jpeg
 *.json
 py_model/dat/shape_predictor_81_face_landmarks.dat
 *.dat
@@ -16,3 +16,108 @@ model/models/__pycache__/Alignment.cpython-38.pyc
 model/utils/__pycache__/image_utils.cpython-38.pyc
 model/mmm.py
 *.JPG
+model/utils/test/man/circle/d7e7b743ecf1ddceec50664cb37666e0.jpg
+model/utils/test/man/circle/e7458e52d45f78b0e6801f11f840e681.jpg
+model/utils/test/man/circle/images (1).jpg
+model/utils/test/man/circle/images (2).jpg
+model/utils/test/man/circle/images (3).jpg
+model/utils/test/man/circle/images.jpg
+model/utils/test/man/circle/KakaoTalk_20230607_154628713_06.jpg
+model/utils/test/man/circle/KakaoTalk_20230607_154628713_11.jpg
+model/utils/test/man/circle/KakaoTalk_20230607_154628713_12.jpg
+model/utils/test/man/circle/KakaoTalk_20230607_154628713_14.jpg
+model/utils/test/man/circle/KakaoTalk_20230607_154628713_16.jpg
+model/utils/test/man/circle/KakaoTalk_20230607_154645198.jpg
+model/utils/test/man/circle/다운로드 (1).jpg
+model/utils/test/man/circle/다운로드 (2).jpg
+model/utils/test/man/circle/다운로드 (3).jpg
+model/utils/test/man/circle/다운로드 (4).jpg
+model/utils/test/man/circle/다운로드 (5).jpg
+model/utils/test/man/circle/다운로드 (6).jpg
+model/utils/test/man/circle/다운로드.jpg
+model/utils/test/man/circle/다운로드2.jpg
+model/utils/test/man/dia/0ecc535c1df751cbdfce35ddee86b4f5.jpg
+model/utils/test/man/dia/5d28fc2b5f122b0dc72232c97f441756.jpg
+model/utils/test/man/dia/228f2c5c8ae42c9bd14e99a17f422d91.jpg
+model/utils/test/man/dia/620662f3a0cb43d1f60203f22476849f.jpg
+model/utils/test/man/dia/480003577c4a69dc64dfbc4f1405768e.jpg
+model/utils/test/man/dia/1291775609-75.jpg
+model/utils/test/man/dia/b819a3cd3ad0a6d80644204278a99d7e.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_04.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_17.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_18.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_21.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_23.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_25.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154628713_27.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154645198_09.jpg
+model/utils/test/man/dia/KakaoTalk_20230607_154645198_10.jpg
+model/utils/test/man/dia/다운로드 (5).jpg
+model/utils/test/man/dia/다운로드.jpg
+model/utils/test/man/egg/3a94ecd0c9fd2e348ef0dfdb67de324d.jpg
+model/utils/test/man/egg/5bec4c7bf751e65cc26613ee5b9af5bf.jpg
+model/utils/test/man/egg/7a2807b1eee5ffb2e55c9d6889b83fc2.jpg
+model/utils/test/man/egg/8b4c32728664b6d6f25f7e9b70e165a9.jpg
+model/utils/test/man/egg/38c39f316f35cf5310309fa53dffa600.jpg
+model/utils/test/man/egg/ba605565fc70e73680f9c36fcbd1ad8f.jpg
+model/utils/test/man/egg/d02eea86c92ff0e1f0f4c89005afbc73.jpg
+model/utils/test/man/egg/d9f6a398fb00c53577dfe8c53999383e.jpg
+model/utils/test/man/egg/images.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154628713_03.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154628713_10.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154628713_19.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154628713_22.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154628713_28.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154628713_29.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154645198_02.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154645198_03.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154645198_04.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154645198_06.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154645198_08.jpg
+model/utils/test/man/egg/KakaoTalk_20230607_154645198_11.jpg
+model/utils/test/man/long/3c5ce0d999196d7505494375e9fcadfe.jpg
+model/utils/test/man/long/7b75618e364294e6a0c460e3e6841daf.jpg
+model/utils/test/man/long/97f9b7cf9b15aa8ba8b23510b1deae2c.jpg
+model/utils/test/man/long/344a44eb1604bfda6ebbf9400f354dd4.jpg
+model/utils/test/man/long/2195b6e6a4d3db5c22b457124a85b8d3.jpg
+model/utils/test/man/long/45301edbd64505b673bdc83e7cc69b8c.jpg
+model/utils/test/man/long/0118641c11fc513bf54d1e86fef79936.jpg
+model/utils/test/man/long/05427278e39af8758f101db82ef5458f.jpg
+model/utils/test/man/long/197497564cab7106d400c2b59fdef5b0.jpg
+model/utils/test/man/long/c00e19a428c6cdd344da8840bd18dc24.jpg
+model/utils/test/man/long/c8ea89ac26a11f25b9b890472ac419d4.jpg
+model/utils/test/man/long/images (2).jpg
+model/utils/test/man/long/images.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_01.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_02.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_07.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_08.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_09.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_15.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_20.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_24.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713_26.jpg
+model/utils/test/man/long/KakaoTalk_20230607_154628713.jpg
+model/utils/test/man/long/다운로드 (1).jpg
+model/utils/test/man/long/다운로드 (2).jpg
+model/utils/test/man/long/다운로드 (3).jpg
+model/utils/test/man/long/다운로드 (4).jpg
+model/utils/test/man/long/다운로드.jpg
+model/utils/test/woman/circle/다운로드 (1).jpg
+model/utils/test/woman/circle/다운로드 (2).jpg
+model/utils/test/woman/circle/다운로드 (3).jpg
+model/utils/test/woman/circle/다운로드 (4).jpg
+model/utils/test/woman/circle/다운로드.jpg
+model/utils/test/woman/dia/다운로드 (1).jpg
+model/utils/test/woman/dia/다운로드 (2).jpg
+model/utils/test/woman/dia/다운로드 (3).jpg
+model/utils/test/woman/dia/다운로드.jpg
+model/utils/test/woman/egg/다운로드 (1).jpg
+model/utils/test/woman/egg/다운로드.jpg
+model/utils/test/woman/egg/다운로드2.jpg
+model/utils/test/woman/long/다운로드 (1).jpg
+model/utils/test/woman/long/다운로드 (2).jpg
+model/utils/test/woman/long/다운로드 (3).jpg
+model/utils/test/woman/long/다운로드 (4).jpg
+model/utils/test/woman/long/다운로드 (5).jpg
+model/utils/test/woman/long/다운로드.jpg
