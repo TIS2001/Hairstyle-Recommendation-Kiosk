@@ -27,8 +27,7 @@ import subprocess
 # import urllib
 
 class MainUI(tk.Tk):
-    def __init__(self,p,picam=False):
-
+    def __init__(self,p,picam=True):
         tk.Tk.__init__(self)
         self.picam = picam
         self.p = p
@@ -50,56 +49,53 @@ class MainUI(tk.Tk):
         self.open_win2()
         self.open_win3()
         self.open_win4()
-        # self.open_win10()
-        # self.win10 = tk.Frame(self, relief="flat",bg="white")
-      #  self.open_win12()
         self.StartFrame.tkraise()
+        
+    def Kakao_init(self):
+        #카카오톡 관련
+        #알리기
+        Config = configparser.ConfigParser()
 
-    # def Kakao_init(self):
-    #     #카카오톡 관련
-    #     #알리기
-    #     Config = configparser.ConfigParser()
+        #카카오 아이디, 비번 불러오기
+        Config.read('../info.conf')
+        Config = Config['MAIN']
 
-    #     #카카오 아이디, 비번 불러오기
-    #     Config.read('../info.conf')
-    #     Config = Config['MAIN']
+        #아이디, 비번
+        id = Config['kakaoid']
+        pw = Config['kakaopw']
 
-    #     #아이디, 비번
-    #     id = Config['kakaoid']
-    #     pw = Config['kakaopw']
+        #카카오메인페이지 지정
+        KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
 
-    #     #카카오메인페이지 지정
-    #     KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
+        # 미용사에 따라 채팅룸 링크 지정
+        ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
+        self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
+        ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
+        options = webdriver.ChromeOptions()
 
-    #     # 미용사에 따라 채팅룸 링크 지정
-    #     ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
-    #     self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
-    #     ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
-    #     options = webdriver.ChromeOptions()
+        #user-agent
+        options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
+        #창을 띄우지 1않고 실행
+        options.add_argument("headless")
 
-    #     #user-agent
-    #     options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
-    #     #창을 띄우지 않고 실행
-    #     options.add_argument("headless")
+        #크로니움 드라이버 로드
+        self.driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
+        self.driver.implicitly_wait(3)
 
-    #     #크로니움 드라이버 로드
-    #     self.driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
-    #     self.driver.implicitly_wait(3)
+        #카카오 메인페이지 로드
+        self.driver.get(KaKaoURL)
+        time.sleep(5)
 
-    #     #카카오 메인페이지 로드
-    #     self.driver.get(KaKaoURL)
-    #     time.sleep(5)
-
-    #     #로그인
-    #     idvar = self.driver.find_element(By.NAME, "loginKey")
-    #     idvar.send_keys(id)
-    #     pwvar =  self.driver.find_element(By.NAME, "password")
-    #     pwvar.send_keys(pw)
-    #     time.sleep(3)
-    #     self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-    #     time.sleep(10)
-    #     self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
-    #     time.sleep(1)
+        #로그인
+        idvar = self.driver.find_element(By.NAME, "loginKey")
+        idvar.send_keys(id)
+        pwvar =  self.driver.find_element(By.NAME, "password")
+        pwvar.send_keys(pw)
+        time.sleep(3)
+        self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
+        time.sleep(10)
+        self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
+        time.sleep(1)
 
     def camera_init(self):
         if self.picam:
@@ -124,7 +120,6 @@ class MainUI(tk.Tk):
         button_start = tk.Button(self.StartFrame, text="시작하기", width=20, height=7, command=lambda:[self.win1.tkraise()])
         button_start.place(relx=0.5,anchor=tk.CENTER, y=700)
         button_start.configure(font=("Arial",18))
-        
         self.StartFrame.bind("<Escape>", self.on_escape)
 
     def firebase_init(self):
@@ -149,8 +144,6 @@ class MainUI(tk.Tk):
         button_login = tk.Button(self.win1, text="로그인하기", width=20, height=5, command=lambda:[self.win3.tkraise()])
         button_login.configure(font=("Arial",18))
         button_login.place(relx=0.5,anchor=tk.CENTER, y=550)
-    
-
     
     #3-1. 회원가입 페이지
     def open_win2(self):
@@ -191,7 +184,6 @@ class MainUI(tk.Tk):
                 'shape' : None
             }
             self.doc_ref.set(self.user_info)
-            
             # 저장 후 필드 초기화
             name_En.delete("1.0","end")
             name_Ko.delete("1.0","end")
@@ -203,12 +195,6 @@ class MainUI(tk.Tk):
             messagebox.showinfo('회원가입 성공', f'{name}님, 회원가입이 완료되었습니다.')
             subprocess.call(["pkill","onboard"])
             self.win1.tkraise()
-            # self.open_win1()
-            # self.win2.withdraw()
-
-            # except Exception as ep:
-
-            #     messagebox.showwarning('회원가입 실패', '형식에 맞는 입력을 넣어주세요.')
  
         def termsCheck():
             if cb.get() == 1:
@@ -296,7 +282,7 @@ class MainUI(tk.Tk):
     
     #3-2. 로그인 페이지 
     def open_win3(self):
-        # subprocess.Popen(["onboard"])
+        subprocess.Popen(["onboard"])
 
         self.win3 = tk.Frame(self, relief="flat",bg="white")
         self.win3.place(x=0,y=0,width=800,height=1280)
@@ -317,7 +303,7 @@ class MainUI(tk.Tk):
                     if password == customer_data['password']:
                         self.user_info = customer_data
                         messagebox.showinfo("로그인 성공", f'어서오세요, {self.user_info["name"]}님.')
-                        # subprocess.call(["pkill","onboard"])
+                        subprocess.call(["pkill","onboard"])
                         self.win4.tkraise()
                     else:
                         messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
@@ -406,7 +392,7 @@ class MainUI(tk.Tk):
                 self.win5.after(999,lambda:AfterCapture(Capture(self.win5,self.picam)))
 
         def AfterCapture(frame):
-            self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!")
+            self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!",bg="red")
             if self.copyImage:
                 self.selectPhoto=self.prevImage
                 self.win5.imageLabel2.config(image=self.copyImage)
@@ -421,6 +407,7 @@ class MainUI(tk.Tk):
             # self.presentImage=img
             resizedImg = self.presentImage.resize((300,300), Image.LANCZOS)
             self.copyImage = ImageTk.PhotoImage(resizedImg)
+                        
             self.win5.imageLabel.config(image=self.copyImage)
             self.win5.imageLabel.photo = self.copyImage
             # self.win5.countdown_label.place_forget()
@@ -431,11 +418,6 @@ class MainUI(tk.Tk):
             self.win5.imageLabel2.config(relief="flat", highlightthickness=0)
             self.list.clear()
             self.mode2=1
-            # tk.Button(self.win5, text="다시 찍기", command=lambda:count_down(3)).place(x=350,y=630,width=100,height=40)    
-            # tk.Button(self.win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),self.win5.withdraw(),self.open_win6()]).grid(row=9,column=3)
-            # select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-            #                     command=lambda:AfterSelect(1,image_name,image))
-            # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
 
         def AfterBrowse(image):
             self.presentImage=image
@@ -460,29 +442,18 @@ class MainUI(tk.Tk):
             self.list.clear()
             self.mode2=0
 
-            # browse_bt.destroy()
-            # image_name = f"{self.user_info['name']}_photo.jpg"
-            # tk.Button(win5, text="사진 선택", command=lambda:[self.server.sendImages(frame),attach_photo(),win5.withdraw(),open_win6()]).grid(row=9,column=3)
-            # select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-            #                     command=lambda:AfterSelect(0,image_name,image))
-            # select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
-
         def AfterSelect(mode,image_name,image):
-            if bool(self.list):
-                # self.open_win10()
-                # self.win10.after(5000,lambda:[self.win10.destroy(),self.open_win6(),self.win6.tkraise()])
-                # self.p.send(mode)   #real
-                # self.p.send(image_name) #real
+            if bool(self.list):                
                 attach_photo(self.bucket,self.user_info["id"],image)
                 self.p.send(mode)   #real
                 self.p.send(image_name) #real
-                self.open_win10()
-                self.win10.tkraise()
                 while(self.user_info['shape']==None):
-                    pass
+                    self.user_info = self.doc_ref.get().to_dict()
+
                 self.open_win6()
                 self.win6.tkraise()
-                self.win10.destroy()
+                self.loading1.destroy()
+                self.win5.destroy()
             else:
                 messagebox.showwarning('사진 전송 오류', '헤어스타일 합성을 위한 사진을 선택해주세요.')
 
@@ -520,14 +491,10 @@ class MainUI(tk.Tk):
         self.win5.imageLabel2.place(relx=0.5,anchor=tk.E,rely=0.6)
         self.win5.takePhoto_bt=tk.Button(self.win5,font=("Arial",15), text="사진 촬영", command=lambda:[count_down(3)])
         self.win5.takePhoto_bt.place(relx=0.5,anchor=tk.CENTER,y=1070,width=200,height=70)
-        # self.win5.imageLabel2 = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
-        # self.win5.imageLabel2.place(x=300,y=700)
         self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
-        # self.win5.countdown_label.place(x=350,y=10)
-        # Creating object of class VideoCapture with webcam index
         image_name = self.user_info['id']
         select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-                                command=lambda:AfterSelect(self.mode,image_name,self.selected))
+                                command=lambda:[messagebox.showinfo("사진 첨부 성공", f'로딩 중입니다. 잠시만 기다려주세요:)'),AfterSelect(self.mode,image_name,self.selected)])
         select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
         self.win5.cap = self.camera
         # Setting width and height
@@ -540,7 +507,7 @@ class MainUI(tk.Tk):
             for widget in frame.winfo_children():
                 widget.destroy()
 
-    def open_win6(self):
+    def open_win6(self,img=None):
         self.win6 = tk.Frame(self, relief="flat", bg="white")
         self.win6.place(x=0, y=0, width=800, height=1280)
         self.dict1 = {}
@@ -579,19 +546,21 @@ class MainUI(tk.Tk):
         # self.recommend_style()  #real
         self.make_btn(self.frame4, [os.path.join("UI/hairstyles/"+self.gender+"/계란형", f) for f in os.listdir("UI/hairstyles/"+self.gender+"/계란형") if f.endswith(".jpg")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
-        img = None
-        while not img:
-            if self.p.poll(timeout=2):
-                img = self.p.recv()
-            else:
-                self.p.send(1) #not receive img
-        self.p.send(0) #receive img
+        # img = None
+        # while not img:
+            # if self.p.poll(timeout=2):
+        if not img:
+            self.tran_img = self.p.recv()
+            img = self.tran_img
+            # else:
+            #     self.p.send(1) #not receive img
+        # self.p.send(0) #receive img
         self.select_personal(img) #real
         # self.select_personal()  #test
 
         
-        tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.win5.tkraise()]).place(x=680, y=0)
-        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: self.send_styles()).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
+        tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.open_win5(),self.win5.tkraise(),self.win6.destroy()]).place(x=680, y=0)
+        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: [messagebox.showinfo("헤어스타일 선택 완료", f'로딩 중입니다. 잠시만 기다려주세요:)'),self.send_styles()]).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
         tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
         tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=245,width=665)
         tk.Label(self.win6,font=("Arial",13),text='전체 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=450,width=780)
@@ -606,18 +575,13 @@ class MainUI(tk.Tk):
             selection.append(style)
             selection.append(color)
             self.p.send(selection)  
-            self.open_win10()
-            self.win10.tkraise()
+
             while(self.user_info['shape']==None):
-                pass
-            # self.open_win10()
-            # self.img = self.p.recv()
+                self.user_info = self.doc_ref.get().to_dict()
+
             self.open_win11()
-            # self.win10.destroy()
             self.win11.tkraise()
-            self.win10.destroy()
-
-
+            self.win6.destroy()
         else:
             messagebox.showwarning('시술 선택 오류', '헤어스타일과 염색 컬러를 모두 선택해 주세요.')
 
@@ -758,6 +722,7 @@ class MainUI(tk.Tk):
                 self.ischeck=1
                 
     def recommend_style(self):
+        self.user_info = self.doc_ref.get().to_dict()
         dir_path="UI/hairstyles/"+self.gender+"/"+self.user_info["shape"]
         self.make_btn(self.frame4,[os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".jpg")],0)
     
@@ -812,41 +777,18 @@ class MainUI(tk.Tk):
                             command=lambda:self.personal_cmd())
             name_label.grid(row=4, column=i+2,padx=5)
 
-    def open_win10(self):
-        print("open win10")
-        self.win10 = tk.Toplevel(self, relief="flat",bg="white")
-        self.win10.geometry("800x1280")
-        self.win10.bind("<Escape>", self.on_escape)
-        # self.win10.after(3000,self.win12.tkraise)
-        tk.Label(self.win10,font=("Arial",20),text="Loading..",bg="white").pack(pady=50)
-        self.gif_img = Image.open("UI/loading_blue.gif")
-        self.tk_img = ImageTk.PhotoImage(self.gif_img)
-        self.label = tk.Label(self.win10, image=self.tk_img)
-        self.label.pack(anchor=tk.CENTER,pady=5)
-        self.update_gif()
-
-    def update_gif(self):
-        # print("update")
-        try:
-            self.gif_img.seek(self.gif_img.tell() + 1)
-            self.tk_img = ImageTk.PhotoImage(self.gif_img)
-            self.label.configure(image=self.tk_img)
-        except EOFError:
-            self.gif_img.seek(0)
-        if self.img:
-            self.win10.destory()
-        else:
-            self.win10.after(100, self.update_gif)
-
     def open_win11(self):
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
-        # self.img = None
-        while not self.img:
-            if self.p.poll(timeout=1):
-                self.img = self.p.recv()
+        self.img = None
+        # while not self.img:
+            # if self.p.poll(timeout=30):
+        self.img = self.p.recv()
                 #real
-        # self.img=Image.open("UI/loading_basic.gif")
+            # else:
+                # self.p.send(0)
+        # self.p.send(1)
+        
         self.win11.bind("<Escape>", self.on_escape)
         
         self.img = self.img.resize((512, 512))  # 이미지 크기 조절        
@@ -854,10 +796,10 @@ class MainUI(tk.Tk):
         label = tk.Label(self.win11, image=photo)
         label.image = photo  # 이미지 객체 유지
         label.place(relx=0.5,anchor=tk.CENTER,y=300)
-
-        tk.Button(self.win11, font=("Arial",15), text="뒤로가기", command=lambda:[self.win6.tkraise()]).place(x=680, y=0)
-        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.win5.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
-        tk.Button(self.win11, font=("Arial",15), text="헤어스타일 재선택", command=lambda:[self.win6.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=895,height=50)
+        
+        # tk.Button(self.win11, font=("Arial",15), text="뒤로가기", command=lambda:[self.p.send(6),self.win6.tkraise()]).place(x=680, y=0)
+        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.p.send(5),self.open_win5(),self.win5.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="헤어스타일 재선택", command=lambda:[self.p.send(6),self.open_win6(self.tran_img),self.win6.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=895,height=50)
         tk.Button(self.win11, font=("Arial",15), text="예약하기", command=lambda:[self.open_win12(),self.win12.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=970,height=50)
 
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
@@ -953,20 +895,24 @@ class MainUI(tk.Tk):
                 
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
-           
+            
             self.open_win13()
             self.win13.tkraise()
+            self.win12.destroy()
+            time.sleep(5)
+            self.StartFrame.tkraise()
+            self.win13.destroy()
                     
-            # # 카카오톡 관련
-            # #채팅방 로드
-            # self.driver.get(self.ChatRoom_LSH)  
-            # time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            # 카카오톡 관련
+            #채팅방 로드
+            self.driver.get(self.ChatRoom_LSH)  
+            time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
 
-            # #메시지 작성
-            # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
-            # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
-            # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-            # self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
+            #메시지 작성
+            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
+            time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+            self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
         
         # def download_image(filename):
         #     bucket = storage.bucket()
@@ -986,7 +932,11 @@ class MainUI(tk.Tk):
             label.pack()
             
         # button_back = tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback())
-        button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()])
+        if(self.isBaro):
+            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(5),self.win4.tkraise()])
+        else:
+            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(6),self.open_win6(self.tran_img),self.win6.tkraise(),self.win12.destroy()])
+
         button_back.configure(font=(20))
         button_back.place(x=670, y=10)
         
@@ -996,7 +946,7 @@ class MainUI(tk.Tk):
         designer1.read_reservation(self.db)
 
         designer2 = designer("선동진", self.win12, y=300)
-        filename2 = "이승현.jpg"
+        filename2 = "선동진.jpg"
         show_image(designer2.frame1, filename2)
         designer2.read_reservation(self.db)
         
@@ -1014,15 +964,8 @@ class MainUI(tk.Tk):
         self.designer_list = [designer1,designer2,designer3,designer4]
         
         # 예약하기 버튼 생성
-        tk.Button(self.win12, font=("Arial",15),text="예약하기", command=lambda:[make_reservation(self.designer_list)]).place(x=375, y=1050)
+        tk.Button(self.win12, font=("Arial",15),text="예약하기", command=lambda:[self.p.send(13),make_reservation(self.designer_list)]).place(x=375, y=1050)
 
-    def BaroGoback(self):
-        # print(self.isBaro)
-        if(self.isBaro==True):
-            # print("뒤로가기")
-            return lambda:[self.win4.tkraise()]
-        else:
-            return lambda:[self.win10.tkraise()]
 
     #13. 예약 완료 텍스트 or 확인 팝업창
     def open_win13(self):
@@ -1030,6 +973,8 @@ class MainUI(tk.Tk):
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
         tk.Label(self.win13, bg="white",font=("Arial",22),text=self.user_info["name"] + "님 예약이 완료되었습니다.").place(relx=0.5,y=300,anchor=tk.CENTER)
+        time.sleep(5)
+        
     
     # esc 누르면 화면이 꺼지게 만드는 기능
     def on_escape(self,event=None):
@@ -1046,32 +991,42 @@ def main(p):
 def server(p):
     server = ClientVideoSocket("211.243.232.32",7100)
     server.connectServer()
-    mode= p.recv()
-    print(mode)
-    server.sock.send(str(mode).encode('utf-8'))
-    image_name = p.recv()
-    # print(image_name)
+     ## camera
+    var1 = 13
+    while var1 == 13:
+        var1 = 5
+        while var1==5:
+            mode= p.recv()
+            print(mode)
+            server.sock.send(str(mode).encode('utf-8'))
+            image_name = p.recv()
+            # print(image_name)
+            
+            server.sock.send(image_name.encode('utf-8'))
+            img = server.receiveImages_png()
+            # p.send(img)
+            # while p.recv():
+            p.send(img)
+            var1=6
+            while var1==6:
+                style,color = p.recv()
+                print(style,color)
+                st=style+"/"+color
+                server.sock.send(st.encode('utf-8'))
+                # time.sleep(1)
+                # server.sock.send(color.encode('utf-8'))        
+                # cv2.imwrite("test.png",img)
+                # print(type(img))
+                # img.save("test.png")    
+                img = server.receiveImages()
+                p.send(img)
+                # while p.recv():
+                    # p.send(img)
+                var1 = p.recv() ## if var1 = 6 style 재선택 if var1=5 재촬영
+                print(var1)
+                server.sock.send(str(var1).encode('utf-8'))
+    server.sock.close()
     
-    server.sock.send(image_name.encode('utf-8'))
-    img = server.receiveImages_png()
-    p.send(img)
-    while p.recv():
-        p.send(img)
-    
-    
-    style,color = p.recv()
-    print(style,color)
-    st=style+"/"+color
-    server.sock.send(st.encode('utf-8'))
-    # time.sleep(1)
-    # server.sock.send(color.encode('utf-8'))        
-    # cv2.imwrite("test.png",img)
-    # print(type(img))
-    # img.save("test.png")    
-    img = server.receiveImages()
-    p.send(img)
-    while p.recv():
-        p.send(img)
 
 if __name__ == "__main__":
     p,q = Pipe()
