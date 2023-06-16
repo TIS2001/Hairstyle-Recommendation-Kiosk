@@ -17,13 +17,15 @@ import numpy as np
 from multiprocessing import Process, Pipe
 import subprocess
 
-# 카카오톡 관련 
+## 카카오톡 관련 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from datetime import datetime
 from PIL import Image
 import time
 import configparser
+import urllib
 from selenium.webdriver.chrome.service import Service
 
 class MainUI(tk.Tk):
@@ -37,7 +39,7 @@ class MainUI(tk.Tk):
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
-        # self.Kakao_init() # 카톡
+        self.Kakao_init()  ## 카카오톡 관련 
         self.Frame_init()
         self.mainloop()
                 
@@ -50,7 +52,8 @@ class MainUI(tk.Tk):
         self.open_win3()
         self.open_win4()
         self.StartFrame.tkraise()
-        
+    
+    ## 카카오톡 관련     
     def Kakao_init(self):
         #카카오톡 관련
         #알리기
@@ -66,21 +69,23 @@ class MainUI(tk.Tk):
 
         #카카오메인페이지 지정
         KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
+        ChatRoom = 'https://center-pf.kakao.com/_xgyjyxj/chats'
 
         # 미용사에 따라 채팅룸 링크 지정
         self.ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
         self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
-        ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
+        self.ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
+        self.ChatRoom_SDH = ''
         options = webdriver.ChromeOptions()
         service = Service(executable_path=r'/usr/bin/chromedriver')
 
         #user-agent
         options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
         #창을 띄우지 1않고 실행
-        options.add_argument("headless")
+        # options.add_argument("headless")
 
         #크로니움 드라이버 로드
-        driver = webdriver.Chrome(service=service, options=options)
+        self.driver = webdriver.Chrome(service=service, options=options)
         self.driver.implicitly_wait(3)
 
         #카카오 메인페이지 로드
@@ -95,7 +100,9 @@ class MainUI(tk.Tk):
         time.sleep(3)
         self.driver.find_element(By.XPATH, '//button[@type="submit"]').click()
         time.sleep(10)
-        self.driver.find_element(By.CLASS_NAME, "tit_invite").click()
+        self.driver.get(ChatRoom)
+        time.sleep(3)
+        self.driver.find_element(By.XPATH, '/html/body/div[4]/div/div/div[3]/button/span').click() #일주일
         time.sleep(1)
 
     def camera_init(self):
@@ -305,6 +312,16 @@ class MainUI(tk.Tk):
                         self.user_info = customer_data
                         messagebox.showinfo("로그인 성공", f'어서오세요, {self.user_info["name"]}님.')
                         subprocess.call(["pkill","onboard"])
+                        ## 카카오톡 관련 
+                        self.driver.find_element(By.NAME, 'keyword').send_keys(self.user_info["name"])#사용자 이름 검색
+                        time.sleep(1)
+                        self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[1]/div[2]/form/fieldset/div/button/span').click() #검색 클릭
+                        time.sleep(1)
+                        self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[3]/div/div/li/a/div').click() #고객 채팅방 입장
+                        time.sleep(5)
+                        self.original_window = self.driver.current_window_handle
+                        self.driver.switch_to.window(self.driver.window_handles[-1]) #팝업창으로 전환
+                        ##
                         self.win4.tkraise()
                     else:
                         messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
@@ -862,6 +879,7 @@ class MainUI(tk.Tk):
         def make_reservation(designer_list):
             # 예약 정보 저장 및 Firestore에 전달하는 함수
             all_time = []
+            send_time = []
             
             # 버튼이 한개만 눌리게 만들려는 로직
             for designer in designer_list:
@@ -873,9 +891,9 @@ class MainUI(tk.Tk):
                     messagebox.showwarning("경고", "하나의 시간대를 선택해야 합니다.")
                     return  # 예약 중단
             
-            for designer in designer_list:
+            for designer in designer_list:                
                 reservation_time = []
-                
+
                 # 기존 예약 시간 불러오기
                 hairdresser_ref = self.db.collection("hairdresser").document(designer.name)
                 doc = hairdresser_ref.get()
@@ -888,7 +906,18 @@ class MainUI(tk.Tk):
                     if btn["relief"] == "sunken":
                         new_time = times[index]
                         if new_time not in reservation_time:  # 중복 확인
-                            reservation_time.append(new_time)   
+                            reservation_time.append(new_time)
+                            send_time.append(new_time)
+                            # 선택된 시간의 디자이너에서 전송하도록 설정
+                            if designer.name == "이승현":
+                                Load_ChattingRoom = self.ChatRoom_LSH
+                            elif designer.name == "선동진":
+                                Load_ChattingRoom = self.ChatRoom_SDJ
+                            elif designer.name == "이가은":
+                                Load_ChattingRoom = self.ChatRoom_LGE
+                            elif designer.name == "신동훈":
+                                Load_ChattingRoom = self.ChatRoom_SDH
+
                 
                 # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
                 data = {
@@ -899,30 +928,32 @@ class MainUI(tk.Tk):
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
             
-            self.open_win13()
-            self.win13.tkraise()
-            self.win12.destroy()
-            # time.sleep(5)
-            # self.StartFrame.tkraise()
-            # self.win13.destroy()
-                    
             # 카카오톡 관련
-            #채팅방 로드
-            self.driver.get(self.ChatRoom_LSH)  
-            time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
-
-            #메시지 작성
-            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', reservation_time,'에 예약 완료되었습니다.')
-            time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            # 
+            self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/이승현.jpg') #고객한테 사진 전송
+            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
+            # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
             self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-            self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/donghoon/Downloads/images.jpeg') #사진전송
-        
-        # def download_image(filename):
-        #     bucket = storage.bucket()
-        #     blob = bucket.blob("stylist/" + filename)
-        #     image_path = "temp.jpg"  # 다운로드 받은 이미지를 임시로 저장할 경로
-        #     blob.download_to_filename(image_path)
-        #     return image_path
+            
+            #채팅방 로드 (미용사에게 로드)
+            self.driver.get(Load_ChattingRoom)  
+            time.sleep(2)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            
+            # 사진전송, 메시지 전송
+            self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/이승현.jpg') 
+            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
+            # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+            
+            # 팝업창 닫기
+            
+            self.driver.close()
+            self.driver.switch_to.window(self.original_window)
+            self.driver.find_element(By.NAME, 'keyword').send_keys(Keys.CONTROL + "a")
+            self.driver.find_element(By.NAME, 'keyword').send_keys(Keys.DELETE)
+            # self.driver.find_element(By.name(self.user_info["name"])).clear()
+            self.open_win13() ###
+            self.win13.tkraise()    
         
         def show_image(frame, filename):
             # 이미지를 다운로드하여 해당 프레임에 출력하는 함수
@@ -963,7 +994,7 @@ class MainUI(tk.Tk):
         show_image(designer4.frame1, filename4)
         designer4.read_reservation(self.db)
 
-        # open_win 함수에서 커스터마이징가능하게 만들어야함
+        # 생성했던 디자이너 리스트들
         self.designer_list = [designer1,designer2,designer3,designer4]
         
         # 예약하기 버튼 생성
@@ -976,7 +1007,6 @@ class MainUI(tk.Tk):
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
         tk.Label(self.win13, bg="white",font=("Arial",22),text=self.user_info["name"] + "님 예약이 완료되었습니다.").place(relx=0.5,y=300,anchor=tk.CENTER)
-        
         self.win13.after(2000,lambda:[self.StartFrame.tkraise(),self.win13.destroy()])
     
     # esc 누르면 화면이 꺼지게 만드는 기능
@@ -994,7 +1024,7 @@ def main(p):
 def server(p):
     server = ClientVideoSocket("211.243.232.32",7100)
     server.connectServer()
-     ## camera
+    # camera
     var1 = 13
     while var1 == 13:
         var1 = 5
