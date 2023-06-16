@@ -68,7 +68,7 @@ class MainUI(tk.Tk):
         KaKaoURL = 'https://accounts.kakao.com/login/kakaoforbusiness?continue=https://center-pf.kakao.com/'
 
         # 미용사에 따라 채팅룸 링크 지정
-        ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
+        self.ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
         self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
         ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
         options = webdriver.ChromeOptions()
@@ -393,7 +393,7 @@ class MainUI(tk.Tk):
                 self.win5.after(800,lambda:AfterCapture(Capture(self.win5,self.picam)))
 
         def AfterCapture(frame):
-            self.win5.after(1000,lambda:self.win5.countdown_label.configure(font=("Arial",18),text="사진을 클릭하여 선택하세요!",bg="white"))
+            self.win5.after(800,lambda:self.win5.countdown_label.configure(font=("Arial",18),text="사진을 클릭하여 선택하세요!",bg="white"))
             self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!",bg="red")
             # self.win5.countdown_label.place(x=-1,y=-100)
             if self.copyImage:
@@ -455,7 +455,7 @@ class MainUI(tk.Tk):
                 self.p.send(image_name) #real
                 while(self.user_info['shape']==None):
                     self.user_info = self.doc_ref.get().to_dict()
-
+                messagebox.showinfo("로딩중", f'사진 전송에 성공했습니다.\n잠시만 기다려주세요:)')
                 self.open_win6()
                 self.win6.tkraise()
                 self.win5.destroy()
@@ -499,7 +499,7 @@ class MainUI(tk.Tk):
         self.win5.countdown_label=Label(self.win5, text="",font=("Arial",36))
         image_name = self.user_info['id']
         select_bt=tk.Button(self.win5,font=("Arial",15), text="사진 선택", \
-                                command=lambda:[messagebox.showinfo("사진 첨부 성공", f'로딩 중입니다. 잠시만 기다려주세요:)'),AfterSelect(self.mode,image_name,self.selected)])
+                                command=lambda:[AfterSelect(self.mode,image_name,self.selected)])
         select_bt.place(relx=0.5,anchor=tk.CENTER,y=1150,width=200,height=70)
         self.win5.cap = self.camera
         # Setting width and height
@@ -548,8 +548,8 @@ class MainUI(tk.Tk):
         self.frame5 = tk.Frame(self.win6, bg='#dddddd')
         self.frame5.place(x=10, y=900,width=780) #850
         self.make_btn(self.frame3, self.img_path1,0)
-        # self.recommend_style()  #real
-        self.make_btn(self.frame4, [os.path.join("UI/hairstyles/"+self.gender+"/계란형", f) for f in os.listdir("UI/hairstyles/"+self.gender+"/계란형") if f.endswith(".jpg")],0)   #test
+        self.recommend_style()  #real
+        # self.make_btn(self.frame4, [os.path.join("UI/hairstyles/"+self.gender+"/계란형", f) for f in os.listdir("UI/hairstyles/"+self.gender+"/계란형") if f.endswith(".jpg")],0)   #test
         self.make_btn(self.frame5, self.img_path2,0)
         # img = None
         # while not img:
@@ -562,10 +562,8 @@ class MainUI(tk.Tk):
         # self.p.send(0) #receive img
         self.select_personal(img) #real
         # self.select_personal()  #test
-
         
-        tk.Button(self.win6, font=("Arial",15), text="뒤로가기", command=lambda:[self.open_win5(),self.win5.tkraise(),self.win6.destroy()]).place(x=680, y=0)
-        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: [messagebox.showinfo("헤어스타일 선택 완료", f'로딩 중입니다. 잠시만 기다려주세요:)'),self.send_styles()]).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
+        tk.Button(self.win6, font=("Arial",15), text="헤어스타일 선택",command=lambda: [self.send_styles()]).place(relx=0.5,anchor=tk.CENTER,y=1120,height=50)
         tk.Label(self.win6,font=("Arial",13),text='잘 어울리는 퍼스널컬러를 선택해주세요! 선택 시 추천 컬러가 바뀝니다.').place(relx=0.5,anchor=tk.CENTER,y=30)
         tk.Label(self.win6,font=("Arial",13),text='퍼스널컬러에 따른 추천 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=245,width=665)
         tk.Label(self.win6,font=("Arial",13),text='전체 염색 컬러').place(relx=0.5,anchor=tk.CENTER,y=450,width=780)
@@ -583,7 +581,7 @@ class MainUI(tk.Tk):
 
             while(self.user_info['shape']==None):
                 self.user_info = self.doc_ref.get().to_dict()
-
+            messagebox.showinfo("로딩중", f'헤어스타일 선택에 성공했습니다.\n잠시만 기다려주세요:)')
             self.open_win11()
             self.win11.tkraise()
             self.win6.destroy()
@@ -904,9 +902,9 @@ class MainUI(tk.Tk):
             self.open_win13()
             self.win13.tkraise()
             self.win12.destroy()
-            time.sleep(5)
-            self.StartFrame.tkraise()
-            self.win13.destroy()
+            # time.sleep(5)
+            # self.StartFrame.tkraise()
+            # self.win13.destroy()
                     
             # 카카오톡 관련
             #채팅방 로드
@@ -978,8 +976,8 @@ class MainUI(tk.Tk):
         self.win13.place(x=0,y=0,width=800,height=1280)
         self.win13.bind("<Escape>", self.on_escape)
         tk.Label(self.win13, bg="white",font=("Arial",22),text=self.user_info["name"] + "님 예약이 완료되었습니다.").place(relx=0.5,y=300,anchor=tk.CENTER)
-        time.sleep(5)
         
+        self.win13.after(2000,lambda:[self.StartFrame.tkraise(),self.win13.destroy()])
     
     # esc 누르면 화면이 꺼지게 만드는 기능
     def on_escape(self,event=None):
@@ -1013,7 +1011,7 @@ def server(p):
             # while p.recv():
             p.send(img)
             var1=6
-            while var1==6:
+            while var1==6:  
                 style,color = p.recv()
                 print(style,color)
                 st=style+"/"+color
