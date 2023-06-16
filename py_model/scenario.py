@@ -17,14 +17,14 @@ import numpy as np
 from multiprocessing import Process, Pipe
 import subprocess
 
-# # 카카오톡 관련 
-# from selenium import webdriver
-# from selenium.webdriver.common.by import By
-# from datetime import datetime
-# from PIL import Image
-# import time
-# import configparser
-# import urllib
+# 카카오톡 관련 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from datetime import datetime
+from PIL import Image
+import time
+import configparser
+from selenium.webdriver.chrome.service import Service
 
 class MainUI(tk.Tk):
     def __init__(self,p,picam=True):
@@ -72,6 +72,7 @@ class MainUI(tk.Tk):
         self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
         ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
         options = webdriver.ChromeOptions()
+        service = Service(executable_path=r'/usr/bin/chromedriver')
 
         #user-agent
         options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
@@ -79,7 +80,7 @@ class MainUI(tk.Tk):
         options.add_argument("headless")
 
         #크로니움 드라이버 로드
-        self.driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
+        driver = webdriver.Chrome(service=service, options=options)
         self.driver.implicitly_wait(3)
 
         #카카오 메인페이지 로드
@@ -385,14 +386,16 @@ class MainUI(tk.Tk):
         self.list=[]
         def count_down(num):
             self.win5.countdown_label.place(relx=0.5,y=50,anchor=tk.CENTER)
-            self.win5.countdown_label.configure(text=str(num))
+            self.win5.countdown_label.configure(text=str(num),bg="red")
             if num>1:
                 self.win5.after(1000,count_down,num-1)
             else:
-                self.win5.after(999,lambda:AfterCapture(Capture(self.win5,self.picam)))
+                self.win5.after(800,lambda:AfterCapture(Capture(self.win5,self.picam)))
 
         def AfterCapture(frame):
+            self.win5.after(1000,lambda:self.win5.countdown_label.configure(font=("Arial",18),text="사진을 클릭하여 선택하세요!",bg="white"))
             self.win5.countdown_label.configure(font=("Arial",20),text="Cheese!",bg="red")
+            # self.win5.countdown_label.place(x=-1,y=-100)
             if self.copyImage:
                 self.selectPhoto=self.prevImage
                 self.win5.imageLabel2.config(image=self.copyImage)
@@ -420,6 +423,8 @@ class MainUI(tk.Tk):
             self.mode2=1
 
         def AfterBrowse(image):
+            self.win5.countdown_label.place(relx=0.5,y=50,anchor=tk.CENTER)
+            self.win5.countdown_label.configure(font=("Arial",18),text="사진을 클릭하여 선택하세요!",bg="white")
             self.presentImage=image
             if self.copyImage:
                 # resizedImg = img.resize((100,100),Image.LANCZOS)
@@ -443,8 +448,9 @@ class MainUI(tk.Tk):
             self.mode2=0
 
         def AfterSelect(mode,image_name,image):
-            if bool(self.list):                
-                attach_photo(self.bucket,self.user_info["id"],image)
+            if bool(self.list):
+                if mode==1:                
+                    attach_photo(self.bucket,self.user_info["id"],image)
                 self.p.send(mode)   #real
                 self.p.send(image_name) #real
                 while(self.user_info['shape']==None):
@@ -452,7 +458,6 @@ class MainUI(tk.Tk):
 
                 self.open_win6()
                 self.win6.tkraise()
-                self.loading1.destroy()
                 self.win5.destroy()
             else:
                 messagebox.showwarning('사진 전송 오류', '헤어스타일 합성을 위한 사진을 선택해주세요.')
@@ -482,7 +487,7 @@ class MainUI(tk.Tk):
         
         
         self.win5.cameraLabel = Label(self.win5, bg="steelblue", borderwidth=3, relief="groove")
-        self.win5.cameraLabel.place(x=144,y=50)
+        self.win5.cameraLabel.place(relx=0.5,anchor=tk.CENTER,rely=0.27)
         self.win5.imageLabel = Button(self.win5, bg="steelblue", borderwidth=3, relief="groove")
         self.win5.imageLabel.config(command=lambda btn=self.win5.imageLabel:tg_img(1,btn))
         self.win5.imageLabel.place(relx=0.5,anchor=tk.W,rely=0.6)
