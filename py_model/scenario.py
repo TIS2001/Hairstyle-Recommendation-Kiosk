@@ -50,18 +50,18 @@ class MainUI(tk.Tk):
         self.camera_init()
         self.Start_Frame()
         self.open_win1()
-        subprocess.Popen(["onboard"])
+        # subprocess.Popen(["onboard"])
         # self.open_win2()
         # self.open_win3()
-        self.open_win4()
+        self.open_win4()    
         self.StartFrame.tkraise()
         
     def Frame_init2(self):
         self.Start_Frame()
         self.open_win1()
-        self.open_win2()
-        self.open_win3()
-        self.open_win4()
+        # self.open_win2()
+        # self.open_win3()
+        self.open_win4()   
         self.StartFrame.tkraise()
     
     ## 카카오톡 관련     
@@ -387,18 +387,19 @@ class MainUI(tk.Tk):
         button_back.configure(font=("Arial",12))
         button_back.place(x=700, y=10)
         
-        button_reg = tk.Button(self.win4, text="바로 예약하기", width=20, height=5, command=lambda:[baro(),self.open_win12(),self.win12.tkraise()])
+        button_reg = tk.Button(self.win4, text="바로 예약하기", width=20, height=5, command=lambda:[baro(),self.open_win12(),self.win12.tkraise(),self.win4.destroy()])
         button_reg.configure(font=("Arial",18))
         button_reg.place(relx=0.5,anchor=tk.CENTER, y=350)
-        if self.picam and self.first:
-            button_login = tk.Button(self.win4, text="헤어스타일 합성", width=20, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise()])
+        if (self.picam and self.first):
+            button_login = tk.Button(self.win4, text="헤어스타일 합성", width=20, height=5, command=lambda:[self.camera.start(),self.open_win5(),self.win5.tkraise(),self.win4.destroy()])
         else:
-            button_login = tk.Button(self.win4, text="헤어스타일 합성", width=20, height=5, command=lambda:[self.open_win5(),self.win5.tkraise()])
+            button_login = tk.Button(self.win4, text="헤어스타일 합성", width=20, height=5, command=lambda:[self.open_win5(),self.win5.tkraise(),self.win4.destroy()])
         button_login.configure(font=("Arial",18))
         button_login.place(relx=0.5,anchor=tk.CENTER, y=550)
 
     #5. 사진 촬영(5초 타이머) or 사진 가져오기(-> 팝업창)
     def open_win5(self):
+        self.first=False
         self.win5 = tk.Frame(self, relief="flat",bg="white")
         self.win5.place(x=0,y=0,width=800,height=1280)
         self.selected=0
@@ -507,7 +508,7 @@ class MainUI(tk.Tk):
                 btn.config(relief="solid", highlightthickness=2, highlightbackground="red")
                 self.list.append(btn)
         #뒤로 갔다가 돌아오면 웹캠 안뜨는 오류 해결 못함
-        tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.win4.tkraise()]).place(x=680, y=0)
+        tk.Button(self.win5, font=("Arial",15),text="뒤로가기", command=lambda:[self.open_win4(),self.win5.destroy()]).place(x=680, y=0)
         browse_bt=tk.Button(self.win5,font=("Arial",15), text="사진 가져오기", command=lambda:[AfterBrowse(imageBrowse(self.bucket,self.user_info["id"]))])
         browse_bt.place(relx=0.5,anchor=tk.CENTER,y=990,width=200,height=70)
         
@@ -972,7 +973,7 @@ class MainUI(tk.Tk):
             
         # button_back = tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback())
         if(self.isBaro):
-            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(5),self.win4.tkraise()])
+            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(5),self.open_win4()]) ###
         else:
             button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(6),self.open_win6(self.tran_img),self.win6.tkraise(),self.win12.destroy()])
 
@@ -1010,7 +1011,6 @@ class MainUI(tk.Tk):
     def open_win13(self):
         self.win13 = tk.Frame(self, relief="flat",bg="white")
         self.win13.place(x=0,y=0,width=800,height=1280)
-        self.first=False
         tk.Label(self.win13, bg="white",font=("Arial",22),text=self.user_info["name"] + "님 예약이 완료되었습니다.").place(relx=0.5,y=300,anchor=tk.CENTER)
         self.win13.after(2000,lambda:[self.Frame_init2(),self.win13.destroy()])
     
