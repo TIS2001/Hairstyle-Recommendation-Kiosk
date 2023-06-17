@@ -826,7 +826,7 @@ class MainUI(tk.Tk):
         label.place(relx=0.5,anchor=tk.CENTER,y=300)
         
         # tk.Button(self.win11, font=("Arial",15), text="뒤로가기", command=lambda:[self.p.send(6),self.win6.tkraise()]).place(x=680, y=0)
-        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.p.send(5),self.open_win5()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.p.send(7),self.open_win5()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
         tk.Button(self.win11, font=("Arial",15), text="헤어스타일 재선택", command=lambda:[self.p.send(6),self.open_win6(self.tran_img)]).place(relx=0.5,anchor=tk.CENTER,y=895,height=50)
         tk.Button(self.win11, font=("Arial",15), text="예약하기", command=lambda:[self.open_win12()]).place(relx=0.5,anchor=tk.CENTER,y=970,height=50)
 
@@ -974,9 +974,9 @@ class MainUI(tk.Tk):
             
         # button_back = tk.Button(self.win12, text="뒤로가기", command=self.BaroGoback())
         if(self.isBaro):
-            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(5),self.open_win4()]) ###
+            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.open_win4()]) 
         else:
-            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(6),self.open_win6(self.tran_img)])
+            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:self.win11.tkraise())
 
         button_back.configure(font=(20))
         button_back.place(x=670, y=10)
@@ -1005,8 +1005,11 @@ class MainUI(tk.Tk):
         self.designer_list = [designer1,designer2,designer3,designer4]
         
         # 예약하기 버튼 생성
-        tk.Button(self.win12, font=("Arial",15),text="예약하기", command=lambda:[self.p.send(13),make_reservation(self.designer_list)]).place(x=375, y=1050)
-
+        tk.Button(self.win12, font=("Arial",15),text="예약하기", command=lambda:[make_reservation(self.designer_list)]).place(x=375, y=1050)
+        if(self.isBaro):
+            pass
+        else:
+            self.p.send(7)
 
     #13. 예약 완료 텍스트 or 확인 팝업창
     def open_win13(self):
@@ -1031,39 +1034,39 @@ def server(p):
     server = ClientVideoSocket("211.243.232.32",7100)
     server.connectServer()
     # camera
-    var1 = 13
-    while var1 == 13:
-        var1 = 5
-        while var1==5:
-            mode= p.recv()
-            print(mode)
-            server.sock.send(str(mode).encode('utf-8'))
-            image_name = p.recv()
-            # print(image_name)
-            
-            server.sock.send(image_name.encode('utf-8'))
-            img = server.receiveImages_png()
-            # p.send(img)
-            # while p.recv():
+    var1 = 5
+    while var1==5 or var1==7:
+        print("var1", var1)
+        mode= p.recv()
+        print("mode", mode)
+        server.sock.send(str(mode).encode('utf-8'))
+        image_name = p.recv()
+        print("name",image_name)
+        
+        server.sock.send(image_name.encode('utf-8'))
+        img = server.receiveImages_png()
+        # p.send(img)
+        # while p.recv():
+        p.send(img)
+        print("5일 때 ",var1)
+        var1=6
+        while var1==6:  
+            style,color = p.recv()
+            print(style,color)
+            st=style+"/"+color
+            server.sock.send(st.encode('utf-8'))
+            # time.sleep(1)
+            # server.sock.send(color.encode('utf-8'))        
+            # cv2.imwrite("test.png",img)
+            # print(type(img))
+            # img.save("test.png")    
+            img = server.receiveImages()
             p.send(img)
-            var1=6
-            while var1==6:  
-                style,color = p.recv()
-                print(style,color)
-                st=style+"/"+color
-                server.sock.send(st.encode('utf-8'))
-                # time.sleep(1)
-                # server.sock.send(color.encode('utf-8'))        
-                # cv2.imwrite("test.png",img)
-                # print(type(img))
-                # img.save("test.png")    
-                img = server.receiveImages()
-                p.send(img)
-                # while p.recv():
-                    # p.send(img)
-                var1 = p.recv() ## if var1 = 6 style 재선택 if var1=5 재촬영
-                print(var1)
-                server.sock.send(str(var1).encode('utf-8'))
+            # while p.recv():
+                # p.send(img)
+            var1 = p.recv() ## if var1 = 6 style 재선택 if var1=5 재촬영
+            print("6일 때 ",var1)
+            server.sock.send(str(var1).encode('utf-8'))
     server.sock.close()
     
 
