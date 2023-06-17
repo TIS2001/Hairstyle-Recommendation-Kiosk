@@ -333,6 +333,7 @@ class MainUI(tk.Tk):
                         # self.driver.switch_to.window(self.driver.window_handles[-1]) #팝업창으로 전환
                         # ##
                         self.win4.tkraise()
+                        self.win3.destroy()
                     else:
                         messagebox.showerror("로그인 실패", "비밀번호가 일치하지 않습니다.")
                 else:
@@ -383,7 +384,7 @@ class MainUI(tk.Tk):
             self.isBaro=True
             # print(self.isBaro)
 
-        button_back = tk.Button(self.win4, text="뒤로가기", command=lambda:[self.win3.tkraise()])
+        button_back = tk.Button(self.win4, text="뒤로가기", command=lambda:[self.open_win3()])
         button_back.configure(font=("Arial",12))
         button_back.place(x=700, y=10)
         
@@ -825,9 +826,9 @@ class MainUI(tk.Tk):
         label.place(relx=0.5,anchor=tk.CENTER,y=300)
         
         # tk.Button(self.win11, font=("Arial",15), text="뒤로가기", command=lambda:[self.p.send(6),self.win6.tkraise()]).place(x=680, y=0)
-        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.p.send(5),self.open_win5(),self.win5.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
-        tk.Button(self.win11, font=("Arial",15), text="헤어스타일 재선택", command=lambda:[self.p.send(6),self.open_win6(self.tran_img),self.win6.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=895,height=50)
-        tk.Button(self.win11, font=("Arial",15), text="예약하기", command=lambda:[self.open_win12(),self.win12.tkraise()]).place(relx=0.5,anchor=tk.CENTER,y=970,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="다시 찍기", command=lambda:[self.p.send(5),self.open_win5()]).place(relx=0.5,anchor=tk.CENTER,y=820,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="헤어스타일 재선택", command=lambda:[self.p.send(6),self.open_win6(self.tran_img)]).place(relx=0.5,anchor=tk.CENTER,y=895,height=50)
+        tk.Button(self.win11, font=("Arial",15), text="예약하기", command=lambda:[self.open_win12()]).place(relx=0.5,anchor=tk.CENTER,y=970,height=50)
 
     #12. 예약하기/ 디자이너 사진 + 스케줄, 완료 버튼
     def open_win12(self):
@@ -975,7 +976,7 @@ class MainUI(tk.Tk):
         if(self.isBaro):
             button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(5),self.open_win4()]) ###
         else:
-            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(6),self.open_win6(self.tran_img),self.win6.tkraise(),self.win12.destroy()])
+            button_back = tk.Button(self.win12, font=("Arial",15),text="뒤로가기", command=lambda:[self.p.send(6),self.open_win6(self.tran_img)])
 
         button_back.configure(font=(20))
         button_back.place(x=670, y=10)
