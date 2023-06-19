@@ -17,7 +17,7 @@ from util.keyboard import en2ko
 import numpy as np
 from multiprocessing import Process, Pipe
 import subprocess
-
+import io
 ## 카카오톡 관련 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -41,7 +41,7 @@ class MainUI(tk.Tk):
         self.bucket = storage.bucket(app=self.firebase_app)
         self.geometry("800x1280")        
         self.title("Princess_maker")
-        #self.Kakao_init()  ## 카카오톡 관련 
+        self.Kakao_init()  ## 카카오톡 관련 
         self.Frame_init()
         self.mainloop()
         # "SCDream4"= "UI/SCDream4.otf"
@@ -88,14 +88,14 @@ class MainUI(tk.Tk):
         self.ChatRoom_LGE = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876826696105085'
         self.ChatRoom_LSH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819996735611'
         self.ChatRoom_SDJ = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876819676480609'
-        self.ChatRoom_SDH = ''
+        self.ChatRoom_SDH = 'https://center-pf.kakao.com/_xgyjyxj/chats/4876782985684096'
         options = webdriver.ChromeOptions()
         service = Service(executable_path=r'/usr/bin/chromedriver')
 
         #user-agent
         options.add_argument("user-agent=Mozilla/5.0 (X11; CrOS aarch64 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.95 Safari/537.36")
         #창을 띄우지 1않고 실행
-        # options.add_argument("headless")
+        options.add_argument("headless")
 
         #크로니움 드라이버 로드
         self.driver = webdriver.Chrome(service=service, options=options)
@@ -345,16 +345,16 @@ class MainUI(tk.Tk):
                         self.user_info = customer_data
                         messagebox.showinfo("로그인 성공", f'어서오세요, {self.user_info["name"]}님.')
                         subprocess.call(["pkill","onboard"])
-                        # ## 카카오톡 관련 
-                        # self.driver.find_element(By.NAME, 'keyword').send_keys(self.user_info["name"])#사용자 이름 검색
-                        # time.sleep(1)
-                        # self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[1]/div[2]/form/fieldset/div/button/span').click() #검색 클릭
-                        # time.sleep(1)
-                        # self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[3]/div/div/li/a/div').click() #고객 채팅방 입장
-                        # time.sleep(5)
-                        # self.original_window = self.driver.current_window_handle
-                        # self.driver.switch_to.window(self.driver.window_handles[-1]) #팝업창으로 전환
-                        # ##
+                        ## 카카오톡 관련 
+                        self.driver.find_element(By.NAME, 'keyword').send_keys(self.user_info["name"])#사용자 이름 검색
+                        time.sleep(1)
+                        self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[1]/div[2]/form/fieldset/div/button/span').click() #검색 클릭
+                        time.sleep(1)
+                        self.driver.find_element(By.XPATH, '//*[@id="mArticle"]/div[2]/div[3]/div/div/li/a/div').click() #고객 채팅방 입장
+                        time.sleep(5)
+                        self.original_window = self.driver.current_window_handle
+                        self.driver.switch_to.window(self.driver.window_handles[-1]) #팝업창으로 전환
+                        ##
                         self.win4.tkraise()
                         self.win3.destroy()
                     else:
@@ -432,7 +432,7 @@ class MainUI(tk.Tk):
         self.first=False
         self.win5 = tk.Frame(self, relief="flat",bg="white")
         self.win5.place(x=0,y=0,width=800,height=1280)
-        img = Image.open("UI/backgrounds/ScreenShot.png")
+        img = Image.open("UI/backgrounds/ScreenShot.PNG")
         img=img.resize((800,1280))
         photo=ImageTk.PhotoImage(img)
         label=tk.Label(self.win5,image=photo)
@@ -516,7 +516,7 @@ class MainUI(tk.Tk):
                 self.p.send(image_name) #real
                 while(self.user_info['shape']==None):
                     self.user_info = self.doc_ref.get().to_dict()
-                messagebox.showinfo("로딩중", f'사진 전송에 성공했습니다.\n잠시만 기다려주세요:)')
+                messagebox.showinfo("로딩중", f'사진 전송에 성공했습니다.\n잠시만 기다려주세요 :)')
                 self.open_win6()
                 self.win6.tkraise()
                 self.win5.destroy()
@@ -652,7 +652,7 @@ class MainUI(tk.Tk):
 
             while(self.user_info['shape']==None):
                 self.user_info = self.doc_ref.get().to_dict()
-            messagebox.showinfo("로딩중", f'헤어스타일 선택에 성공했습니다.\n잠시만 기다려주세요:)')
+            messagebox.showinfo("로딩중", f'헤어스타일 선택에 성공했습니다.\n잠시만 기다려주세요 :)')
             self.open_win11()
             self.win11.tkraise()
             self.win6.destroy()
@@ -856,7 +856,7 @@ class MainUI(tk.Tk):
     def open_win11(self):
         self.win11 = tk.Frame(self, relief="flat",bg="white")
         self.win11.place(x=0,y=0,width=800,height=1280)
-        img = Image.open("UI/backgrounds/Result.png")
+        img = Image.open("UI/backgrounds/Result.PNG")
         img=img.resize((800,1280))
         photo=ImageTk.PhotoImage(img)
         label=tk.Label(self.win11,image=photo)
@@ -935,7 +935,7 @@ class MainUI(tk.Tk):
                 for index, time in enumerate(times):
                     btn_state = tk.NORMAL
                     # 인덱스와 시간을 흝으면서, 예약 시간이 이미 잡혀있다면 버튼 비활성화.
-                    if time in saved_times:
+                    if time in saved_times or (int(time.split(":")[0]) <= datetime.now().hour):
                         btn_state = tk.DISABLED
                 
                     row = index // 5  # 버튼이 배치될 행 인덱스
@@ -977,17 +977,17 @@ class MainUI(tk.Tk):
                         if new_time not in reservation_time:  # 중복 확인
                             reservation_time.append(new_time)
                             send_time.append(new_time)
-                            ## 카카오톡 관련
+                            # 카카오톡 관련
                             # 선택된 시간의 디자이너에서 전송하도록 설정
-                            # if designer.name == "이승현":
-                            #     Load_ChattingRoom = self.ChatRoom_LSH
-                            # elif designer.name == "선동진":
-                            #     Load_ChattingRoom = self.ChatRoom_SDJ
-                            # elif designer.name == "이가은":
-                            #     Load_ChattingRoom = self.ChatRoom_LGE
-                            # elif designer.name == "신동훈":
-                            #     Load_ChattingRoom = self.ChatRoom_SDH
-                            ##
+                            if designer.name == "이승현":
+                                Load_ChattingRoom = self.ChatRoom_LSH
+                            elif designer.name == "선동진":
+                                Load_ChattingRoom = self.ChatRoom_SDJ
+                            elif designer.name == "이가은":
+                                Load_ChattingRoom = self.ChatRoom_LGE
+                            elif designer.name == "신동훈":
+                                Load_ChattingRoom = self.ChatRoom_SDH
+                            #
                 
                 # 예약 정보와 기타 필요한 정보를 수집하여 Firestore에 저장
                 data = {
@@ -998,29 +998,38 @@ class MainUI(tk.Tk):
                 # Firestore에 예약 정보 저장
                 hairdresser_ref.set(data)
             
-            # ## 카카오톡 관련
-            # # 
-            # self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/이승현.jpg') #고객한테 사진 전송
-            # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
-            # # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
-            # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+            ## 카카오톡 관련
+            # 
+            # with io.BytesIO() as stream:
+                # self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+                # self.img = Image.fromarray(self.img)
+            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
+            time.sleep(2)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+            time.sleep(2)
+            self.img.save("result.jpg", format='JPEG')
+            if self.isBaro == False:
+                self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys("/home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/result.jpg") #고객한테 사진 전송
+            time.sleep(2)
             
-            # #채팅방 로드 (미용사에게 로드)
-            # self.driver.get(Load_ChattingRoom)  
-            # time.sleep(2)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
-            
-            # # 사진전송, 메시지 전송
-            # self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys('/home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/이승현.jpg') 
-            # self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
-            # # time.sleep(1)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
-            # self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
-            
-            # # 팝업창 닫기
-            # self.driver.close()
-            # self.driver.switch_to.window(self.original_window)
-            # self.driver.find_element(By.NAME, 'keyword').send_keys(Keys.CONTROL + "a")
-            # self.driver.find_element(By.NAME, 'keyword').send_keys(Keys.DELETE)
-            # ##
+            #채팅방 로드 (미용사에게 로드)
+            self.driver.get(Load_ChattingRoom)  
+            time.sleep(3)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            # 사진전송, 메시지 전송
+            self.driver.find_element(By.ID, 'chatWrite').send_keys(self.user_info["name"],'님 ', send_time,' 예약 완료되었습니다.')
+            time.sleep(2)  # 수정 필요 (현재 딜레이 고려해 3초 설정)
+            self.driver.find_element(By.XPATH, '//*[@id="kakaoWrap"]/div[1]/div[2]/div/div[2]/div/form/fieldset/button').click()  #전송버튼   
+            time.sleep(2)
+            if self.isBaro == False: 
+                self.driver.find_element(By.XPATH, "//input[@class='custom uploadInput']").send_keys("/home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/result.jpg") 
+                time.sleep(2)
+             
+            # 팝업창 닫기
+            self.driver.close()
+            self.driver.switch_to.window(self.original_window)
+            self.driver.find_element(By.NAME, 'keyword').send_keys(Keys.CONTROL + "a")
+            self.driver.find_element(By.NAME, 'keyword').send_keys(Keys.DELETE)
+            ##
             self.open_win13() 
             self.win13.tkraise()    
         
@@ -1144,5 +1153,6 @@ if __name__ == "__main__":
     p2.start()
     p1.join()
     p2.join()
-    
-    
+
+
+

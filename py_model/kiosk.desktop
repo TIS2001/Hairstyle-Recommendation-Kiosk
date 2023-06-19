@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=Kiosk
+Exec=/usr/bin/python /home/u2018430034/project/Hairstyle-Recommendation-Kiosk/py_model/scenario.py
