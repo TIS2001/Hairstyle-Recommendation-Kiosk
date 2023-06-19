@@ -1059,7 +1059,7 @@ class MainUI(tk.Tk):
         designer3.read_reservation(self.db)
         
         designer4 = designer("신동훈", self.win12, y=840)
-        filename4 = "이승현.jpg"
+        filename4 = "신동훈.jpg"
         show_image(designer4.frame1, filename4)
         designer4.read_reservation(self.db)
 
