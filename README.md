@@ -15,7 +15,7 @@ UOS_MIE Embedded Project<br/>
 # 구현 내용
 ## 하드웨어 설계 및 UI 화면 구성
 ### 키오스크 하우징
-[kiosk_housing_part](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/tree/baf6a57762e742558e6122f6aaa026a8190bedb0/kiosk_housing_part) 참고
+[kiosk_housing_part](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/tree/baf6a57762e742558e6122f6aaa026a8190bedb0/kiosk_housing_part) 참고 <br/>
 25.6cm * 16.8cm의 키오스크 모니터를 보호, 지지해주기 위해 키오스크의 하우징은 총 크기를 35cm * 20cm로 설계하였고, 전면부 2개, 후면부 2개 총 4개의 part로 나누어서 설계했다. 
 
 나누어진 총 4개의 part는 아래와 같다. <br/>
