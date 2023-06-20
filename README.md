@@ -194,14 +194,3 @@ Storage에는 남성/여성의 헤어스타일 정보와 염색 정보를 저장
 ![375px-2023_hk_kakaotalk2](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/88767c35-5396-4a97-9595-d2ace3dc029a)
 ![365px-2023_hk_kakaotalk1](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/886d3ce8-3210-4e4c-9e1a-6dc568141628)
 
-![600px-PM_Start_Frame](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/d919e464-36d3-484c-b8e0-52a0f8b11c3b)
-![600px-PM_Open_win1](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/10aa6948-d245-4bd6-9f0c-2620615042a5)
-![600px-PM_Open_win2](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/4d876da0-00a5-4960-9972-fd6b29210036)
-![600px-PM_Open_win3_000](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/74bc752c-7b00-4407-afe3-4b4f62405f48)
-![600px-PM_Open_win4](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/3de2fc47-8a0a-4f7b-b27d-62e4a799ea10)
-![600px-PM_Open_win5](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/81f13f62-4cf3-48e6-be07-b8a57ab98ae0)
-![600px-PM_Open_win6](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/2bed2648-b582-44f2-ba47-16f0f4fa6f22)
-![600px-PM_Open_win11](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/30a84a1e-3db6-466f-8524-5873d75d3933)
-![600px-PM_Open_win12](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/5e61e27a-eee8-4636-bedc-10af9affcee7)
-![600px-PM_Open_win13](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/160d0eca-05f2-4971-bd95-13d42edfd1c8)
-
