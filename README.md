@@ -66,10 +66,8 @@ scenario.py 에서 서버 IP 주소 및 포트 변경, DB Json 경로 및 주소
 25.6cm * 16.8cm의 키오스크 모니터를 보호, 지지해주기 위해 키오스크의 하우징은 총 크기를 35cm * 20cm로 설계하였고, 전면부 2개, 후면부 2개 총 4개의 part로 나누어서 설계했다. 
 
 나누어진 총 4개의 part는 아래와 같다. <br/>
-![338px-2023_hk_ft](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/35af277f-4760-4e1f-806a-9874440c90b1)
-![270px-2023_hk_fb](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/a2ed476f-62c8-4186-b6e1-4695d7526f19)
-![270px-2023_hk_bt](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/2ffef8b8-de86-42eb-8b6c-956dabe5ed8b)
-![338px-2023_hk_bb](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/90cb16f9-1989-4ff8-933c-42ce36c9f63a)
+
+![total_cad](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/d071caad-e7f2-46e3-8fc4-2885509865d1)
 
 
 위의 part들을 각각 출력하여 완성된 키오스크의 모습은 아래와 같다.
@@ -241,8 +239,4 @@ Storage에는 남성/여성의 헤어스타일 정보와 염색 정보를 저장
 ### 카카오톡 전송
 예약시스템을 완성 시키기 위해서는 예약 내역과 고객이 선택한 헤어스타일이 합성된 사진을 고객과 미용사에게 전송해야 했고, 이를 카카오톡으로 전송하기로 하였다. 카카오톡 전송은 python의 selenium모듈을 통한 웹크롤링을 통하여 구현하였다. "프린세스메이커" 전용 플러스친구 채널을 따로 만들어 사용자들이 이 채널을 친구추가 하면 채널을 통해 카카오톡 전송이 가능하게 하였다. 고객이 키오스크를 통해 로그인을 하면 데이터베이스에서 받아온 고객의 이름을 통하여 플러스친구의 고객 명단에서 사용자의 이름을 검색하고 고객이 원하는 헤어스타일을 적용한 후에 예약을 하면 헤어스타일이 합성된 사진과 예약 시간을 각각 첨부하여 고객에게 전송하였고, 이를 선택한 디자이너에게도 보낼 수 있게 하였다.
 
-
-![1050px-2023_hk_kakaotalk_main](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/d56e8c55-d826-4b02-9697-cead793f6874)
-
-![375px-2023_hk_kakaotalk2](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/88767c35-5396-4a97-9595-d2ace3dc029a)
-![365px-2023_hk_kakaotalk1](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/886d3ce8-3210-4e4c-9e1a-6dc568141628)
+![total_kakao](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/d311afe5-19d3-4bb1-bb35-0d0310481baa)
