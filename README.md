@@ -51,8 +51,7 @@ Firebase Cloud Database를 사용하여 고객의 데이터를 처리하는 과�
 # 구현 내용
 ## 하드웨어 설계 및 UI 화면 구성
 ### 키오스크 하우징
-25.6cm * 16.8cm의 키오스크 모니터를 보호, 지지해주기 위해 키오스크의 하우징은 총 크기를 35cm * 20cm로 설계하였으나, 3D 프린터의 출력 크기 제약으로 인하여 전면부 2개, 후면부 2개 총 4개의 part로 나누어서 설계했다. 베젤의 크기를 고려하여 하우징이 터치를 위한 모니터의 화면을 제외한 모든 부분을 보호할 수 있도록 만들었고 각 모서리의 직선적인 투박함을 줄이기 위해 edge fillet을 주어 모서리를 부드럽게 만들었다. 또한 터치 시 키오스크의 흔들림이나 part의 분리를 방지하기 위해 접합부를 결합할 수 있게 만들어 흔들림과 분리 위험을 줄였고, 하우징은 아래로 갈수록 두꺼운 형태를 갖기에 디스플레이 터치시에 흔들리거나 뒤로 넘어가지 않고 잘 지지할 수 있도록 설계했다.
-
+25.6cm * 16.8cm의 키오스크 모니터를 보호, 지지해주기 위해 키오스크의 하우징은 총 크기를 35cm * 20cm로 설계하였고, 전면부 2개, 후면부 2개 총 4개의 part로 나누어서 설계했다. 
 
 나누어진 총 4개의 part는 아래와 같다. <br/>
 ![338px-2023_hk_ft](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/35af277f-4760-4e1f-806a-9874440c90b1)
@@ -73,15 +72,8 @@ main 내에서 MainUI 클래스를 호출하여 UI 인스턴스를 생성한다.
 * 카메라 초기화, 스타트 프레임, 로그인 프레임, 서비스 선택 프레임을 시작한다.
 * 스타트 프레임을 가장 위에 띄운다.
 
-![600px-PM_Start_Frame](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/d919e464-36d3-484c-b8e0-52a0f8b11c3b)
-
-
 ### open_win1 메서드: 로그인과 회원가입 선택 페이지
 *회원가입 버튼을 클릭하면 open_win2을, 로그인 버튼을 클릭하면 open_win3을 실행한다.
-
-![600px-PM_Open_win1](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/10aa6948-d245-4bd6-9f0c-2620615042a5)
-
-
 
 ### open_win2 메서드: 회원가입 페이지
 * onboard 키보드 띄우기 : 한글 출력은 되지만, 입력이 안되는 오류 발생했다. 대안으로 키가 눌릴 때마다 영어->한글로 변환하는 함수 실행하고, 프레임이 생성되고 커서가 입력 부분에 갈 수 있도록 focus_set() 설정하여 사용자가 이름 입력에 헷갈리지 않도록 함.
@@ -90,11 +82,6 @@ main 내에서 MainUI 클래스를 호출하여 UI 인스턴스를 생성한다.
 * 개인정보 동의 항목이 체크 되면 submit 버튼 활성화
 * 회원가입 완료하면 onboard 키보드 종료
 
-
-![600px-PM_Open_win2](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/4d876da0-00a5-4960-9972-fd6b29210036)
-
-
-
 ### open_win3 메서드: 로그인 페이지
 * onboard 키보드 띄우기
 * self.db.collection('customers').document(id) 리턴값을 get() 하여 doc 변수에 저장
@@ -102,16 +89,10 @@ main 내에서 MainUI 클래스를 호출하여 UI 인스턴스를 생성한다.
 * 로그인 시도시 FIrebase Database에 저장된 고객의 정보와 비교, 저장된 고객 데이터의 아이디와 비밀번호가 일치하는지 확인
 * 로그인이 되면 고객 이름을 카카오톡 채팅 목록에서 검색하여 윈도우 전환하고 프레임 destroy()
 
-
-![600px-PM_Open_win3_000](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/74bc752c-7b00-4407-afe3-4b4f62405f48)
-
-
 ### open_win4 메서드: 서비스 선택 페이지
 * button_reg을 누르면 baro()를 호출하여 self.isBaro를 참으로 바꾼 뒤 바로 예약 페이지 메서드를 호출
 * self.isBaro가 참으로 설정될 시 사진 합성 과정을 생략하기에 이후 카카오톡 메세지 전송 환경에서 사진을 따로 보내지 않음
 * button_login을 누르면 사진 촬영 페이지 메서드를 호출
-
-![600px-PM_Open_win4](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/3de2fc47-8a0a-4f7b-b27d-62e4a799ea10)
 
 ### open_win5 메서드: 사진 촬영 페이지
 * 이 프레임을 시작하면 self.Baro = False로 변경
@@ -121,16 +102,11 @@ main 내에서 MainUI 클래스를 호출하여 UI 인스턴스를 생성한다.
 * AfterSelect(mode,image_name,image) 함수에서 리스트 속성이 있을 경우 모드와 이미지 속성을 서버로 전송 
 * 서버에서 사용자의 얼굴형을 파악하여 Firebase에 업로드하면 헤어스타일 선택 페이지 메서드 호출 후 프레임 종료
 
-![600px-PM_Open_win5](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/81f13f62-4cf3-48e6-be07-b8a57ab98ae0)
-
-
 ### open_win6 메서드: 헤어스타일 선택 페이지
 * select_personal(self,img) 메서드를 통해 전송했던 서버로부터 사진의 배경이 지워진 사진을 받아 퍼스널컬러를 확인해볼 수 있는 4가지 배경에 붙여서 이미지 라벨에 추가
 * append_list(self,img_path,img_list,img_name) 메서드, select_personal(self,img) 메서드, make_btn(self, frame, img_path,page) 메서드, recommend_style 메서드를 사용해 각 이미지 프레임별로 원하는 사진 버튼을 배열하고 구축
 * 이미지 버튼을 클릭할 때 toggle_border(self, button)에서 변수를 결정하고 이를 인자로 받는 toggle_change(self,button,dict_var,page) 메서드로 컬러와 헤어스타일이 한 개씩만 선택될 수 있도록 설정
 * send_styles 메서드로 선택된 style은 self.dict1 딕셔너리에 저장된 첫 번재 키에 해당한 값의 text, color는 self.dict2 딕셔너리에 저장된 첫 번재 키에 해당한 값의 text를 받아 [style, color] 리스트를 서버에게 전송한다. 이후 합성 결과 확인 페이지 메서드 호출
-
-![600px-PM_Open_win6](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/2bed2648-b582-44f2-ba47-16f0f4fa6f22)
 
 ### open_win11 메서드: 합성 결과 확인 페이지
 * 서버로부터 받은 합성 결과 이미지를 라벨에 표시
@@ -139,21 +115,13 @@ main 내에서 MainUI 클래스를 호출하여 UI 인스턴스를 생성한다.
 * 이 경우 서버에게 동작 페이지를 알려주기 위해 5나 6을 모드로 전송 
 * 합성된 결과대로 시술을 예약하고 싶다면 예약하기 버튼을 클릭하여 미용사 선택 페이지로 이동
 
-![600px-PM_Open_win11](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/30a84a1e-3db6-466f-8524-5873d75d3933)
-
-
 ### open_win12 메서드: 예약 페이지
 * designer 클래쓰를 통해 미용사 인스턴스를 생성하고, 미용사별로 read_reservation(self,db) 메서드로 Firebase Storage로부터 예약 내역을 확인하여 버튼을 생성
 * make_reservation(designer_list) 함수로 예약 정보를 Firestore에 저장하며, 여러 시간, 여러 미용사를 선택하지 않도록 함
 * 선택된 미용사와 고객 이름을 바탕으로 예약 내역과 합성 결과 이미지를 카카오톡 전송 후 예약 완료 알림 페이지 호출
 
-![600px-PM_Open_win12](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/5e61e27a-eee8-4636-bedc-10af9affcee7)
-
 ### open_win13 메서드: 종료 페이지
 * 예약이 완료되었다는 텍스트를 보여주고 2초 뒤에 초기 화면으로 돌아가며 이전 프레임은 종료하여 키오스크 초기화
-
-![600px-PM_Open_win13](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/160d0eca-05f2-4971-bd95-13d42edfd1c8)
-
 
 ## 소프트웨어 설계 및 구현
 ### 헤어스타일 합성 모델
