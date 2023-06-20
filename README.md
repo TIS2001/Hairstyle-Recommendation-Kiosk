@@ -50,6 +50,12 @@ scenario.py 에서 서버 IP 주소 및 포트 변경, DB Json 경로 및 주소
 
 카카오톡 예약까지 진행할 경우엔 디자이너 채팅방 경로 카카오톡 채팅방 경로 수정 필요 / 처음 실행할 때 카카오톡 2차인증 필요
 
+## 주의 사항
+
+현재 프로젝트가 종료되어, Firebase Database 비공개 키가 삭제되어 있으며, 사용 필요시 데이터 베이스를 새로 구축해 비공개 키를 삽입하여 사용해야 합니다.
+
+또한 카카오톡 예약 역시 [info.conf](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/tree/master/info.conf) 파일에 접근하여 관리자의 아이디와 비밀번호를 입력해야 사용할 수 있습니다.
+
 
 # 프로젝트 개요
 ## 프로젝트 요약
