@@ -206,6 +206,9 @@ conda create -n {env_name} python=3.8.0
 conda activate {env_name}
 conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11.1 -c pytorch -c conda-forge
 pip install face_alignment face-recognition gdown ipython matplotlib firebase-admin pybase64
+pip install opencv-python opencv-contrib-python
+sudo apt-get install -y libatlas-base-dev libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev  libqtgui4  libqt4-test
+pip install cmake dlib
 ```
 python main.py에 DB json 경로와 DB 주소 수정 
 
