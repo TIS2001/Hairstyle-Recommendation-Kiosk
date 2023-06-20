@@ -32,15 +32,10 @@ class ServerSocket:
         print(u'Server socket [ TCP_IP: ' + self.TCP_IP + ', TCP_PORT: ' + str(self.TCP_PORT) + ' ] is connected with client')
         try:
             length = self.recvall(self.conn, 64)
-            # print(length)
             length1 = length.decode('utf-8')
             stringData = self.recvall(self.conn, int(length1))
-            
-            # print(stringData)
-
             data = numpy.frombuffer(base64.b64decode(stringData), dtype = numpy.uint8)
             decimg = cv2.imdecode(data, 1)
-            # imageRGB = cv2.cvtColor(decimg , cv2.COLOR_BGR2RGB)
             return decimg       
         except Exception as e:
             print(e)
@@ -52,14 +47,10 @@ class ServerSocket:
         result, frame = cv2.imencode(".jpg",img,encode_param)
         data = numpy.array(frame)
         stringData = base64.b64encode(data)
-        
         length = str(len(stringData))
-        # print(length)
         self.conn.send(length.encode('utf-8').ljust(64))
         self.conn.send(stringData)
-        print('send images')
-        # self.connectServer()
-        # self.sendImages()
+
     
     def sendImages(self,img):
         encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
@@ -68,27 +59,19 @@ class ServerSocket:
         stringData = base64.b64encode(data)
         
         length = str(len(stringData))
-        # print(length)
         self.conn.send(length.encode('utf-8').ljust(64))
         self.conn.send(stringData)
-        print('send images')
-        # self.connectServer()
-        # self.sendImages()
+
     
     def sendImages_png(self,img):
-        # encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
         img = numpy.array(img)
         result, frame = cv2.imencode(".png",img)
         data = numpy.array(frame)
         stringData = base64.b64encode(data)
         
         length = str(len(stringData))
-        # print(length)
         self.conn.send(length.encode('utf-8').ljust(64))
         self.conn.send(stringData)
-        print('send images')
-        # self.connectServer()
-        # self.sendImages()
     
     def recvall(self, sock, count):
         buf = b''
