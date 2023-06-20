@@ -140,12 +140,12 @@ Style-your-hair는 Image generation 모델이 입력받은 이미지를 생성�
 
 **SYH_해결 방안 2)  파일 저장**
 
-::Style-your-hair는 대부분의 과정이 파일을 직접 저장하고 저장한 파일을 불러오는 방식으로 동작하게 되어있다. 파일을 저장하지 않아도 동작하도록 코드를 수정하여 고객의 개인정보가 서버에 남아있지 않도록 수정해주었다.
+Style-your-hair는 대부분의 과정이 파일을 직접 저장하고 저장한 파일을 불러오는 방식으로 동작하게 되어있다. 파일을 저장하지 않아도 동작하도록 코드를 수정하여 고객의 개인정보가 서버에 남아있지 않도록 수정해주었다.
 
 
 ### 염색
 
-::염색을 하는 과정은 BiseNet과 Opencv를 활용하여 진행하였다. 합성 이미지를 BiseNet에 넣어서 Segmentation data를 받고 이중 Hair 부분만 opencv로 염색을 진행하였다.
+염색을 하는 과정은 BiseNet과 Opencv를 활용하여 진행하였다. 합성 이미지를 BiseNet에 넣어서 Segmentation data를 받고 이중 Hair 부분만 opencv로 염색을 진행하였다.
 
 ![1050px-Dying](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/841dcbd2-0944-4730-bfa1-26c329470ae0)
 
