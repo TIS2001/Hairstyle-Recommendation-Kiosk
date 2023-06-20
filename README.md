@@ -194,3 +194,45 @@ Storage에는 남성/여성의 헤어스타일 정보와 염색 정보를 저장
 ![375px-2023_hk_kakaotalk2](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/88767c35-5396-4a97-9595-d2ace3dc029a)
 ![365px-2023_hk_kakaotalk1](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/886d3ce8-3210-4e4c-9e1a-6dc568141628)
 
+# How to Use
+
+## Server
+
+[model](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/tree/master/model) 폴더 사용
+
+- Install dependencies:
+```
+conda create -n {env_name} python=3.8.0
+conda activate {env_name}
+conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+pip install face_alignment face-recognition gdown ipython matplotlib firebase-admin pybase64
+```
+python main.py에 DB json 경로와 DB 주소 수정 
+
+utils/tcp_server에서 IP, port 수정
+
+`python main.py` 로 서버 실행
+
+main_model.py 에서 parameter 수정가능
+
+## UI
+
+[py_model](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/tree/master/py_model) 폴더 사용
+- Install dependencies:
+```
+sudo apt-get -y update && sudo apt-get -y  upgrade
+pip install firebase-admin pybase64 pillow selenium opencv-python
+sudo apt-get install python-imaging-tk
+pip install opencv-contrib-python
+sudo apt-get install -y libatlas-base-dev libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev  libqtgui4  libqt4-test
+```
+
+- Install Camera Library
+
+본 프로젝트에선 aducam_64mp [참고](https://docs.arducam.com/Raspberry-Pi-Camera/Native-camera/PiCamera2-User-Guide/) 를 사용하여 진행
+
+scenario.py 에서 서버 IP 주소 및 포트 변경, DB Json 경로 및 주소 변경
+
+`python scenario.py` 로 UI 실행가능
+
+카카오톡 예약까지 진행할 경우엔 디자이너 채팅방 경로 카카오톡 채팅방 경로 수정 필요 / 처음 실행할 때 카카오톡 2차인증 필요
