@@ -1,6 +1,6 @@
 # 프로젝트 명
 
-라즈베리파이를 활용한 미용실 전용 키오스크
+라즈베리파이를 활용한 미용실 전용 키오스크<br/>
 서울시립대학교 기계정보공학과- 2023ESE-머리문제가 아니조
 
 # 프로젝트 개요
@@ -42,11 +42,6 @@ Firebase Cloud Database를 사용하여 고객의 데이터를 처리하는 과�
 
 # 동작 시나리오
 ![시나리오](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/bc31a450-9591-4e4d-bc31-95f971a2c281)
-
-
-## 개발 일정
-![업무별 세부개발 내용](https://github.com/TIS2001/Hairstyle-Recommendation-Kiosk/assets/94544462/460483f2-dbb0-495c-9233-b5621697c546)
-
 
 # 구현 내용
 ## 하드웨어 설계 및 UI 화면 구성
