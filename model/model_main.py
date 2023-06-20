@@ -130,8 +130,8 @@ class Img_model:
         parser.add_argument('--l2_lambda', type=float, default=1.0, help='L2 loss multiplier factor')
         parser.add_argument('--p_norm_lambda', type=float, default=0.001, help='P-norm Regularizer multiplier factor')
         parser.add_argument('--l_F_lambda', type=float, default=0.1, help='L_F loss multiplier factor')
-        parser.add_argument('--W_steps', type=int, default=400, help='Number of W space optimization steps')
-        parser.add_argument('--FS_steps', type=int, default=200, help='Number of W space optimization steps')
+        parser.add_argument('--W_steps', type=int, default=200, help='Number of W space optimization steps')
+        parser.add_argument('--FS_steps', type=int, default=100, help='Number of W space optimization steps')
 
         # Alignment loss options
         parser.add_argument('--ce_lambda', type=float, default=1.0, help='cross entropy loss multiplier factor')
@@ -149,18 +149,12 @@ class Img_model:
         return args
 
 if __name__ == "__main__":
-    args = model_init()
-    align = Alignment(args)
-    img = Image.open("test.png")
+    model = Img_model()
+    # args = model_init()
+    # align = Alignment(args)
+    img = Image.open("source6.png")
     # img = img_maker(args,img,align)
-    res_img_torch = align.preprocess_PILImg(img, is_downsampled = True) ## res_img torch
-    # print(type(res_img))
-    _, seg_target = align.get_img_and_seg_from_path(res_img_torch)
-    
-    # res_img = toPIL(res_img.squeeze().cpu())
-    # res_img = np.array(toPIL(res_img.squeeze().cpu()))
-    img = np.array(img)
-    res_img = dying(img,seg_target.squeeze().cpu(),[25,60,40])
+    res_img = model.dying_main(img,(122.0, 238.0, 122.0))
     res_img=Image.fromarray(res_img)
     
     res_img.save("dying_test.png")
