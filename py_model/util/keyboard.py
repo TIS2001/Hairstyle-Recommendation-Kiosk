@@ -36,7 +36,7 @@ def en2ko(main_input):
         elif (ko_word[i] in choseong_list and ko_word[i+1] in jungseong_list) or (ko_word[i] not in choseong_list and ko_word[i] not in jungseong_list):
             words.append(ko_word[start:i])
             start = i
-    
+
     # convert dubble letter
     for word in words:
         if len(word) > 2 and word[0] in choseong_list and word[1] in jungseong_list:
@@ -50,7 +50,6 @@ def en2ko(main_input):
                 word[2] = make_jongseong_list(word[2:4])
                 if (b != word[2]):
                     word.pop(3)
-    
     #combine each letter
     output_list = []
     for char in words:
