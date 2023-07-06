@@ -1106,7 +1106,7 @@ def main(p):
     UI = MainUI(p)
 
 def server(p):
-    server = ClientVideoSocket("211.243.232.32",7100)
+    server = ClientVideoSocket("",)
     server.connectServer()
     # camera
     var1 = 5
